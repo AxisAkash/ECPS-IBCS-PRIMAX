@@ -11,7 +11,7 @@ import { SegmentedControl } from "@/components/ui/form";
 import { SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application } from "@/lib/domain/types";
 import { holdingInfo, STAGE_LABEL } from "@/lib/domain/workflow";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatDate, formatRelative } from "@/lib/utils";
 import { useMe, useMyApplications, useUsers } from "./hooks";
@@ -52,7 +52,7 @@ export function ApplicantDashboard() {
           icon: AlertTriangle,
           eyebrow: t("status.correction_requested"),
           title: a.title,
-          body: a.correctionNote ?? "RAJUK has asked for a correction.",
+          body: a.correctionNote ?? t("dash.corrFallback"),
           href: `/workspace/applications/${a.id}`,
           cta: t("ws.fix"),
           app: a,
@@ -67,7 +67,7 @@ export function ApplicantDashboard() {
           icon: CreditCard,
           eyebrow: t("status.fee_pending"),
           title: a.title,
-          body: `${formatBDT(a.fee?.total ?? 0, locale)} (illustrative) · electrical & plumbing drawings also requested`,
+          body: t("dash.feeBody", { amount: formatBDT(a.fee?.total ?? 0, locale) }),
           href: `/workspace/applications/${a.id}?pay=1`,
           cta: t("ws.pay"),
           app: a,
@@ -82,7 +82,7 @@ export function ApplicantDashboard() {
           icon: FilePen,
           eyebrow: `${t("status.draft")} · ${a.draftStep ?? 0}/${WIZARD_STEPS}`,
           title: a.title,
-          body: a.professionals.some((p) => p.status === "invited") ? "Waiting for your architect to accept the invitation." : `Last saved ${formatRelative(a.createdAt)}.`,
+          body: a.professionals.some((p) => p.status === "invited") ? t("dash.waitArchitect") : t("dash.lastSaved", { when: formatRelative(a.createdAt, undefined, locale) }),
           href: `/workspace/applications/${a.id}/edit`,
           cta: t("ws.continue"),
           app: a,
@@ -179,7 +179,7 @@ export function ApplicantDashboard() {
           >
             {groups[tab].length === 0 ? (
               <div className="p-5">
-                <EmptyState title="Nothing here yet" body="Applications you start will appear in this list." />
+                <EmptyState title={t("dash.empty")} body={t("dash.emptyBody")} />
               </div>
             ) : (
               <ul className="divide-y divide-line">
@@ -206,10 +206,10 @@ export function ApplicantDashboard() {
                                 <StageTrack type={a.type} stage={a.stage} status={a.status} showLabels />
                                 <p className="text-xs text-muted md:text-right">
                                   {["approved", "rejected", "appealed"].includes(a.status) ? (
-                                    <>Decided {formatDate(a.decidedAt, locale)}</>
+                                    <>{t("apps.decided", { date: formatDate(a.decidedAt, locale) })}</>
                                   ) : (
                                     <>
-                                      {t("ws.holder")} <span className="font-medium text-ink">{a.stage === "fee_and_drawings" ? "you (payment due)" : STAGE_LABEL[a.stage]}</span>
+                                      {t("ws.holder")} <span className="font-medium text-ink">{a.stage === "fee_and_drawings" ? t("dash.youPay") : t(`stage.${a.stage}` as MessageKey)}</span>
                                       <span className={cn("ml-1", h.state === "exceeded" && "font-medium text-danger-700")}>· {h.days}d</span>
                                     </>
                                   )}
@@ -247,7 +247,7 @@ export function ApplicantDashboard() {
                       <span className="truncate text-sm font-medium text-ink-strong group-hover:text-teal-700">{n.title}</span>
                     </span>
                     <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">{n.body}</span>
-                    <span className="mt-1 block text-[0.6875rem] text-subtle">{formatRelative(n.at)}</span>
+                    <span className="mt-1 block text-[0.6875rem] text-subtle">{formatRelative(n.at, undefined, locale)}</span>
                   </Link>
                 </li>
               ))}
@@ -257,17 +257,17 @@ export function ApplicantDashboard() {
           <Panel title={t("ws.payments")} actions={<ReceiptText className="size-4 text-subtle" aria-hidden />}>
             <dl className="grid grid-cols-2 gap-4">
               <div>
-                <dt className="text-xs text-muted">Due now</dt>
+                <dt className="text-xs text-muted">{t("dash.dueNow")}</dt>
                 <dd className={cn("tabular mt-1 font-display text-xl font-semibold", due.length ? "text-danger-700" : "text-ink-strong")}>{formatBDT(due.reduce((s, p) => s + p.amount, 0), locale)}</dd>
               </div>
               <div>
-                <dt className="text-xs text-muted">Paid to date</dt>
+                <dt className="text-xs text-muted">{t("dash.paid")}</dt>
                 <dd className="tabular mt-1 font-display text-xl font-semibold text-ink-strong">{formatBDT(paid.reduce((s, p) => s + p.amount, 0), locale)}</dd>
               </div>
             </dl>
-            <p className="mt-3 text-[0.6875rem] text-subtle">Amounts are illustrative and not RAJUK fees.</p>
+            <p className="mt-3 text-[0.6875rem] text-subtle">{t("dash.amountsNote")}</p>
             <Button asChild variant="secondary" size="sm" className="mt-4 w-full">
-              <Link href="/workspace/payments">View payments</Link>
+              <Link href="/workspace/payments">{t("dash.viewPayments")}</Link>
             </Button>
           </Panel>
 
@@ -282,7 +282,7 @@ export function ApplicantDashboard() {
                       {h.toStage && <> → {STAGE_LABEL[h.toStage]}</>}
                     </span>
                     <span className="block truncate text-xs text-muted">
-                      {h.app.ref} · {formatRelative(h.at)}
+                      {h.app.ref} · {formatRelative(h.at, undefined, locale)}
                     </span>
                   </span>
                 </li>
@@ -296,12 +296,12 @@ export function ApplicantDashboard() {
             <div className="mt-4 flex flex-wrap gap-2">
               <Button asChild size="sm" variant="outline-dark">
                 <Link href="/guides">
-                  <BookOpen /> Guide
+                  <BookOpen /> {t("dash.guide")}
                 </Link>
               </Button>
               <Button asChild size="sm" variant="outline-dark">
                 <Link href="/workspace/support">
-                  <LifeBuoy /> Support
+                  <LifeBuoy /> {t("dash.support")}
                 </Link>
               </Button>
             </div>

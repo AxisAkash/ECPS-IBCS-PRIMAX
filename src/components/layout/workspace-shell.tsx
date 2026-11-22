@@ -379,7 +379,7 @@ export function WorkspaceShell({ workspace, children }: { workspace: "workspace"
             {role && (
               <p className="flex items-center gap-2 truncate text-xs text-muted">
                 <span className="hidden rounded-xs border border-dashed border-amber-500/70 px-1.5 py-px font-mono text-[0.625rem] uppercase tracking-wider text-amber-700 sm:inline">Demo</span>
-                <span className="truncate">{dark ? <ShellUserLabel /> : roleMeta(role).label}</span>
+                <span className="truncate">{dark ? <ShellUserLabel /> : <RoleLabel role={role} />}</span>
               </p>
             )}
           </div>
@@ -404,6 +404,12 @@ export function WorkspaceShell({ workspace, children }: { workspace: "workspace"
       </div>
     </div>
   );
+}
+
+function RoleLabel({ role }: { role: RoleKey }) {
+  const { locale } = useI18n();
+  const m = roleMeta(role);
+  return <>{locale === "bn" ? m.labelBn : m.label}</>;
 }
 
 function ShellUserLabel() {

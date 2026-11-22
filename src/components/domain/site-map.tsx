@@ -2,6 +2,7 @@
 
 import { Crosshair, Layers, MapPin } from "lucide-react";
 import { useId, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { SimulatedTag } from "@/components/ui/feedback";
 
@@ -32,6 +33,7 @@ const ZONES = [
 ];
 
 export function SiteMap({ lat, lng, onChange, device, className, height = 320, label = "Plot location", showDap: showDapInitial = true }: Props) {
+  const { t } = useI18n();
   const [center] = useState({ lat, lng });
   const [showDap, setShowDap] = useState(showDapInitial);
   const titleId = useId();
@@ -100,7 +102,7 @@ export function SiteMap({ lat, lng, onChange, device, className, height = 320, l
         </svg>
 
         <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2">
-          <SimulatedTag className="bg-surface/90">Simulated map</SimulatedTag>
+          <SimulatedTag className="bg-surface/90">{t("map.simulated")}</SimulatedTag>
         </div>
         <div className="absolute right-3 top-3 flex flex-col gap-1.5">
           <button
@@ -109,21 +111,21 @@ export function SiteMap({ lat, lng, onChange, device, className, height = 320, l
             aria-pressed={showDap}
             className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/95 px-2 py-1 text-xs font-medium text-ink shadow-sm hover:bg-surface"
           >
-            <Layers className="size-3.5" /> DAP overlay
+            <Layers className="size-3.5" /> {t("map.dap")}
           </button>
         </div>
         {onChange && (
           <div className="absolute bottom-3 right-3 grid grid-cols-3 gap-0.5 rounded-md border border-line bg-surface/95 p-0.5 shadow-sm">
             <span />
-            <NudgeButton label="Move pin north" onClick={() => nudge(0.00005, 0)}>↑</NudgeButton>
+            <NudgeButton label={t("map.north")} onClick={() => nudge(0.00005, 0)}>↑</NudgeButton>
             <span />
-            <NudgeButton label="Move pin west" onClick={() => nudge(0, -0.00005)}>←</NudgeButton>
+            <NudgeButton label={t("map.west")} onClick={() => nudge(0, -0.00005)}>←</NudgeButton>
             <span className="grid place-items-center text-teal-700">
               <Crosshair className="size-3.5" aria-hidden />
             </span>
-            <NudgeButton label="Move pin east" onClick={() => nudge(0, 0.00005)}>→</NudgeButton>
+            <NudgeButton label={t("map.east")} onClick={() => nudge(0, 0.00005)}>→</NudgeButton>
             <span />
-            <NudgeButton label="Move pin south" onClick={() => nudge(-0.00005, 0)}>↓</NudgeButton>
+            <NudgeButton label={t("map.south")} onClick={() => nudge(-0.00005, 0)}>↓</NudgeButton>
             <span />
           </div>
         )}
@@ -135,7 +137,7 @@ export function SiteMap({ lat, lng, onChange, device, className, height = 320, l
             {lat.toFixed(6)}° N, {lng.toFixed(6)}° E
           </span>
         </span>
-        <span>Google Maps integration enabled only with a RAJUK-provided key (TOR 2.3)</span>
+        <span>{t("map.keyNote")}</span>
       </figcaption>
     </figure>
   );

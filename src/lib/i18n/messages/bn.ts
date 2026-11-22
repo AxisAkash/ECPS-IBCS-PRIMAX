@@ -1,3 +1,4 @@
+import { bnApplicant } from "./bn-applicant";
 import type { MessageKey } from "./en";
 
 /**
@@ -6,6 +7,7 @@ import type { MessageKey } from "./en";
  * language and communications team before any public use.
  */
 export const bn: Record<MessageKey, string> = {
+  ...bnApplicant,
   "gov.country": "গণপ্রজাতন্ত্রী বাংলাদেশ সরকার",
   "gov.agency": "রাজধানী উন্নয়ন কর্তৃপক্ষ (রাজউক)",
   "brand.name": "ইসিপিএস",

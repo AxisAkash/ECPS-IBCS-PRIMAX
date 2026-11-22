@@ -70,16 +70,17 @@ export function formatDateTime(iso: string | undefined, locale: Locale = "en") {
   return formatDate(iso, locale, { hour: "2-digit", minute: "2-digit" });
 }
 
-export function formatRelative(iso: string, now = Date.now()): string {
+export function formatRelative(iso: string, now = Date.now(), locale: Locale = "en"): string {
   const diff = now - new Date(iso).getTime();
   const mins = Math.round(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins} min ago`;
+  const bn = locale === "bn";
+  if (mins < 1) return bn ? "এইমাত্র" : "just now";
+  if (mins < 60) return bn ? `${toBnDigits(mins)} মিনিট আগে` : `${mins} min ago`;
   const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs} h ago`;
+  if (hrs < 24) return bn ? `${toBnDigits(hrs)} ঘণ্টা আগে` : `${hrs} h ago`;
   const days = Math.round(hrs / 24);
-  if (days < 30) return `${days} d ago`;
-  return formatDate(iso);
+  if (days < 30) return bn ? `${toBnDigits(days)} দিন আগে` : `${days} d ago`;
+  return formatDate(iso, locale);
 }
 
 /** Formats an amount in Bangladeshi Taka with South-Asian digit grouping. */

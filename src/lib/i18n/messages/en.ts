@@ -2,7 +2,9 @@
  * English source dictionary. Bangla (bn.ts) must provide every key — enforced by the type system.
  * Internal RAJUK workspace copy is English-only in the prototype; see DESIGN_SYSTEM.md (Localisation).
  */
-export const en = {
+import { enApplicant } from "./en-applicant";
+
+const core = {
   // Global / chrome
   "gov.country": "Government of the People's Republic of Bangladesh",
   "gov.agency": "Rajdhani Unnayan Kartripakkha (RAJUK)",
@@ -438,5 +440,7 @@ export const en = {
   "common.no": "No",
   "common.back": "Back",
 } as const;
+
+export const en = { ...core, ...enApplicant } as const;
 
 export type MessageKey = keyof typeof en;
