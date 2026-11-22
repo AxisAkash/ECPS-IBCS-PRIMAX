@@ -114,6 +114,7 @@ interface DemoActions {
   decideRevert: (id: string, approve: boolean) => void;
   uploadNoc: (appId: string, memoNo: string) => void;
   runIntegrationCheck: (key: string) => void;
+  reconcilePayment: (id: string) => void;
   advanceMigration: (id: string) => void;
   moveTwoC: (id: string, toId: string, note: string) => void;
 }
@@ -721,6 +722,10 @@ export const useDemoStore = create<DemoStore>()(
           }));
           notify(a.applicantId, { title: "Estate NOC added", body: `${a.ref}: Estate section issued its NOC.`, kind: "info", href: `/workspace/applications/${appId}` });
           audit("estate.noc", a.ref, memoNo);
+        },
+        reconcilePayment: (id) => {
+          set((s) => ({ payments: s.payments.map((p) => (p.id === id ? { ...p, reconciled: true } : p)) }));
+          audit("payment.reconcile", id, "Matched against gateway settlement (simulated)");
         },
         runIntegrationCheck: (key) =>
           set((s) => ({ integrations: s.integrations.map((i) => (i.key === key ? { ...i, lastCheckAt: new Date().toISOString(), lastCheckResult: "ok" } : i)) })),

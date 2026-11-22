@@ -192,7 +192,7 @@ export function HBarChart<T extends Record<string, string | number>>({ data, yKe
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }} barCategoryGap="30%">
         <CartesianGrid horizontal={false} stroke={GRID} />
         <XAxis type="number" {...axisProps} allowDecimals={false} tickFormatter={(v: number) => (format ? format(v) : v.toLocaleString("en-IN"))} />
-        <YAxis type="category" dataKey={yKey as never} {...axisProps} width={120} tick={{ fill: "#253244", fontSize: 11.5 }} />
+        <YAxis type="category" dataKey={yKey as never} {...axisProps} width={128} interval={0} tick={{ fill: "#253244", fontSize: 11.5 }} />
         <Tooltip cursor={{ fill: "rgb(20 38 61 / 0.04)" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
         {series.map((s, i) => (
           <Bar key={s.key} dataKey={s.key} name={s.label} stackId={stacked ? "a" : undefined} fill={s.color ?? SERIES[i]} stroke="#fff" strokeWidth={stacked ? 1 : 0} radius={stacked ? (i === series.length - 1 ? [0, 4, 4, 0] : 0) : [0, 4, 4, 0]} maxBarSize={18} />
