@@ -59,7 +59,10 @@ interface DemoActions {
   addDocument: (appId: string, doc: Omit<DocumentRecord, "id" | "uploadedAt" | "uploadedBy" | "sample" | "version" | "status">) => void;
   removeDocument: (appId: string, docId: string) => void;
   inviteProfessional: (appId: string, userId: string, role: ProfessionalRole) => void;
-  replaceProfessional: (appId: string, oldUserId: string, newUserId: string) => void;
+  replaceProfessional: (appId: string, oldUserId: string, newUserId: string, reason: string) => void;
+  endorseDrawings: (appId: string) => void;
+  regenerateLetter: (appId: string, reason: string) => void;
+  notifyServiceDrawings: (appId: string) => void;
   respondInvitation: (appId: string, userId: string, accept: boolean, note?: string) => void;
   submitApplication: (id: string) => void;
   resubmitCorrection: (id: string, note: string) => void;
@@ -117,6 +120,10 @@ interface DemoActions {
   reconcilePayment: (id: string) => void;
   advanceMigration: (id: string) => void;
   moveTwoC: (id: string, toId: string, note: string) => void;
+  addTwoCDocument: (id: string, name: string) => void;
+  removeTrustedDevice: (id: string) => void;
+  saveReportDelivery: (patch: Partial<DemoSeed["reportDelivery"]>) => void;
+  formCommittee: (c: Omit<DemoSeed["committees"][number], "id">) => void;
 }
 
 export type DemoStore = DemoState & DemoActions;
@@ -201,8 +208,9 @@ export const useDemoStore = create<DemoStore>()(
 
         addDocument: (appId, doc) =>
           patchApp(appId, (a) => {
-            const prior = a.documents.filter((d) => d.category === doc.category && d.ownerIndex === doc.ownerIndex && d.drawingSheet === doc.drawingSheet && d.status !== "superseded");
-            const replaced = ["plot_photo", "road_photo"].includes(doc.category) || doc.category === "drawing";
+            // Versioning applies to the same drawing sheet or the same service drawing; photos and attachments are additive.
+            const prior = a.documents.filter((d) => d.category === doc.category && d.drawingSheet === doc.drawingSheet && d.service === doc.service && d.status !== "superseded");
+            const replaced = doc.category === "drawing" && (!!doc.drawingSheet || !!doc.service);
             const version = replaced && prior.length ? Math.max(...prior.map((p) => p.version)) + 1 : 1;
             return {
               ...a,
@@ -225,16 +233,22 @@ export const useDemoStore = create<DemoStore>()(
           audit("professional.invite", a.ref, `Invited ${userId} as ${role}`);
         },
 
-        replaceProfessional: (appId, oldUserId, newUserId) => {
+        replaceProfessional: (appId, oldUserId, newUserId, reason) => {
           const a = app(appId)!;
-          const old = a.professionals.find((p) => p.userId === oldUserId)!;
+          const old = a.professionals.find((p) => p.userId === oldUserId && p.status !== "replaced")!;
+          const nameOf = (id: string) => get().users.find((u) => u.id === id)?.name ?? id;
           patchApp(appId, (x) => ({
             ...x,
             professionals: [
-              ...x.professionals.map((p) => (p.userId === oldUserId ? { ...p, status: "replaced" as const } : p)),
-              { userId: newUserId, role: old.role, status: "invited", invitedAt: new Date().toISOString(), note: `Replaces ${oldUserId}` },
+              ...x.professionals.map((p) =>
+                p.userId === oldUserId && p.role === old.role && p.status !== "replaced" ? { ...p, status: "replaced" as const, replacementReason: reason } : p,
+              ),
+              { userId: newUserId, role: old.role, status: "invited", invitedAt: new Date().toISOString(), note: `Replaces ${nameOf(oldUserId)}` },
             ],
+            history: [...x.history, event(me(), "professional_replaced", { note: `${nameOf(oldUserId)} → ${nameOf(newUserId)} (${old.role}). Reason: ${reason}` })],
           }));
+          notify(oldUserId, { title: "Replacement recorded", body: `${a.ref}: the owner recorded a professional replacement. Reason: ${reason}`, kind: "warning", href: "/workspace/invitations" });
+          if (a.holderId) notify(a.holderId, { title: "Professional replacement recorded", body: `${a.ref}: ${old.role} replaced; review before approval.`, kind: "info", href: `/rajuk/files/${appId}` });
           notify(newUserId, { title: "Replacement invitation", body: `You are invited to replace a ${old.role} on "${a.title}".`, kind: "action", href: "/workspace/invitations" });
           audit("professional.replace", a.ref, `${oldUserId} → ${newUserId}`, "notice");
         },
@@ -739,6 +753,46 @@ export const useDemoStore = create<DemoStore>()(
               return b;
             }),
           })),
+        endorseDrawings: (appId) => {
+          const a = app(appId)!;
+          const now = new Date().toISOString();
+          patchApp(appId, (x) => ({
+            ...x,
+            professionals: x.professionals.map((p) => (p.userId === me() && p.status === "accepted" ? { ...p, endorsedAt: now } : p)),
+            history: [...x.history, event(me(), "endorsed", { note: "Drawings endorsed by the participating professional (simulated digital endorsement).", simulated: true })],
+          }));
+          notify(a.applicantId, { title: "Drawings endorsed", body: `${get().users.find((u) => u.id === me())?.name} endorsed the drawings for ${a.ref}.`, kind: "success", href: `/workspace/applications/${appId}` });
+          audit("professional.endorse", a.ref);
+        },
+        regenerateLetter: (appId, reason) => {
+          const a = app(appId)!;
+          const v = (a.letterVersion ?? 1) + 1;
+          patchApp(appId, (x) => ({ ...x, letterVersion: v, history: [...x.history, event(me(), "letter_regenerated", { note: `Decision letter regenerated as version ${v}. Reason: ${reason}` })] }));
+          notify(a.applicantId, { title: "Decision letter updated", body: `${a.ref}: a corrected decision letter (version ${v}) is available.`, kind: "info", href: `/workspace/applications/${appId}` });
+          audit("letter.regenerate", a.ref, `v${v}: ${reason}`, "notice");
+        },
+        notifyServiceDrawings: (appId) => {
+          const a = app(appId)!;
+          patchApp(appId, (x) => ({ ...x, history: [...x.history, event(me(), "service_drawings", { note: "Electrical and plumbing drawings submitted after approval." })] }));
+          notify("u-off-01", { title: "Service drawings received", body: `${a.ref}: electrical and plumbing drawings uploaded.`, kind: "info", href: `/rajuk/files/${appId}` });
+          audit("application.service_drawings", a.ref);
+        },
+        addTwoCDocument: (id, name) => {
+          set((s) => ({ twoC: s.twoC.map((f) => (f.id === id ? { ...f, documents: [...f.documents, { name, addedOn: new Date().toISOString() }] } : f)) }));
+          audit("twoc.document", id, name);
+        },
+        removeTrustedDevice: (id) => {
+          set((s) => ({ trustedDevices: s.trustedDevices.filter((d) => d.id !== id) }));
+          audit("auth.device_removed", id, "Trusted device removed; OTP required on next sign-in", "notice");
+        },
+        saveReportDelivery: (patch) => {
+          set((s) => ({ reportDelivery: { ...s.reportDelivery, ...patch } }));
+          audit("settings.reports", "Report delivery", JSON.stringify(patch));
+        },
+        formCommittee: (c) => {
+          set((s) => ({ committees: [...s.committees, { ...c, id: uid("bcc") }] }));
+          audit("committee.form", c.name, `${c.members.length} members`, "notice");
+        },
         moveTwoC: (id, toId, note) =>
           set((s) => ({ twoC: s.twoC.map((f) => (f.id === id ? { ...f, custodianId: toId, movements: [...f.movements, { at: new Date().toISOString(), fromId: f.custodianId, toId, note }] } : f)) })),
       };
@@ -746,7 +800,7 @@ export const useDemoStore = create<DemoStore>()(
     {
       name: STORAGE_KEY,
       // Bump when the seed schema changes so stale browser state is replaced by the new seed.
-      version: 3,
+      version: 4,
       migrate: () => createSeed() as unknown as DemoStore,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,

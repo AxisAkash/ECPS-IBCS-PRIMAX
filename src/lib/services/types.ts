@@ -33,6 +33,9 @@ export interface ApplicationService {
   respondToInvitation(id: string, userId: string, accept: boolean, note?: string): Promise<void>;
   payFee(id: string, channel: "Card" | "Mobile banking" | "Internet banking"): Promise<void>;
   fileAppeal(id: string, grounds: string): Promise<string>;
+  replaceProfessional(id: string, oldUserId: string, newUserId: string, reason: string): Promise<void>;
+  endorseDrawings(id: string): Promise<void>;
+  submitServiceDrawings(id: string): Promise<void>;
 }
 
 export interface FileProcessingService {

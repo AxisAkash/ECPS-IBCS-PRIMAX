@@ -33,6 +33,9 @@ import type {
   Ticket,
   TwoCFile,
   User,
+  CommitteeConfig,
+  ReportDelivery,
+  TrustedDevice,
   WorkflowEvent,
   ApplicationStatus,
   DrawingSheetKind,
@@ -559,6 +562,9 @@ export interface DemoSeed {
   dap: DapZone[];
   issuedPermits: typeof PUBLIC_PERMITS;
   counters: { application: number; ticket: number };
+  committees: CommitteeConfig[];
+  reportDelivery: ReportDelivery;
+  trustedDevices: TrustedDevice[];
 }
 
 export function createSeed(now = Date.now()): DemoSeed {
@@ -843,5 +849,14 @@ export function createSeed(now = Date.now()): DemoSeed {
     dap,
     issuedPermits: [],
     counters: { application: 400, ticket: 419 },
+    committees: [
+      { id: "bcc-r", name: "BC Committee (Regular)", type: "Regular", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-com-02", "u-com-03"] },
+      { id: "bcc-l", name: "BC Committee (LSP)", type: "Large & Special Projects", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-ctp-01"] },
+    ],
+    reportDelivery: { monthly: true, weekly: false, recipients: "director.dc@demo.ecps.test; ao.zone4@demo.ecps.test" },
+    trustedDevices: USERS.filter((u) => u.status === "active").flatMap((u) => [
+      { id: `td-${u.id}-1`, userId: u.id, label: "This browser", kind: "laptop" as const, lastSeenAt: new Date(now).toISOString() },
+      { id: `td-${u.id}-2`, userId: u.id, label: "Android phone (sample)", kind: "phone" as const, lastSeenAt: daysAgo(4, now) },
+    ]),
   };
 }

@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Badge, KeyValues, PageHeader, Panel } from "@/components/ui/display";
 import { Callout, EmptyState, SimulatedTag } from "@/components/ui/feedback";
 import { Input, SegmentedControl } from "@/components/ui/form";
-import { Dialog, DialogContent } from "@/components/ui/overlay";
+import { ConfirmDialog, Dialog, DialogContent } from "@/components/ui/overlay";
+import { toast } from "@/components/ui/toast";
 import { DOCUMENT_CATEGORY_LABEL, PROFESSIONAL_ROLE_LABEL, SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application, DocumentRecord } from "@/lib/domain/types";
-import { STAGE_LABEL } from "@/lib/domain/workflow";
-import { useI18n } from "@/lib/i18n";
+import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatDate, formatDateTime, formatRelative } from "@/lib/utils";
 import { HelpdeskForUser } from "@/features/helpdesk/user-tickets";
@@ -36,25 +36,25 @@ export function ApplicationsListPage() {
     .filter((a) => !q || `${a.ref} ${a.title} ${a.property.area}`.toLowerCase().includes(q.toLowerCase()));
   return (
     <div>
-      <PageHeader title={t("nav.ws.applications")} description={role === "professional" ? "Applications you participate in as a registered professional." : "Every application you have started or submitted."} actions={role !== "professional" && <NewApplicationButton />} />
+      <PageHeader title={t("nav.ws.applications")} description={role === "professional" ? t("apps.leadPro") : t("apps.lead")} actions={role !== "professional" && <NewApplicationButton />} />
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <SegmentedControl
-          label="Filter applications"
+          label={t("apps.filter")}
           value={filter}
           onChange={setFilter}
           options={[
-            { value: "all", label: "All", count: apps.length },
-            { value: "action", label: "Needs action" },
+            { value: "all", label: t("apps.all"), count: apps.length },
+            { value: "action", label: t("apps.action") },
             { value: "progress", label: t("ws.inprogress") },
             { value: "done", label: t("ws.completed") },
           ]}
         />
         <div className="w-full sm:w-72">
-          <Input leading={<Search />} placeholder="Search reference, title or area" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search applications" />
+          <Input leading={<Search />} placeholder={t("apps.search")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={t("apps.search")} />
         </div>
       </div>
       {list.length === 0 ? (
-        <EmptyState icon={FileStack} title="No applications match" body="Try a different filter or search term." />
+        <EmptyState icon={FileStack} title={t("apps.none")} body={t("apps.noneBody")} />
       ) : (
         <ul className="grid gap-3 lg:grid-cols-2">
           {list.map((a) => {
@@ -77,7 +77,7 @@ export function ApplicationsListPage() {
                   <div className="mt-auto pt-5">
                     {a.status !== "draft" ? <StageTrack type={a.type} stage={a.stage} status={a.status} /> : <div className="h-1.5 rounded-full bg-surface-3"><div className="h-full rounded-full bg-teal-600" style={{ width: `${((a.draftStep ?? 0) / 7) * 100}%` }} /></div>}
                     <p className="mt-2 text-xs text-muted">
-                      {a.status === "draft" ? `Draft · step ${(a.draftStep ?? 0) + 1} of 8` : ["approved", "rejected"].includes(a.status) ? `Decided ${formatDate(a.decidedAt, locale)}` : `At ${STAGE_LABEL[a.stage]} · submitted ${formatDate(a.submittedAt, locale)}`}
+                      {a.status === "draft" ? t("apps.draftStep", { n: (a.draftStep ?? 0) + 1 }) : ["approved", "rejected"].includes(a.status) ? t("apps.decided", { date: formatDate(a.decidedAt, locale) }) : t("apps.atStage", { stage: t(`stage.${a.stage}` as MessageKey), date: formatDate(a.submittedAt, locale) })}
                     </p>
                   </div>
                 </Link>
@@ -125,30 +125,30 @@ export function DocumentsPage() {
 }
 
 export function PaymentsPage() {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const apps = useMyApplications();
   const payments = useDemoStore((s) => s.payments);
   const [payFor, setPayFor] = useState<Application | null>(null);
   const mine = useMemo(() => payments.filter((p) => apps.some((a) => a.id === p.applicationId)), [payments, apps]);
   return (
     <div>
-      <PageHeader title="Payments" description="Fees for your applications. Payments are processed by the approved payment gateway; in this prototype they are simulated." />
+      <PageHeader title={t("nav.ws.payments")} description={t("pays.lead")} />
       <Callout tone="demo" className="mb-5">
-        All amounts are illustrative and calculated from a placeholder rule set — they are not RAJUK fees.
+        {t("pays.note")}
       </Callout>
       {mine.length === 0 ? (
-        <EmptyState title="No payments yet" />
+        <EmptyState title={t("ad.noPayments")} />
       ) : (
         <div className="overflow-hidden rounded-xl border border-line bg-surface">
           <table className="w-full text-left text-sm">
             <caption className="sr-only">Payments</caption>
             <thead className="bg-surface-2 text-xs text-muted">
               <tr>
-                <th scope="col" className="px-4 py-2.5 font-medium">Application</th>
-                <th scope="col" className="hidden px-4 py-2.5 font-medium md:table-cell">Category</th>
-                <th scope="col" className="hidden px-4 py-2.5 font-medium sm:table-cell">Date</th>
-                <th scope="col" className="px-4 py-2.5 text-right font-medium">Amount</th>
-                <th scope="col" className="px-4 py-2.5 text-right font-medium">Status</th>
+                <th scope="col" className="px-4 py-2.5 font-medium">{t("pays.app")}</th>
+                <th scope="col" className="hidden px-4 py-2.5 font-medium md:table-cell">{t("pays.cat")}</th>
+                <th scope="col" className="hidden px-4 py-2.5 font-medium sm:table-cell">{t("pays.date")}</th>
+                <th scope="col" className="px-4 py-2.5 text-right font-medium">{t("pays.amount")}</th>
+                <th scope="col" className="px-4 py-2.5 text-right font-medium">{t("pays.status")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -166,7 +166,7 @@ export function PaymentsPage() {
                     <td className="px-4 py-3 text-right">
                       {p.status === "pending" ? (
                         <Button size="xs" onClick={() => setPayFor(a)}>
-                          Pay now
+                          {t("ws.pay")}
                         </Button>
                       ) : (
                         <Badge tone={p.status === "paid" ? "success" : "danger"}>{p.status}</Badge>
@@ -185,6 +185,7 @@ export function PaymentsPage() {
 }
 
 export function NotificationsPage() {
+  const { t } = useI18n();
   const me = useMe();
   const all = useDemoStore((s) => s.notifications);
   const markRead = useDemoStore((s) => s.markNotificationRead);
@@ -194,17 +195,17 @@ export function NotificationsPage() {
   return (
     <div>
       <PageHeader
-        title="Notifications"
-        description="Status changes, requests and decisions on your applications. In production these are also sent by SMS and email."
+        title={t("nav.ws.notifications")}
+        description={t("notif.lead")}
         actions={
           <Button variant="secondary" onClick={markAll}>
-            <CheckCheck /> Mark all read
+            <CheckCheck /> {t("notif.markAll")}
           </Button>
         }
       />
-      <SegmentedControl className="mb-4" label="Filter" value={only} onChange={setOnly} options={[{ value: "all", label: "All" }, { value: "unread", label: "Unread" }]} />
+      <SegmentedControl className="mb-4" label={t("apps.filter")} value={only} onChange={setOnly} options={[{ value: "all", label: t("apps.all") }, { value: "unread", label: t("notif.unread") }]} />
       {mine.length === 0 ? (
-        <EmptyState icon={Bell} title="Nothing to show" />
+        <EmptyState icon={Bell} title={t("notif.empty")} />
       ) : (
         <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
           {mine.map((n) => (
@@ -217,7 +218,7 @@ export function NotificationsPage() {
               </div>
               {n.href && (
                 <Button asChild size="sm" variant="ghost" onClick={() => markRead(n.id)}>
-                  <Link href={n.href}>Open</Link>
+                  <Link href={n.href}>{t("notif.open")}</Link>
                 </Button>
               )}
             </li>
@@ -264,6 +265,10 @@ export function InvitationsPage() {
 export function ProfilePage() {
   const me = useMe();
   const security = useDemoStore((s) => s.security);
+  const allDevices = useDemoStore((s) => s.trustedDevices);
+  const removeDevice = useDemoStore((s) => s.removeTrustedDevice);
+  const devices = useMemo(() => allDevices.filter((d) => d.userId === me?.id), [allDevices, me]);
+  const [removing, setRemoving] = useState<string | null>(null);
   if (!me) return null;
   return (
     <div>
@@ -302,20 +307,37 @@ export function ProfilePage() {
             </li>
           </ul>
           <h3 className="mb-2 mt-6 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted">Trusted devices</h3>
-          <ul className="divide-y divide-line rounded-lg border border-line text-sm">
-            <li className="flex items-center gap-3 px-3 py-2.5">
-              <Laptop className="size-4 text-subtle" aria-hidden />
-              <span className="flex-1">This browser</span>
-              <span className="text-xs text-muted">Now</span>
-            </li>
-            <li className="flex items-center gap-3 px-3 py-2.5">
-              <Smartphone className="size-4 text-subtle" aria-hidden />
-              <span className="flex-1">Android phone (sample)</span>
-              <Button size="xs" variant="ghost">
-                Remove
-              </Button>
-            </li>
-          </ul>
+          {devices.length === 0 ? (
+            <p className="rounded-lg border border-dashed border-line-strong px-3 py-3 text-sm text-muted">No trusted devices. You will be asked for a one-time code on every new device.</p>
+          ) : (
+            <ul className="divide-y divide-line rounded-lg border border-line text-sm">
+              {devices.map((d) => (
+                <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
+                  {d.kind === "laptop" ? <Laptop className="size-4 text-subtle" aria-hidden /> : <Smartphone className="size-4 text-subtle" aria-hidden />}
+                  <span className="flex-1">{d.label}</span>
+                  <span className="text-xs text-muted">{d.label === "This browser" ? "Now" : formatRelative(d.lastSeenAt)}</span>
+                  {d.label !== "This browser" && (
+                    <Button size="xs" variant="ghost" onClick={() => setRemoving(d.id)} aria-label={`Remove ${d.label}`}>
+                      Remove
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          <ConfirmDialog
+            open={!!removing}
+            onOpenChange={(o) => !o && setRemoving(null)}
+            title="Remove this trusted device?"
+            description="The next sign-in from that device will require a one-time code (TOR 1.9)."
+            confirmLabel="Yes, remove"
+            tone="danger"
+            onConfirm={() => {
+              removeDevice(removing!);
+              setRemoving(null);
+              toast.success("Device removed", "A one-time code will be required next time.");
+            }}
+          />
           <p className="mt-3 text-xs text-muted">Automatic sign-out after {security.idleTimeoutMinutes} minutes without activity.</p>
         </Panel>
       </div>

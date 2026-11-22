@@ -78,4 +78,44 @@ describe("demo store — cross-role scenarios", () => {
     expect(s().applications.find((a) => a.id === "a-203")!.stage).toBe("authorized_officer");
     expect(s().session?.role).toBe("officer");
   });
+
+  it("keeps electrical and plumbing service drawings as separate documents", () => {
+    s().signInAs("applicant");
+    s().addDocument("a-104", { name: "e.pdf", sizeKb: 1, category: "drawing", service: "electrical", previewKind: "drawing" });
+    s().addDocument("a-104", { name: "p.pdf", sizeKb: 1, category: "drawing", service: "plumbing", previewKind: "drawing" });
+    s().addDocument("a-104", { name: "p2.pdf", sizeKb: 1, category: "drawing", service: "plumbing", previewKind: "drawing" });
+    const live = s().applications.find((a) => a.id === "a-104")!.documents.filter((d) => d.service && d.status !== "superseded");
+    expect(live.map((d) => d.name).sort()).toEqual(["e.pdf", "p2.pdf"]);
+    expect(live.find((d) => d.name === "p2.pdf")!.version).toBe(2);
+  });
+
+  it("records a professional replacement with reason and a new invitation (TOR 1.4)", () => {
+    s().signInAs("applicant");
+    s().replaceProfessional("a-103", "u-pro-01", "u-pro-06", "Architect relocated abroad");
+    const app = s().applications.find((a) => a.id === "a-103")!;
+    expect(app.professionals.find((p) => p.userId === "u-pro-01")!.status).toBe("replaced");
+    expect(app.professionals.find((p) => p.userId === "u-pro-06" && p.role === "architect")!.status).toBe("invited");
+    expect(app.history.at(-1)!.action).toBe("professional_replaced");
+  });
+
+  it("lets a participating professional endorse drawings", () => {
+    s().signInAs("professional");
+    s().endorseDrawings("a-103");
+    const p = s().applications.find((a) => a.id === "a-103")!.professionals.find((x) => x.userId === "u-pro-01")!;
+    expect(p.endorsedAt).toBeTruthy();
+  });
+
+  it("regenerates a decision letter as a new version (TOR 1.16)", () => {
+    s().signInAs("officer");
+    s().regenerateLetter("a-104", "Owner name corrected");
+    expect(s().applications.find((a) => a.id === "a-104")!.letterVersion).toBe(2);
+  });
+
+  it("persists admin committee formation and report delivery", () => {
+    s().signInAs("admin");
+    s().formCommittee({ name: "BC Committee (Zone 6)", type: "Regular", maxPresentations: 2, members: ["u-com-01", "u-com-02", "u-com-03"] });
+    s().saveReportDelivery({ weekly: true });
+    expect(s().committees.some((c) => c.name === "BC Committee (Zone 6)")).toBe(true);
+    expect(s().reportDelivery.weekly).toBe(true);
+  });
 });

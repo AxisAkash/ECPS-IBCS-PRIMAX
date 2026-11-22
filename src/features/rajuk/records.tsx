@@ -466,6 +466,10 @@ export function TwoCFiles() {
   const files = useDemoStore((s) => s.twoC);
   const users = useDemoStore((s) => s.users);
   const move = useDemoStore((s) => s.moveTwoC);
+  const addDoc = useDemoStore((s) => s.addTwoCDocument);
+  const [adding, setAdding] = useState(false);
+  const [docName, setDocName] = useState("");
+  const [docFile, setDocFile] = useState<string | null>(null);
   const role = useDemoStore((s) => s.session?.role);
   const [sel, setSel] = useState(files[0]?.id);
   const [filter, setFilter] = useState<"open" | "all">("open");
@@ -548,7 +552,7 @@ export function TwoCFiles() {
                   ))}
                 </ul>
                 {canManage && (
-                  <Button size="sm" variant="ghost" className="mt-3" onClick={() => toast.info("Document added (sample)", "In production this attaches a scanned record to the 2C file.")}>
+                  <Button size="sm" variant="ghost" className="mt-3" onClick={() => { setAdding(true); setDocName(""); setDocFile(null); }}>
                     <FilePlus2 /> Add document
                   </Button>
                 )}
@@ -559,6 +563,30 @@ export function TwoCFiles() {
           <EmptyState icon={Building2} title="Select a file" />
         )}
       </div>
+      <ConfirmDialog
+        open={adding}
+        onOpenChange={setAdding}
+        title="Add a document to this 2C file"
+        description="The document is listed in the file record and the addition is audited."
+        confirmLabel="Add document"
+        confirmDisabled={!docName.trim() || !docFile}
+        onConfirm={() => {
+          addDoc(f!.id, docName.trim());
+          setAdding(false);
+          toast.success("Document added to the 2C file");
+        }}
+      >
+        <div className="space-y-4">
+          <Field label="Document title" required hint="e.g. Hearing notice, Site inspection report">
+            {(a) => <Input {...a} value={docName} onChange={(e) => setDocName(e.target.value)} />}
+          </Field>
+          {docFile ? (
+            <p className="rounded-md bg-surface-2 px-3 py-2 text-sm">{docFile} · sample</p>
+          ) : (
+            <FileDrop compact label="Scanned document" accept=".pdf" sampleName="2c_record_sample.pdf" onUploaded={(x) => setDocFile(x.name)} />
+          )}
+        </div>
+      </ConfirmDialog>
       <ConfirmDialog
         open={moving}
         onOpenChange={setMoving}

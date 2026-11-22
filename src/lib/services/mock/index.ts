@@ -30,6 +30,9 @@ export const mockServices: EcpsServices = {
     respondToInvitation: (id, userId, accept, note) => run(() => s().respondInvitation(id, userId, accept, note)),
     payFee: (id, channel) => run(() => s().payFee(id, channel), LATENCY.slow),
     fileAppeal: (id, grounds) => run(() => s().fileAppeal(id, grounds)),
+    replaceProfessional: (id, oldUserId, newUserId, reason) => run(() => s().replaceProfessional(id, oldUserId, newUserId, reason)),
+    endorseDrawings: (id) => run(() => s().endorseDrawings(id)),
+    submitServiceDrawings: (id) => run(() => s().notifyServiceDrawings(id)),
   },
   files: {
     take: (id) => run(() => s().takeFile(id), LATENCY.fast),

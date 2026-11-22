@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { DecisionLetter, letterKindFor } from "@/components/domain/decision-letter";
 import { DocumentPreview } from "@/components/domain/document-preview";
 import { MfaDialog } from "@/components/domain/mfa-dialog";
 import { SiteMap } from "@/components/domain/site-map";
@@ -35,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, Badge, Tag, Timeline } from "@/components/ui/display";
 import { Callout, EmptyState, ProgressBar } from "@/components/ui/feedback";
 import { Field, Select, Textarea } from "@/components/ui/form";
-import { ConfirmDialog, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip } from "@/components/ui/overlay";
+import { ConfirmDialog, Dialog, DialogContent, Tabs, TabsContent, TabsList, TabsTrigger, Tooltip } from "@/components/ui/overlay";
 import { toast } from "@/components/ui/toast";
 import { farFor } from "@/features/wizard/validation";
 import { eventsToTimeline } from "@/features/workspace/application-detail";
@@ -57,6 +58,10 @@ export function ReviewWorkspace({ id }: { id: string }) {
   const far = useDemoStore((s) => s.far);
   const security = useDemoStore((s) => s.security);
   const [taking, setTaking] = useState(false);
+  const [letterOpen, setLetterOpen] = useState(false);
+  const [regen, setRegen] = useState(false);
+  const [regenReason, setRegenReason] = useState("");
+  const regenerateLetter = useDemoStore((s) => s.regenerateLetter);
 
   if (!app) return <EmptyState title="File not found" body="It may have been removed when the demo was reset." action={<Button asChild><Link href="/rajuk/inbox">Back to inbox</Link></Button>} />;
 
@@ -66,6 +71,7 @@ export function ReviewWorkspace({ id }: { id: string }) {
   const fileAudit = audit.filter((a) => a.target.includes(app.ref) || a.target.includes(app.id));
   const checklist = checklistCompletion(REVIEW_CHECKLIST, app.checklist);
   const elapsed = app.submittedAt ? workingDaysBetween(app.submittedAt) : 0;
+  const letterKind = letterKindFor(app);
 
   const take = async () => {
     setTaking(true);
@@ -91,6 +97,18 @@ export function ReviewWorkspace({ id }: { id: string }) {
           <p className="mt-1 text-[0.9375rem] text-ink">
             {app.title} <span className="text-muted">· {SERVICE_SHORT_LABEL[app.type]}</span>
           </p>
+          {letterKind && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button size="sm" variant="secondary" onClick={() => setLetterOpen(true)}>
+                <FileText /> Decision letter (v{app.letterVersion ?? 1})
+              </Button>
+              {me?.role === "officer" && (
+                <Button size="sm" variant="ghost" onClick={() => { setRegen(true); setRegenReason(""); }}>
+                  Regenerate letter
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap items-stretch gap-px overflow-hidden rounded-lg border border-line bg-line text-sm">
           <div className="bg-surface px-4 py-2.5">
@@ -141,6 +159,30 @@ export function ReviewWorkspace({ id }: { id: string }) {
       )}
 
       <KeyFacts app={app} far={far} users={users} />
+
+      <Dialog open={letterOpen} onOpenChange={setLetterOpen}>
+        <DialogContent size="xl" eyebrow={app.ref} title="Decision letter">
+          {letterKind && <DecisionLetter app={app} users={users} kind={letterKind} />}
+        </DialogContent>
+      </Dialog>
+      <ConfirmDialog
+        open={regen}
+        onOpenChange={setRegen}
+        eyebrow={`${app.ref} · TOR 1.16`}
+        title="Regenerate the decision letter?"
+        description="A corrected letter is issued as a new version; the applicant is notified and the change is audited."
+        confirmLabel="Yes, regenerate"
+        confirmDisabled={regenReason.trim().length < 10}
+        onConfirm={() => {
+          regenerateLetter(app.id, regenReason.trim());
+          setRegen(false);
+          toast.success("Letter regenerated", `Version ${(app.letterVersion ?? 1) + 1} issued.`);
+        }}
+      >
+        <Field label="Reason for correction" required hint="At least 10 characters, e.g. a corrected owner name or gazette change.">
+          {(a) => <Textarea {...a} rows={3} value={regenReason} onChange={(e) => setRegenReason(e.target.value)} />}
+        </Field>
+      </ConfirmDialog>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
         {/* Centre: document viewer */}
@@ -296,7 +338,7 @@ function DocumentViewer({ app }: { app: Application }) {
                   className={cn("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors", i === idx ? "bg-teal-50 text-teal-800" : "text-ink hover:bg-surface-3")}
                 >
                   {d.previewKind === "photo" ? <ImageIcon className="size-3.5 shrink-0" aria-hidden /> : d.previewKind === "drawing" ? <Building2 className="size-3.5 shrink-0" aria-hidden /> : <FileText className="size-3.5 shrink-0" aria-hidden />}
-                  <span className="truncate">{d.drawingSheet ? `Sheet · ${d.drawingSheet}` : DOCUMENT_CATEGORY_LABEL[d.category]}</span>
+                  <span className="truncate">{d.drawingSheet ? `Sheet · ${d.drawingSheet}` : d.service ? `Service · ${d.service}` : DOCUMENT_CATEGORY_LABEL[d.category]}</span>
                   {d.status === "verified" && <Check className="ml-auto size-3 shrink-0 text-success-600" aria-label="verified" />}
                 </button>
               </li>

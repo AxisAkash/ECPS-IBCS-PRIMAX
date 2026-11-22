@@ -36,6 +36,9 @@ export const httpServices: EcpsServices = {
     respondToInvitation: notConfigured("POST /api/v1/invitations/{id}/response"),
     payFee: notConfigured("POST /api/v1/payments/{id}/initiate (payment gateway redirect)"),
     fileAppeal: notConfigured("POST /api/v1/applications/{id}/appeals"),
+    replaceProfessional: notConfigured("POST /api/v1/applications/{id}/professionals/{userId}/replacement"),
+    endorseDrawings: notConfigured("POST /api/v1/applications/{id}/endorsements"),
+    submitServiceDrawings: notConfigured("POST /api/v1/applications/{id}/service-drawings"),
   },
   files: {
     take: notConfigured("POST /api/v1/files/{id}/take"),

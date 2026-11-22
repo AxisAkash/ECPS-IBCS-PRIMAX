@@ -296,10 +296,8 @@ export function AdminRoles() {
 
 export function AdminCommittees() {
   const users = useDemoStore((s) => s.users);
-  const [committees, setCommittees] = useState([
-    { id: "bcc-r", name: "BC Committee (Regular)", type: "Regular", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-com-02", "u-com-03"] },
-    { id: "bcc-l", name: "BC Committee (LSP)", type: "Large & Special Projects", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-ctp-01"] },
-  ]);
+  const committees = useDemoStore((s) => s.committees);
+  const formCommittee = useDemoStore((s) => s.formCommittee);
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [type, setType] = useState("Regular");
@@ -350,11 +348,11 @@ export function AdminCommittees() {
         open={open}
         onOpenChange={setOpen}
         title="Form a new committee"
-        description="Committee composition is recorded in minutes. Kept for this browser session in the demo."
+        description="Committee composition is recorded in minutes and in the audit trail."
         confirmLabel="Create committee"
         confirmDisabled={!name.trim() || members.length < 3}
         onConfirm={() => {
-          setCommittees((cs) => [...cs, { id: `c-${cs.length}`, name: name.trim(), type, maxPresentations: 2, members }]);
+          formCommittee({ name: name.trim(), type, maxPresentations: 2, members });
           setOpen(false);
           toast.success("Committee formed", `${members.length} members recorded.`);
         }}
@@ -618,7 +616,10 @@ export function AdminScheduler() {
   const toggle = useDemoStore((s) => s.toggleJob);
   const run = useDemoStore((s) => s.runJob);
   const [running, setRunning] = useState<string | null>(null);
-  const [delivery, setDelivery] = useState({ monthly: true, weekly: false, recipients: "director.dc@demo.ecps.test; ao.zone4@demo.ecps.test" });
+  const savedDelivery = useDemoStore((s) => s.reportDelivery);
+  const saveDelivery = useDemoStore((s) => s.saveReportDelivery);
+  const [delivery, setDelivery] = useState(savedDelivery);
+  const deliveryDirty = JSON.stringify(delivery) !== JSON.stringify(savedDelivery);
   return (
     <AdminShell>
       <PageHeader title="Scheduler & reports" description="Background jobs and report delivery. Runs are simulated in the prototype." />
@@ -665,7 +666,14 @@ export function AdminScheduler() {
             <Switch checked={delivery.weekly} onCheckedChange={(v) => setDelivery({ ...delivery, weekly: v })} aria-label="Weekly summary" /> Weekly over-limit summary to supervisors
           </label>
           <Field label="Recipients (fictional)">{(a) => <Textarea {...a} rows={2} value={delivery.recipients} onChange={(e) => setDelivery({ ...delivery, recipients: e.target.value })} />}</Field>
-          <Button variant="secondary" onClick={() => toast.success("Report delivery saved", "Kept for this browser session (demo).")}>
+          <Button
+            variant="secondary"
+            disabled={!deliveryDirty}
+            onClick={() => {
+              saveDelivery(delivery);
+              toast.success("Report delivery saved", "Recorded in the audit trail.");
+            }}
+          >
             Save delivery settings
           </Button>
         </div>

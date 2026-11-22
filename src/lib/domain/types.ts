@@ -98,6 +98,9 @@ export interface ProfessionalParticipation {
   invitedAt: string;
   respondedAt?: string;
   note?: string;
+  /** Set when the professional endorses the current drawing set. */
+  endorsedAt?: string;
+  replacementReason?: string;
 }
 
 export type DocumentCategory =
@@ -129,6 +132,8 @@ export interface DocumentRecord {
   sample: true;
   previewKind: "drawing" | "document" | "photo";
   drawingSheet?: DrawingSheetKind;
+  /** Service drawings requested after approval (TOR 1.13). */
+  service?: "electrical" | "plumbing";
 }
 
 export type DrawingSheetKind = "site" | "ground" | "typical" | "elevation" | "section" | "far";
@@ -197,7 +202,11 @@ export interface WorkflowEvent {
     | "noc_uploaded"
     | "revert_requested"
     | "reverted"
-    | "appeal_filed";
+    | "appeal_filed"
+    | "professional_replaced"
+    | "endorsed"
+    | "service_drawings"
+    | "letter_regenerated";
   fromStage?: StageKey;
   toStage?: StageKey;
   toUserId?: string;
@@ -269,6 +278,8 @@ export interface Application {
   linkedApplicationId?: string;
   permitNo?: string;
   correctionNote?: string;
+  /** Decision letter version; incremented when a letter is regenerated (TOR 1.16). */
+  letterVersion?: number;
   /** Records migrated from the legacy "Construction Permit (CP) system" (TOR 2.11). */
   legacy?: boolean;
 }
@@ -508,4 +519,26 @@ export interface DapZone {
   label: string;
   permittedOccupancies: OccupancyKey[];
   notes: string;
+}
+
+export interface CommitteeConfig {
+  id: string;
+  name: string;
+  type: string;
+  maxPresentations: number;
+  members: string[];
+}
+
+export interface ReportDelivery {
+  monthly: boolean;
+  weekly: boolean;
+  recipients: string;
+}
+
+export interface TrustedDevice {
+  id: string;
+  userId: string;
+  label: string;
+  kind: "laptop" | "phone";
+  lastSeenAt: string;
 }
