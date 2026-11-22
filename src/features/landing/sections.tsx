@@ -280,7 +280,7 @@ export function HowItWorks() {
         {steps.map((s, i) => (
           <li key={s.title} className="relative lg:pr-10">
             <div className="flex items-center gap-4">
-              <span className="font-display text-5xl font-light leading-none tracking-tight text-line-strong tabular">{String(i + 1).padStart(2, "0")}</span>
+              <span aria-hidden className="font-display text-5xl font-light leading-none tracking-tight text-subtle tabular">{String(i + 1).padStart(2, "0")}</span>
               <span className="hidden h-px flex-1 bg-line lg:block" aria-hidden />
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-navy-900 text-white">
                 <s.icon className="size-[18px]" aria-hidden />

@@ -125,7 +125,7 @@ export function ChartFrame({
             </table>
           </div>
         ) : (
-          <div style={{ height }} aria-hidden>
+          <div style={{ height }}>
             {children}
           </div>
         )}

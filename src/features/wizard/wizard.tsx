@@ -79,7 +79,7 @@ export function ApplicationWizard({ id }: { id: string }) {
     setAttempted((a) => ({ ...a, [step]: true }));
     const blocking = issuesByStep[step]!.filter((i) => i.severity === "error");
     if (blocking.length) {
-      toast.error("Some details are missing", `${blocking.length} item${blocking.length > 1 ? "s" : ""} on this step need attention.`);
+      toast.error("Some details are missing", blocking.length === 1 ? blocking[0]!.message : `${blocking.length} items on this step need attention.`);
       document.getElementById("wizard-step")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -197,7 +197,7 @@ export function ApplicationWizard({ id }: { id: string }) {
                     {t("wiz.submit")}
                   </Button>
                 ) : (
-                  <Button onClick={goNext}>
+                  <Button onClick={goNext} loading={saving}>
                     {t("wiz.next")} <ArrowRight />
                   </Button>
                 )}

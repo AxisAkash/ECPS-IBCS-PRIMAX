@@ -338,13 +338,13 @@ export function ProfessionalsStep({ app, errors }: StepProps) {
           const req = required.includes(r);
           return (
             <li key={r} className="flex flex-wrap items-center gap-4 px-4 py-4">
-              <div className="w-48 shrink-0">
+              <div className="w-full shrink-0 sm:w-48">
                 <p className="text-sm font-medium text-ink-strong">{PROFESSIONAL_ROLE_LABEL[r]}</p>
                 <p className={cn("text-xs", req ? "text-danger-700" : "text-subtle")}>{req ? "Required" : "Optional at this stage"}</p>
               </div>
               <div className="min-w-0 flex-1">
                 {u && current && current.status !== "declined" ? (
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <Avatar name={u.name} size="sm" />
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-ink-strong">{u.name}</p>

@@ -268,7 +268,7 @@ function NavLinks({ groups, counts, dark, onNavigate }: { groups: NavGroup[]; co
     <nav aria-label="Workspace" className="space-y-6">
       {groups.map((g, gi) => (
         <div key={gi}>
-          {g.label && <p className={cn("mb-2 px-3 font-mono text-[0.625rem] uppercase tracking-[0.14em]", dark ? "text-on-dark-muted/70" : "text-subtle")}>{g.label}</p>}
+          {g.label && <p className={cn("mb-2 px-3 font-mono text-[0.625rem] uppercase tracking-[0.14em]", dark ? "text-on-dark-muted" : "text-subtle")}>{g.label}</p>}
           <ul className="space-y-0.5">
             {g.items.map((it) => {
               const on = active(it);

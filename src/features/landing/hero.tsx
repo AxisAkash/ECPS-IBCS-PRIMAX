@@ -72,7 +72,7 @@ export function Hero() {
           </form>
 
           <div className="mt-auto pt-12">
-            <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-on-dark-muted/70">{t("hero.framework")}</p>
+            <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-on-dark-muted">{t("hero.framework")}</p>
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[0.8125rem] text-on-dark-muted">
               <li>BNBC 2020</li>
               <li aria-hidden className="text-white/20">
@@ -119,15 +119,19 @@ function StatusPreviewCard() {
         <dl className="mt-3.5 space-y-2 text-[0.8125rem]">
           <div className="flex items-center gap-2">
             <dt className="sr-only">Current desk</dt>
-            <span className="relative grid size-2 place-items-center text-teal-600">
-              <span className="pulse-dot relative size-2 rounded-full bg-teal-600" />
-            </span>
-            <dd className="font-medium text-ink-strong">{t("hero.card.stage")}</dd>
+            <dd className="flex items-center gap-2 font-medium text-ink-strong">
+              <span aria-hidden className="relative grid size-2 place-items-center text-teal-600">
+                <span className="pulse-dot relative size-2 rounded-full bg-teal-600" />
+              </span>
+              {t("hero.card.stage")}
+            </dd>
           </div>
           <div className="flex items-center gap-2 text-muted">
             <dt className="sr-only">Time held</dt>
-            <Clock3 className="size-3.5" aria-hidden />
-            <dd>{t("hero.card.held")}</dd>
+            <dd className="flex items-center gap-2">
+              <Clock3 className="size-3.5" aria-hidden />
+              {t("hero.card.held")}
+            </dd>
           </div>
         </dl>
         <p className="mt-3 border-t border-line pt-3 text-xs text-muted">{t("hero.card.next")}</p>

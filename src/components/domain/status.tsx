@@ -76,7 +76,7 @@ export function StageTrack({ type, stage, status, className, showLabels = false 
               )}
             />
             {showLabels && (
-              <span className={cn("truncate font-mono text-[0.625rem] uppercase tracking-wide", current ? "font-semibold text-ink-strong" : done ? "text-teal-700" : "text-subtle")} title={STAGE_LABEL[s]}>
+              <span className={cn("truncate font-mono text-[0.625rem] uppercase tracking-wide", current ? "font-semibold text-ink-strong" : done ? "text-teal-800" : "text-muted")} title={STAGE_LABEL[s]}>
                 {STAGE_SHORT[s]}
               </span>
             )}

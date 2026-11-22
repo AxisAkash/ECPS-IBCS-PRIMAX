@@ -30,11 +30,10 @@ export function LanguageToggle({ onDark, className }: { onDark?: boolean; classN
         onDark ? "text-on-dark hover:bg-white/10" : "text-ink hover:bg-surface-3",
         className,
       )}
-      aria-label={`${t("lang.label")}: ${locale === "en" ? "English" : "বাংলা"}. Switch to ${locale === "en" ? "Bangla" : "English"}`}
-      lang={locale === "en" ? "bn" : "en"}
     >
       <Languages className="size-4" aria-hidden />
-      {t("lang.switch")}
+      <span lang={locale === "en" ? "bn" : "en"}>{t("lang.switch")}</span>
+      <span className="sr-only"> (Switch to {locale === "en" ? "Bangla" : "English"})</span>
     </button>
   );
 }

@@ -656,7 +656,7 @@ export function createSeed(now = Date.now()): DemoSeed {
   const cats: Payment["category"][] = ["application_fee", "permit_fee", "permit_fee", "application_fee", "oc_fee", "renewal_fee", "appeal_fee"];
   const channels: Payment["channel"][] = ["Card", "Mobile banking", "Internet banking", "Mobile banking"];
   for (let i = 0; i < 96; i++) {
-    const day = Math.floor((i * 179) % 180) + 1;
+    const day = ((i * 37) % 178) + 1;
     const cat = cats[i % cats.length]!;
     const base = cat === "permit_fee" ? 60000 + ((i * 7919) % 140000) : cat === "application_fee" ? [5000, 10000, 6000][i % 3]! : cat === "oc_fee" ? 8000 : cat === "renewal_fee" ? 2500 : 2000;
     const failed = i % 23 === 0;

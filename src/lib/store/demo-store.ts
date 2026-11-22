@@ -746,7 +746,7 @@ export const useDemoStore = create<DemoStore>()(
     {
       name: STORAGE_KEY,
       // Bump when the seed schema changes so stale browser state is replaced by the new seed.
-      version: 2,
+      version: 3,
       migrate: () => createSeed() as unknown as DemoStore,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,

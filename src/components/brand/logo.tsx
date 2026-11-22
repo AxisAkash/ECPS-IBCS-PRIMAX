@@ -19,7 +19,8 @@ export function LogoMark({ className, onDark }: { className?: string; onDark?: b
 
 export function Logo({ onDark, compact, href = "/", subtitle }: { onDark?: boolean; compact?: boolean; href?: string; subtitle?: string }) {
   return (
-    <Link href={href} className="group inline-flex items-center gap-2.5 rounded-md" aria-label="ECPS home">
+    <Link href={href} className="group inline-flex items-center gap-2.5 rounded-md">
+      {compact && <span className="sr-only">ECPS home</span>}
       <LogoMark onDark={onDark} />
       {!compact && (
         <span className="leading-none">
