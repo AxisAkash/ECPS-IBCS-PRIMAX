@@ -145,13 +145,16 @@ function property(area: string, zone: string, n: number, extra: Partial<Property
   };
 }
 
-function building(storeys: number, occupancy: BuildingInfo["occupancy"], plotAreaSqm: number): BuildingInfo {
-  const ground = Math.round(plotAreaSqm * 0.6);
+function building(storeys: number, occupancy: BuildingInfo["occupancy"], plotAreaSqm: number, n = 0): BuildingInfo {
+  // Keep seeded FAR within the illustrative limits, except one deliberate exception (n % 9 === 5).
+  const farTarget = n % 9 === 5 ? 4.6 : Math.min(storeys * 0.6, 3.8);
+  const total = Math.round(plotAreaSqm * farTarget);
+  const ground = Math.min(Math.round(plotAreaSqm * 0.6), Math.round(total / storeys));
   return {
     occupancy,
     storeys,
     basements: storeys > 8 ? 1 : 0,
-    totalFloorAreaSqm: ground * storeys,
+    totalFloorAreaSqm: total,
     groundCoverageSqm: ground,
     units: occupancy === "A" ? Math.max(1, (storeys - 1) * 2) : storeys,
     heightM: +(storeys * 3.2 + 1.5).toFixed(1),
@@ -240,7 +243,7 @@ function buildApp(s: AppSeed, now: number): Application {
   const submitted = s.submittedDaysAgo !== undefined ? daysAgo(s.submittedDaysAgo, now, 11) : undefined;
   const prop = property(s.area, s.zone, s.n, s.propertyExtra);
   const [lat, lng] = COORDS[s.area] ?? [23.78, 90.4];
-  const b = building(s.storeys, s.occupancy ?? "A", prop.plotAreaSqm);
+  const b = building(s.storeys, s.occupancy ?? "A", prop.plotAreaSqm, s.n);
   const isDraft = s.status === "draft";
   const history: WorkflowEvent[] = [{ id: `${s.id}-h0`, at: created, actorId: s.applicantId, action: "created" }];
   if (submitted) {
@@ -608,7 +611,7 @@ export function createSeed(now = Date.now()): DemoSeed {
       id: "m-14",
       title: "BC Committee (Regular) — Meeting 14/2026",
       committee: "BC_REGULAR",
-      date: hoursAgo(-26, now),
+      date: daysAgo(-1, now, 10),
       venue: "RAJUK Bhaban, Conference Room 3 (demo)",
       memberIds: ["u-com-04", "u-com-01", "u-com-02", "u-com-03"],
       status: "scheduled",
@@ -633,8 +636,8 @@ export function createSeed(now = Date.now()): DemoSeed {
   ];
 
   const inspections: Inspection[] = [
-    { id: "i-01", applicationId: "a-213", kind: "plinth", scheduledFor: hoursAgo(-3, now), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
-    { id: "i-02", applicationId: "a-212", kind: "occupancy", scheduledFor: hoursAgo(-27, now), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
+    { id: "i-01", applicationId: "a-213", kind: "plinth", scheduledFor: daysAgo(0, now, 15), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
+    { id: "i-02", applicationId: "a-212", kind: "occupancy", scheduledFor: daysAgo(-1, now, 11), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
     {
       id: "i-03", applicationId: "a-202", kind: "complaint", scheduledFor: daysAgo(1, now), inspectorId: "u-ins-01", status: "draft",
       checklist: { "site.gps": { id: "site.gps", result: "pass" }, "site.board": { id: "site.board", result: "fail", note: "No display board at entrance." } },
@@ -653,7 +656,7 @@ export function createSeed(now = Date.now()): DemoSeed {
   const cats: Payment["category"][] = ["application_fee", "permit_fee", "permit_fee", "application_fee", "oc_fee", "renewal_fee", "appeal_fee"];
   const channels: Payment["channel"][] = ["Card", "Mobile banking", "Internet banking", "Mobile banking"];
   for (let i = 0; i < 96; i++) {
-    const day = Math.floor((i * 179) % 180) + 1;
+    const day = ((i * 37) % 178) + 1;
     const cat = cats[i % cats.length]!;
     const base = cat === "permit_fee" ? 60000 + ((i * 7919) % 140000) : cat === "application_fee" ? [5000, 10000, 6000][i % 3]! : cat === "oc_fee" ? 8000 : cat === "renewal_fee" ? 2500 : 2000;
     const failed = i % 23 === 0;
