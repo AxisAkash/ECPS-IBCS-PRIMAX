@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, ArrowRight, CircleCheckBig } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useForm, type FieldPath } from "react-hook-form";
+import { useForm, useWatch, type FieldPath } from "react-hook-form";
 import { z } from "zod";
 import { FileDrop, FileRow } from "@/components/domain/file-drop";
 import { Button } from "@/components/ui/button";
@@ -61,9 +61,9 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
     mode: "onTouched",
     defaultValues: { fullName: "", fullNameBn: "", nid: "", dob: "", mobile: "", email: "", address: "", body: "", membership: "", discipline: "", docA: "", docB: "", terms: undefined as unknown as true },
   });
-  const { register, formState, trigger, setValue, watch, handleSubmit } = form;
+  const { register, formState, trigger, setValue, handleSubmit, control } = form;
   const errors = formState.errors;
-  const v = watch();
+  const v = useWatch({ control }) as Values;
 
   const next = async () => {
     const ok = await trigger(steps[step]!.fields);

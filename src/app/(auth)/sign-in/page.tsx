@@ -5,7 +5,7 @@ import { Eye, EyeOff, Info } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Callout } from "@/components/ui/feedback";
@@ -36,9 +36,11 @@ function SignInInner() {
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { identifier: "", password: "", remember: false } });
+
+  const rememberValue = useWatch({ control, name: "remember" });
 
   const onSubmit = async () => {
     setNotice(false);
@@ -79,7 +81,7 @@ function SignInInner() {
         </Field>
         <div className="flex items-center justify-between gap-4">
           <label className="flex items-center gap-2.5 text-sm text-ink">
-            <Checkbox checked={watch("remember")} onCheckedChange={(v) => setValue("remember", v === true)} />
+            <Checkbox checked={rememberValue} onCheckedChange={(v) => setValue("remember", v === true)} />
             {t("auth.remember")}
           </label>
           <Link href="/forgot-password" className="shrink-0 text-sm font-medium text-teal-700 hover:underline">

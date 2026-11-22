@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { ChartFrame, HBarChart, SERIES } from "@/components/charts/charts";
 import { FileDrop } from "@/components/domain/file-drop";
-import { HoldingIndicator, StatusBadge } from "@/components/domain/status";
+import { HoldingIndicator } from "@/components/domain/status";
 import { Button } from "@/components/ui/button";
 import { Avatar, Badge, PageHeader, Panel, Tag, Timeline } from "@/components/ui/display";
 import { Callout, EmptyState } from "@/components/ui/feedback";
