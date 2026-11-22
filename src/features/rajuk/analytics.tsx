@@ -24,7 +24,7 @@ function HeroStat({ label, value, sub, tone, href }: { label: string; value: str
   const body = (
     <>
       <p className="text-xs text-muted">{label}</p>
-      <p className={cn("tabular mt-1 font-display text-[2rem] font-semibold leading-none tracking-tight", tone === "danger" ? "text-danger-700" : "text-ink-strong")}>{value}</p>
+      <p className={cn("tabular mt-1 break-words font-display text-[1.375rem] font-semibold leading-tight tracking-tight sm:text-[1.75rem] xl:text-[2rem] xl:leading-none", tone === "danger" ? "text-danger-700" : "text-ink-strong")}>{value}</p>
       {sub && <p className="mt-1.5 text-xs text-muted">{sub}</p>}
     </>
   );
@@ -312,8 +312,8 @@ export function FinanceDashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
-        <HeroStat label="Collected" value={formatBDT(paid.reduce((s, p) => s + p.amount, 0))} sub={`${paid.length} transactions`} />
-        <HeroStat label="Pending payment" value={formatBDT(pending.reduce((s, p) => s + p.amount, 0))} sub={`${pending.length} requests open`} />
+        <HeroStat label="Collected" value={formatBDT(paid.reduce((s, p) => s + p.amount, 0))} sub={`${paid.length} transaction${paid.length === 1 ? "" : "s"}`} />
+        <HeroStat label="Pending payment" value={formatBDT(pending.reduce((s, p) => s + p.amount, 0))} sub={`${pending.length} request${pending.length === 1 ? "" : "s"} open`} />
         <HeroStat label="Failed / refunded" value={String(failed.length)} sub="Gateway status" tone={failed.length ? "danger" : undefined} />
         <HeroStat label="Awaiting reconciliation" value={String(unreconciled.length)} sub="Paid, not yet matched" />
       </div>

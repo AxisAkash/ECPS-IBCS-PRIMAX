@@ -138,7 +138,7 @@ export function ApplicationWizard({ id }: { id: string }) {
       </div>
 
       {/* Mobile progress */}
-      <div className="mt-5 rounded-lg border border-line bg-surface p-3 lg:hidden">
+      <div className="mt-5 rounded-lg border border-line bg-surface p-3 xl:hidden">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-ink-strong">
             {step + 1}. {t(STEP_LABEL[key])}
@@ -150,8 +150,8 @@ export function ApplicationWizard({ id }: { id: string }) {
         <ProgressBar value={(step + 1) / STEP_KEYS.length} className="mt-2" label={t("wz.progress")} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
-        <aside className="hidden lg:block">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <aside className="hidden xl:block">
           <div className="sticky top-24 rounded-xl border border-line bg-surface p-2">
             <Stepper steps={stepStates} current={step} onSelect={(i) => setStep(i)} />
             <div className="mt-2 border-t border-line px-2.5 pb-1 pt-3">
@@ -184,11 +184,11 @@ export function ApplicationWizard({ id }: { id: string }) {
           </section>
 
           <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:shadow-md">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
                 <ArrowLeft /> <span className="hidden sm:inline">{t("wiz.back")}</span>
               </Button>
-              <div className="flex gap-2">
+              <div className="ml-auto flex flex-wrap justify-end gap-2">
                 <Button variant="secondary" onClick={saveDraft} loading={saving}>
                   <Save /> <span className="hidden sm:inline">{t("wiz.save")}</span>
                 </Button>

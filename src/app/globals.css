@@ -125,6 +125,15 @@
 }
 
 @layer base {
+  /* Layout safety net: grid items may shrink below their content (prevents wide tables, rails and
+     scroll areas from blowing out a column), and scroll containers clip absolutely positioned
+     descendants such as visually-hidden labels. Zero-specificity so utilities still win. */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+  :where(.overflow-auto, .overflow-x-auto, .overflow-y-auto) {
+    position: relative;
+  }
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;

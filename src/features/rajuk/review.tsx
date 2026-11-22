@@ -110,7 +110,7 @@ export function ReviewWorkspace({ id }: { id: string }) {
             </div>
           )}
         </div>
-        <div className="flex flex-wrap items-stretch gap-px overflow-hidden rounded-lg border border-line bg-line text-sm">
+        <div className="grid w-full grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line text-sm sm:grid-cols-3 xl:w-auto">
           <div className="bg-surface px-4 py-2.5">
             <p className="text-[0.6875rem] text-muted">Current holder</p>
             <p className="mt-0.5 flex items-center gap-2 font-medium text-ink-strong">
