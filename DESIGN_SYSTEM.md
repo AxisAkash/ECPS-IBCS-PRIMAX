@@ -79,7 +79,9 @@ shadcn/ui conventions (Radix + Tailwind + `cva`) are used as a foundation only; 
 | Inspector | Phone-first single column, 44px touch targets, thumb-reachable sticky actions |
 | Management/finance | Desktop-first two-column charts that stack on narrow screens; every chart has a table alternative |
 
-Tested at 1440, 1024, 768, 390 and 360px wide.
+Tested at 1440, 1024, 768, 390 and 360px wide. An e2e guard (`tests/e2e/responsive.spec.ts`) fails if any of 17 key pages scrolls horizontally at 1024, 768 or 360px.
+
+Layout safety net in `globals.css`: direct children of any `.grid` get `min-width: 0` (so long references and tables shrink instead of pushing the page wider), and scroll containers are `position: relative` (so absolutely positioned `sr-only` text stays inside them). The wizard's step sidebar appears from 1280px; below that the compact progress header is used.
 
 ## 6. Accessibility (target WCAG 2.2 AA)
 
@@ -97,7 +99,8 @@ Tested at 1440, 1024, 768, 390 and 360px wide.
 ## 7. Localisation
 
 - English and Bangla dictionaries are typed: Bangla must define every English key (enforced by TypeScript and a unit test that also checks placeholders).
-- Translated: public landing, navigation, authentication and registration, service names, applicant dashboard and wizard chrome, statuses.
+- Translated: public landing, navigation, authentication and registration, service names, statuses, and the complete applicant journey — dashboard, every wizard step and its validation messages, application detail and timeline, payments, notifications, file upload and map controls. Dictionaries: `messages/en.ts` + `en-applicant.ts`, mirrored in Bangla.
+- Relative times (“2 days ago”) and Taka amounts are formatted per locale.
 - English-only (prototype scope): internal RAJUK workspace screens.
 - Official service names are kept in their commonly used transliterated form (e.g. “প্ল্যানিং পারমিট”) with plain-language descriptions. All Bangla copy should be reviewed by RAJUK.
 

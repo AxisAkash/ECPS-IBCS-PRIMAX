@@ -23,11 +23,15 @@ A presenter script for showing the ECPS prototype to company management alongsid
 | 8 | 1:00 | **Inspector, phone width** `/rajuk/inspections/i-01` | Capture GPS → distance to plot; large checklist buttons; sample photo; sticky Save draft / Submit. | 2.3, 1.12 |
 | 9 | 1:00 | **Management & finance** (Switch → Management) | Over-limit %, workflow distribution, holding duration, officer monitoring. Toggle **Table** to show the accessible view. Finance: collections, reconciliation queue. | 2.5, 2.6 |
 | 10 | 0:45 | **Admin** (Switch → Administrator) | Security: 15-minute inactivity logout configurable; **Preview inactivity warning**. Workflow: change a holding limit → inbox highlights change. Users: duplicate profile rejected. | 1.9, 2.8 |
-| 11 | 0:45 | **Public Register** `/public-register` | Search, open a permit extract (owners, floor limit, units, setbacks; no NID/tax), **Verify a permit** with the sample. If you paid the Mohammadpur fee as the applicant, that permit appears here. | 2.14 |
+| 11 | 0:45 | **Public Register** `/public-register` | Search, open a permit extract (owners, floor limit, units, setbacks; no NID/tax), **Verify a permit** with the sample. If you completed the Mohammadpur fee step as the applicant, that permit appears here. | 2.14 |
 
 ## Optional extras
 
-- Applicant → **Mohammadpur** application → **Pay fee** (simulated gateway) → permit issued → appears in the Public Register.
+- Applicant → **Mohammadpur** application → upload the **electrical** and **plumbing** drawings (**Use sample file**) → **Submit service drawings** → **Pay fee** (simulated gateway) → permit issued → appears in the Public Register. Payment stays disabled until the service drawings are submitted (TOR 1.13).
+- Applicant → any decided application → **Decision letter**: approval / approval-with-fee / rejection wording with the construction-term note (TOR 1.4), watermarked DEMONSTRATION and “Digitally signed (simulated)”. As the officer, **Regenerate letter** with a reason creates a new version (TOR 1.16).
+- Applicant → an application under review → **Professionals** tab → **Request replacement**: pick the new professional and give a reason; the history records it and the new professional is invited (TOR 1.4).
+- Professional → an application they work on → upload a revised sheet or attachment and **Endorse current drawings**; the endorsement date shows to the applicant and RAJUK.
+- Switch to **বাংলা** while signed in as the applicant: the dashboard, the whole wizard (including validation errors) and the application detail are in Bangla.
 - Applicant → rejected **Khilgaon OC** → **File appeal** (OC appeal, TOR 2.4).
 - Estate Officer → upload NOC for the Purbachal lease plot (TOR 2.13).
 - Support → helpdesk queue; Applicant → raise a ticket and watch the status change.

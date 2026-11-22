@@ -126,5 +126,5 @@ tests/
 
 - No backend, authentication, persistence beyond the browser, file storage, payments, signing, SMS, maps or partner integrations — all are simulated or scaffolded.
 - Fees, FAR values, holding limits, workflow sequences and checklist items are **illustrative** and must be replaced with RAJUK-approved rules.
-- Bangla translation covers the public portal, authentication, service names and core applicant journeys; internal RAJUK screens are English-only in this prototype. Bangla copy needs review by RAJUK's language team.
+- Bangla translation covers the public portal, authentication, service names and the full applicant journey (dashboard, every wizard step and its validation messages, application detail, payments, notifications and timeline); internal RAJUK screens are English-only in this prototype. Bangla copy needs review by RAJUK's language team.
 - The official ECPS portal could not be fetched while building this prototype (TLS certificate error on the site), so service terminology follows the TOR rather than the live site.
