@@ -379,7 +379,7 @@ export function WorkspaceShell({ workspace, children }: { workspace: "workspace"
             {role && (
               <p className="flex items-center gap-2 truncate text-xs text-muted">
                 <span className="hidden rounded-xs border border-dashed border-amber-500/70 px-1.5 py-px font-mono text-[0.625rem] uppercase tracking-wider text-amber-700 sm:inline">Demo</span>
-                <span className="truncate">{dark ? `RAJUK · ${roleMeta(role).label}` : roleMeta(role).label}</span>
+                <span className="truncate">{dark ? <ShellUserLabel /> : roleMeta(role).label}</span>
               </p>
             )}
           </div>
@@ -404,6 +404,11 @@ export function WorkspaceShell({ workspace, children }: { workspace: "workspace"
       </div>
     </div>
   );
+}
+
+function ShellUserLabel() {
+  const user = useDemoStore((s) => s.users.find((u) => u.id === s.session?.userId));
+  return <>{user ? `RAJUK · ${user.designation}${user.zone ? `, ${user.zone}` : ""}` : "RAJUK"}</>;
 }
 
 function WrongWorkspace({ role }: { role: RoleKey }) {

@@ -145,13 +145,16 @@ function property(area: string, zone: string, n: number, extra: Partial<Property
   };
 }
 
-function building(storeys: number, occupancy: BuildingInfo["occupancy"], plotAreaSqm: number): BuildingInfo {
-  const ground = Math.round(plotAreaSqm * 0.6);
+function building(storeys: number, occupancy: BuildingInfo["occupancy"], plotAreaSqm: number, n = 0): BuildingInfo {
+  // Keep seeded FAR within the illustrative limits, except one deliberate exception (n % 9 === 5).
+  const farTarget = n % 9 === 5 ? 4.6 : Math.min(storeys * 0.6, 3.8);
+  const total = Math.round(plotAreaSqm * farTarget);
+  const ground = Math.min(Math.round(plotAreaSqm * 0.6), Math.round(total / storeys));
   return {
     occupancy,
     storeys,
     basements: storeys > 8 ? 1 : 0,
-    totalFloorAreaSqm: ground * storeys,
+    totalFloorAreaSqm: total,
     groundCoverageSqm: ground,
     units: occupancy === "A" ? Math.max(1, (storeys - 1) * 2) : storeys,
     heightM: +(storeys * 3.2 + 1.5).toFixed(1),
@@ -240,7 +243,7 @@ function buildApp(s: AppSeed, now: number): Application {
   const submitted = s.submittedDaysAgo !== undefined ? daysAgo(s.submittedDaysAgo, now, 11) : undefined;
   const prop = property(s.area, s.zone, s.n, s.propertyExtra);
   const [lat, lng] = COORDS[s.area] ?? [23.78, 90.4];
-  const b = building(s.storeys, s.occupancy ?? "A", prop.plotAreaSqm);
+  const b = building(s.storeys, s.occupancy ?? "A", prop.plotAreaSqm, s.n);
   const isDraft = s.status === "draft";
   const history: WorkflowEvent[] = [{ id: `${s.id}-h0`, at: created, actorId: s.applicantId, action: "created" }];
   if (submitted) {
