@@ -18,7 +18,7 @@ const HOUR = 3_600_000;
 
 export function daysAgo(n: number, now = Date.now(), hour = 10): string {
   const d = new Date(now - n * DAY);
-  d.setHours(hour, (n * 37) % 60, 0, 0);
+  d.setHours(hour, (Math.round(Math.abs(n * 37)) % 12) * 5, 0, 0);
   return d.toISOString();
 }
 

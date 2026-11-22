@@ -611,7 +611,7 @@ export function createSeed(now = Date.now()): DemoSeed {
       id: "m-14",
       title: "BC Committee (Regular) — Meeting 14/2026",
       committee: "BC_REGULAR",
-      date: hoursAgo(-26, now),
+      date: daysAgo(-1, now, 10),
       venue: "RAJUK Bhaban, Conference Room 3 (demo)",
       memberIds: ["u-com-04", "u-com-01", "u-com-02", "u-com-03"],
       status: "scheduled",
@@ -636,8 +636,8 @@ export function createSeed(now = Date.now()): DemoSeed {
   ];
 
   const inspections: Inspection[] = [
-    { id: "i-01", applicationId: "a-213", kind: "plinth", scheduledFor: hoursAgo(-3, now), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
-    { id: "i-02", applicationId: "a-212", kind: "occupancy", scheduledFor: hoursAgo(-27, now), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
+    { id: "i-01", applicationId: "a-213", kind: "plinth", scheduledFor: daysAgo(0, now, 15), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
+    { id: "i-02", applicationId: "a-212", kind: "occupancy", scheduledFor: daysAgo(-1, now, 11), inspectorId: "u-ins-01", status: "assigned", checklist: {}, observations: "", photos: [] },
     {
       id: "i-03", applicationId: "a-202", kind: "complaint", scheduledFor: daysAgo(1, now), inspectorId: "u-ins-01", status: "draft",
       checklist: { "site.gps": { id: "site.gps", result: "pass" }, "site.board": { id: "site.board", result: "fail", note: "No display board at entrance." } },
