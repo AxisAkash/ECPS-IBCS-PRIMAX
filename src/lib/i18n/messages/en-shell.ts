@@ -272,4 +272,7 @@ export const enShell = {
   "dl.version": "Letter version {v}",
   "dl.signed": "Digitally signed (simulated)",
   "dl.note": "Only the construction-term condition reproduces TOR 1.4 wording; all other text is illustrative.",
+  "ui.mainNav": "Main",
+  "ui.verified": "Verified",
+  "ui.sampleFictional": "SAMPLE · FICTIONAL",
 } as const;

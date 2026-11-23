@@ -274,4 +274,7 @@ export const bnShell: Record<keyof typeof enShell, string> = {
   "dl.version": "পত্রের সংস্করণ {v}",
   "dl.signed": "ডিজিটাল স্বাক্ষরিত (অনুকরণকৃত)",
   "dl.note": "শুধু নির্মাণ-মেয়াদের শর্তটি TOR 1.4-এর ভাষা অনুসরণ করে; বাকি লেখা দৃষ্টান্তমূলক।",
+  "ui.mainNav": "প্রধান",
+  "ui.verified": "যাচাইকৃত",
+  "ui.sampleFictional": "নমুনা · কাল্পনিক",
 };

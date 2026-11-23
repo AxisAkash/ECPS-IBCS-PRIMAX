@@ -172,7 +172,7 @@ export function FileRow({
           {status === "superseded" && ` · ${t("up.superseded")}`}
         </p>
       </div>
-      {status === "verified" && <CheckCircle2 className="size-4 text-success-700" aria-label="Verified" />}
+      {status === "verified" && <CheckCircle2 className="size-4 text-success-700" aria-label={t("ui.verified")} />}
       {onReplace && (
         <Button type="button" variant="ghost" size="icon-sm" onClick={onReplace} aria-label={`Replace ${name}`}>
           <RotateCcw />

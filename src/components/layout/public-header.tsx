@@ -127,7 +127,7 @@ export function PublicHeader() {
       >
         <div className="mx-auto flex h-16 max-w-[88rem] items-center justify-between gap-6 px-4 sm:px-6 lg:px-10">
           <Logo onDark={dark} />
-          <nav aria-label="Main" className="hidden lg:block">
+          <nav aria-label={t("ui.mainNav")} className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {NAV.map((n) => (
                 <li key={n.href}>
@@ -177,7 +177,7 @@ export function PublicHeader() {
           </div>
         </div>
         {open && (
-          <nav id="mobile-nav" aria-label="Main" className="animate-fade-in border-t border-line bg-surface lg:hidden">
+          <nav id="mobile-nav" aria-label={t("ui.mainNav")} className="animate-fade-in border-t border-line bg-surface lg:hidden">
             <ul className="mx-auto max-w-[88rem] space-y-0.5 px-4 py-3 sm:px-6">
               {NAV.map((n) => (
                 <li key={n.href}>

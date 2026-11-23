@@ -84,7 +84,7 @@ export function PhotoPlaceholder({ label, kind, className }: { label: string; ki
           </>
         )}
         <rect x="10" y="10" width="138" height="20" rx="3" fill="#14263d" opacity="0.75" />
-        <text x="18" y="24" fontSize="10" fill="#fff" fontFamily="var(--font-plex-mono), monospace">SAMPLE · FICTIONAL</text>
+        <text x="18" y="24" fontSize="10" fill="#fff" fontFamily="var(--font-plex-mono), var(--font-noto-bengali), monospace">{t("ui.sampleFictional")}</text>
       </svg>
       <figcaption className="truncate border-t border-line bg-surface-2 px-3 py-1.5 text-xs text-muted">{label}</figcaption>
     </figure>
