@@ -13,12 +13,17 @@ import { Field, SegmentedControl, Select } from "@/components/ui/form";
 import { toast } from "@/components/ui/toast";
 import { ZONES } from "@/lib/domain/catalog";
 import type { Payment, StageKey } from "@/lib/domain/types";
-import { STAGE_LABEL } from "@/lib/domain/workflow";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { useDemoStore } from "@/lib/store/demo-store";
-import { cn, downloadText, formatBDT, formatDate, toCsv } from "@/lib/utils";
+import { cn, downloadText, formatBDT, formatDate, formatNumber, toBnDigits, toCsv } from "@/lib/utils";
 import { ACTIVE, useRajukData } from "./hooks";
 
-const MONTHS = ["Jun", "Jul", "Aug", "Sep", "Oct", "Nov"];
+/** Six illustrative months ending November 2026, named in the reader's language. */
+const monthNames = (locale: string) => Array.from({ length: 6 }, (_, i) => new Date(2026, 5 + i, 1).toLocaleString(locale === "bn" ? "bn-BD" : "en-GB", { month: "short" }));
+
+/** Payment channel → message key (channels are stored in English). */
+const CHANNEL_KEY = { Card: "pay.card", "Mobile banking": "pay.mfs", "Internet banking": "pay.bank" } as const satisfies Record<string, MessageKey>;
 
 function HeroStat({ label, value, sub, tone, href }: { label: string; value: string; sub?: string; tone?: "danger"; href?: string }) {
   const body = (
@@ -40,6 +45,8 @@ function HeroStat({ label, value, sub, tone, href }: { label: string; value: str
 /* ———————————————————————————— Management (TOR 2.5) ———————————————————————————— */
 
 export function ManagementDashboard() {
+  const { t, term, locale } = useI18n();
+  const L = useLabels();
   const { applications, users } = useRajukData();
   const [zone, setZone] = useState("");
   const [type, setType] = useState("");
@@ -49,27 +56,27 @@ export function ManagementDashboard() {
 
   // Illustrative six-month series (scaled by the current filter so the view reacts to it).
   const factor = (zone ? 0.18 : 1) * (type === "PP" ? 0.45 : type === "CP" ? 0.4 : 1);
-  const trend = MONTHS.map((m, i) => ({ month: m, submitted: Math.round((182 + i * 9 + (i % 2) * 14) * factor), decided: Math.round((160 + i * 11 - (i === 3 ? 18 : 0)) * factor) }));
+  const trend = monthNames(locale).map((m, i) => ({ month: m, submitted: Math.round((182 + i * 9 + (i % 2) * 14) * factor), decided: Math.round((160 + i * 11 - (i === 3 ? 18 : 0)) * factor) }));
 
   const stages: StageKey[] = ["front_desk", "building_inspector", "chief_building_inspector", "assistant_authorized_officer", "authorized_officer", "deputy_town_planner", "town_planner", "chief_town_planner", "department_review", "bc_committee", "signing", "fee_and_drawings"];
   const byStage = stages
-    .map((s) => ({ stage: STAGE_LABEL[s], within: active.filter((a) => a.stage === s && a.holding.state !== "exceeded").length, over: active.filter((a) => a.stage === s && a.holding.state === "exceeded").length }))
+    .map((s) => ({ stage: L.stage(s), within: active.filter((a) => a.stage === s && a.holding.state !== "exceeded").length, over: active.filter((a) => a.stage === s && a.holding.state === "exceeded").length }))
     .filter((r) => r.within + r.over > 0);
   const bins = [
-    { bin: "0–2 days", files: active.filter((a) => a.holding.days <= 2).length },
-    { bin: "3–5 days", files: active.filter((a) => a.holding.days >= 3 && a.holding.days <= 5).length },
-    { bin: "6–10 days", files: active.filter((a) => a.holding.days >= 6 && a.holding.days <= 10).length },
-    { bin: "11+ days", files: active.filter((a) => a.holding.days > 10).length },
+    { bin: t("mg.bin1"), files: active.filter((a) => a.holding.days <= 2).length },
+    { bin: t("mg.bin2"), files: active.filter((a) => a.holding.days >= 3 && a.holding.days <= 5).length },
+    { bin: t("mg.bin3"), files: active.filter((a) => a.holding.days >= 6 && a.holding.days <= 10).length },
+    { bin: t("mg.bin4"), files: active.filter((a) => a.holding.days > 10).length },
   ];
   const depts = [
-    { dept: "Development Control", files: active.filter((a) => ["front_desk", "building_inspector", "chief_building_inspector", "assistant_authorized_officer", "authorized_officer", "signing"].includes(a.stage)).length },
-    { dept: "Town Planning", files: active.filter((a) => ["deputy_town_planner", "town_planner", "chief_town_planner"].includes(a.stage) || a.department === "town_planning").length },
-    { dept: "Estate", files: active.filter((a) => a.department === "estate").length },
-    { dept: "Committees", files: active.filter((a) => a.stage === "bc_committee").length },
+    { dept: L.dept("development_control"), files: active.filter((a) => ["front_desk", "building_inspector", "chief_building_inspector", "assistant_authorized_officer", "authorized_officer", "signing"].includes(a.stage)).length },
+    { dept: L.dept("town_planning"), files: active.filter((a) => ["deputy_town_planner", "town_planner", "chief_town_planner"].includes(a.stage) || a.department === "town_planning").length },
+    { dept: L.dept("estate"), files: active.filter((a) => a.department === "estate").length },
+    { dept: L.dept("committee"), files: active.filter((a) => a.stage === "bc_committee").length },
   ];
   const byZone = ZONES.map((z) => {
     const files = applications.filter((a) => ACTIVE(a) && a.property.zone === z);
-    return { zone: z.replace("Zone ", "Z"), within: files.filter((a) => a.holding.state !== "exceeded").length, over: files.filter((a) => a.holding.state === "exceeded").length };
+    return { zone: t("mg.zoneShort", { n: locale === "bn" ? toBnDigits(z.replace("Zone ", "")) : z.replace("Zone ", "") }), within: files.filter((a) => a.holding.state !== "exceeded").length, over: files.filter((a) => a.holding.state === "exceeded").length };
   });
   const officers = users
     .filter((u) => ["officer", "inspector"].includes(u.role) && u.status === "active")
@@ -85,97 +92,99 @@ export function ManagementDashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        kicker="Management dashboard · TOR 2.5"
-        title="Permitting performance"
-        description="Workload, holding time and throughput across zones and departments. Historical series are illustrative; current-pipeline figures come from the demo records."
+        kicker={t("mg.kicker")}
+        title={t("mg.title")}
+        description={t("mg.desc")}
         actions={
           <Button variant="secondary" onClick={() => window.print()}>
-            <Printer /> Print
+            <Printer /> {t("mg.print")}
           </Button>
         }
       />
       <div className="flex flex-wrap items-end gap-3">
-        <Field label="Zone" className="w-36">
+        <Field label={t("mg.zone")} className="w-36">
           {(a) => (
             <Select {...a} value={zone} onChange={(e) => setZone(e.target.value)}>
-              <option value="">All zones</option>
+              <option value="">{t("mg.allZones")}</option>
               {ZONES.map((z) => (
-                <option key={z}>{z}</option>
+                <option key={z} value={z}>
+                  {term("zone", z)}
+                </option>
               ))}
             </Select>
           )}
         </Field>
-        <Field label="Permit type" className="w-44">
+        <Field label={t("mg.type")} className="w-44">
           {(a) => (
             <Select {...a} value={type} onChange={(e) => setType(e.target.value)}>
-              <option value="">All types</option>
-              <option value="PP">Planning Permits</option>
-              <option value="CP">Construction Permits</option>
+              <option value="">{t("mg.allTypes")}</option>
+              <option value="PP">{t("mg.pp")}</option>
+              <option value="CP">{t("mg.cp")}</option>
             </Select>
           )}
         </Field>
-        <p className="pb-2 text-xs text-muted">Period: last 6 months</p>
+        <p className="pb-2 text-xs text-muted">{t("mg.period")}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
-        <HeroStat label="Active files" value={String(active.length)} sub="In the current pipeline" href="/rajuk/monitoring" />
-        <HeroStat label="Over holding limit" value={`${active.length ? Math.round((over.length / active.length) * 100) : 0}%`} sub={`${over.length} files need escalation`} tone={over.length ? "danger" : undefined} href="/rajuk/monitoring" />
-        <HeroStat label="Median working days at stage" value={String(active.length ? [...active].sort((a, b) => a.holding.days - b.holding.days)[Math.floor(active.length / 2)]!.holding.days : 0)} sub="Current pipeline" />
-        <HeroStat label="Permits issued" value={issued6m.toLocaleString("en-IN")} sub="6 months · illustrative" />
+        <HeroStat label={t("mg.active")} value={formatNumber(active.length, locale)} sub={t("mg.activeSub")} href="/rajuk/monitoring" />
+        <HeroStat label={t("mg.over")} value={`${formatNumber(active.length ? Math.round((over.length / active.length) * 100) : 0, locale)}%`} sub={t("mg.overSub", { n: over.length })} tone={over.length ? "danger" : undefined} href="/rajuk/monitoring" />
+        <HeroStat label={t("mg.median")} value={formatNumber(active.length ? [...active].sort((a, b) => a.holding.days - b.holding.days)[Math.floor(active.length / 2)]!.holding.days : 0, locale)} sub={t("mg.medianSub")} />
+        <HeroStat label={t("mg.issued")} value={formatNumber(issued6m, locale)} sub={t("mg.issuedSub")} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <ChartFrame
-          title="Submissions and decisions"
-          description="Monthly applications received vs decided (illustrative series)."
+          title={t("mg.trend")}
+          description={t("mg.trendDesc")}
           series={[
-            { key: "submitted", label: "Submitted" },
-            { key: "decided", label: "Decided" },
+            { key: "submitted", label: t("mg.submitted") },
+            { key: "decided", label: t("mg.decided") },
           ]}
-          table={{ columns: ["Month", "Submitted", "Decided"], rows: trend.map((r) => [r.month, r.submitted, r.decided]) }}
+          table={{ columns: [t("mg.month"), t("mg.submitted"), t("mg.decided")], rows: trend.map((r) => [r.month, r.submitted, r.decided]) }}
         >
-          <TrendChart data={trend} xKey="month" series={[{ key: "submitted", label: "Submitted" }, { key: "decided", label: "Decided" }]} />
+          <TrendChart data={trend} xKey="month" series={[{ key: "submitted", label: t("mg.submitted") }, { key: "decided", label: t("mg.decided") }]} />
         </ChartFrame>
         <ChartFrame
-          title="Workflow distribution"
-          description="Active files by stage; red = over holding limit."
+          title={t("mg.flow")}
+          description={t("mg.flowDesc")}
           series={[
-            { key: "within", label: "Within limit", color: SERIES[0] },
-            { key: "over", label: "Over limit", color: STATUS.critical },
+            { key: "within", label: t("rk.withinLimit"), color: SERIES[0] },
+            { key: "over", label: t("rk.overLimit"), color: STATUS.critical },
           ]}
-          table={{ columns: ["Stage", "Within", "Over"], rows: byStage.map((r) => [r.stage, r.within, r.over]) }}
+          table={{ columns: [t("rk.stage"), t("mg.within"), t("mg.overShort")], rows: byStage.map((r) => [r.stage, r.within, r.over]) }}
           height={Math.max(220, byStage.length * 30 + 30)}
         >
-          <HBarChart data={byStage} yKey="stage" stacked series={[{ key: "within", label: "Within limit", color: SERIES[0] }, { key: "over", label: "Over limit", color: STATUS.critical }]} />
+          <HBarChart data={byStage} yKey="stage" stacked series={[{ key: "within", label: t("rk.withinLimit"), color: SERIES[0] }, { key: "over", label: t("rk.overLimit"), color: STATUS.critical }]} />
         </ChartFrame>
-        <ChartFrame title="Holding duration" description="Working days the file has spent at its current stage." table={{ columns: ["Days at stage", "Files"], rows: bins.map((b) => [b.bin, b.files]) }} height={220}>
-          <VBarChart data={bins} xKey="bin" series={[{ key: "files", label: "Files", color: SERIES[0] }]} colorFor={(row) => (row.bin === "11+ days" ? STATUS.critical : row.bin === "6–10 days" ? STATUS.warning : undefined)} />
+        <ChartFrame title={t("mg.duration")} description={t("mg.durationDesc")} table={{ columns: [t("mg.daysAtStage"), t("mg.files")], rows: bins.map((b) => [b.bin, b.files]) }} height={220}>
+          <VBarChart data={bins} xKey="bin" series={[{ key: "files", label: t("mg.files"), color: SERIES[0] }]} colorFor={(row) => (row.bin === t("mg.bin4") ? STATUS.critical : row.bin === t("mg.bin3") ? STATUS.warning : undefined)} />
         </ChartFrame>
-        <ChartFrame title="Departmental workload" description="Active files by responsible department." table={{ columns: ["Department", "Files"], rows: depts.map((d) => [d.dept, d.files]) }} height={220}>
-          <HBarChart data={depts} yKey="dept" series={[{ key: "files", label: "Files", color: SERIES[2] }]} />
+        <ChartFrame title={t("mg.dept")} description={t("mg.deptDesc")} table={{ columns: [t("mg.department"), t("mg.files")], rows: depts.map((d) => [d.dept, d.files]) }} height={220}>
+          <HBarChart data={depts} yKey="dept" series={[{ key: "files", label: t("mg.files"), color: SERIES[2] }]} />
         </ChartFrame>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <ChartFrame
-          title="Zones"
-          description="Active files per zone (all types)."
+          title={t("mg.zones")}
+          description={t("mg.zonesDesc")}
           series={[
-            { key: "within", label: "Within limit", color: SERIES[0] },
-            { key: "over", label: "Over limit", color: STATUS.critical },
+            { key: "within", label: t("rk.withinLimit"), color: SERIES[0] },
+            { key: "over", label: t("rk.overLimit"), color: STATUS.critical },
           ]}
-          table={{ columns: ["Zone", "Within", "Over"], rows: byZone.map((z) => [z.zone, z.within, z.over]) }}
+          table={{ columns: [t("mg.zone"), t("mg.within"), t("mg.overShort")], rows: byZone.map((z) => [z.zone, z.within, z.over]) }}
           height={220}
         >
-          <VBarChart data={byZone} xKey="zone" stacked series={[{ key: "within", label: "Within limit", color: SERIES[0] }, { key: "over", label: "Over limit", color: STATUS.critical }]} />
+          <VBarChart data={byZone} xKey="zone" stacked series={[{ key: "within", label: t("rk.withinLimit"), color: SERIES[0] }, { key: "over", label: t("rk.overLimit"), color: STATUS.critical }]} />
         </ChartFrame>
         <Panel
-          title="Officer-level monitoring"
-          description="Highest holding load first."
+          title={t("mg.officers")}
+          description={t("mg.officersDesc")}
           actions={
             <Button asChild variant="ghost" size="sm">
               <Link href="/rajuk/monitoring">
-                Full register <ArrowRight />
+                {t("mg.fullRegister")} <ArrowRight />
               </Link>
             </Button>
           }
@@ -188,33 +197,35 @@ export function ManagementDashboard() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink-strong">{r.u.name}</p>
                   <p className="truncate text-xs text-muted">
-                    {r.u.designation}
-                    {r.u.zone ? ` · ${r.u.zone}` : ""}
+                    {term("desig", r.u.designation)}
+                    {r.u.zone ? ` · ${term("zone", r.u.zone)}` : ""}
                   </p>
                 </div>
-                <span className="tabular text-sm text-ink">{r.held} held</span>
+                <span className="tabular text-sm text-ink">{t("mg.held", { n: r.held })}</span>
                 {r.over > 0 ? (
                   <Badge tone="danger" icon={AlarmClock}>
-                    {r.over} over
+                    {t("mg.overN", { n: r.over })}
                   </Badge>
                 ) : (
-                  <Badge tone="success">On time</Badge>
+                  <Badge tone="success">{t("mg.onTime")}</Badge>
                 )}
               </li>
             ))}
           </ul>
         </Panel>
       </div>
-      <Callout tone="demo">Figures labelled illustrative are not RAJUK performance data. Live dashboards would read from the ECPS reporting database with role-based access.</Callout>
+      <Callout tone="demo">{t("mg.note")}</Callout>
     </div>
   );
 }
 
 /* ———————————————————————————— Finance (TOR 2.6) ———————————————————————————— */
 
+/** English labels for CSV exports (data interchange stays in English). */
 const CAT_LABEL: Record<Payment["category"], string> = { application_fee: "Application fee", permit_fee: "Permit fee", oc_fee: "OC fee", renewal_fee: "Renewal fee", appeal_fee: "Appeal fee" };
 
 export function FinanceDashboard() {
+  const { t, term, locale } = useI18n();
   const payments = useDemoStore((s) => s.payments);
   const reconcile = useDemoStore((s) => s.reconcilePayment);
   const [period, setPeriod] = useState<"30" | "90" | "180">("90");
@@ -234,38 +245,39 @@ export function FinanceDashboard() {
     const keys = Array.from({ length: 6 }).map((_, i) => {
       const d = new Date();
       d.setMonth(d.getMonth() - (5 - i));
-      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleString("en-GB", { month: "short" }) };
+      return { key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleString(locale === "bn" ? "bn-BD" : "en-GB", { month: "short" }) };
     });
     return keys.map((k) => {
       const inMonth = payments.filter((p) => p.status === "paid" && p.paidAt && `${new Date(p.paidAt).getFullYear()}-${new Date(p.paidAt).getMonth()}` === k.key && (!zone || p.zone === zone));
       const sum = (c: Payment["category"][]) => Math.round(inMonth.filter((p) => c.includes(p.category)).reduce((s, p) => s + p.amount, 0) / 1000);
       return { month: k.label, permit: sum(["permit_fee"]), application: sum(["application_fee"]), oc: sum(["oc_fee"]), other: sum(["renewal_fee", "appeal_fee"]) };
     });
-  }, [payments, zone]);
-  const channels = (["Mobile banking", "Card", "Internet banking"] as const).map((c) => ({ channel: c, amount: Math.round(paid.filter((p) => p.channel === c).reduce((s, p) => s + p.amount, 0) / 1000) }));
+  }, [payments, zone, locale]);
+  const channels = (["Mobile banking", "Card", "Internet banking"] as const).map((c) => ({ channel: t(CHANNEL_KEY[c]), amount: Math.round(paid.filter((p) => p.channel === c).reduce((s, p) => s + p.amount, 0) / 1000) }));
 
   const columns: ColumnDef<Payment, unknown>[] = useMemo(
     () => [
-      { id: "date", header: "Date", accessorFn: (p) => p.paidAt ?? p.createdAt, cell: ({ getValue }) => <span className="tabular whitespace-nowrap text-muted">{formatDate(getValue() as string)}</span> },
-      { id: "ref", header: "Application", accessorFn: (p) => p.applicationRef, cell: ({ getValue }) => <span className="ref whitespace-nowrap text-ink-strong">{getValue() as string}</span> },
-      { id: "cat", header: "Category", accessorFn: (p) => CAT_LABEL[p.category] },
-      { id: "zone", header: "Zone", accessorFn: (p) => p.zone },
-      { id: "channel", header: "Channel", accessorFn: (p) => p.channel },
-      { id: "gw", header: "Gateway ref", accessorFn: (p) => p.gatewayRef ?? "—", cell: ({ getValue }) => <span className="ref text-xs text-muted">{getValue() as string}</span> },
-      { id: "amount", header: "Amount", accessorFn: (p) => p.amount, meta: { align: "right" }, cell: ({ getValue }) => <span className="tabular font-medium text-ink-strong">{formatBDT(getValue() as number)}</span> },
+      { id: "date", header: t("fn.col.date"), accessorFn: (p) => p.paidAt ?? p.createdAt, cell: ({ getValue }) => <span className="tabular whitespace-nowrap text-muted">{formatDate(getValue() as string, locale)}</span> },
+      { id: "ref", header: t("fn.col.app"), accessorFn: (p) => p.applicationRef, cell: ({ getValue }) => <span className="ref whitespace-nowrap text-ink-strong">{getValue() as string}</span> },
+      { id: "cat", header: t("fn.col.cat"), accessorFn: (p) => t(`paycat.${p.category}`) },
+      { id: "zone", header: t("fn.col.zone"), accessorFn: (p) => term("zone", p.zone) },
+      { id: "channel", header: t("fn.col.channel"), accessorFn: (p) => (p.channel && p.channel in CHANNEL_KEY ? t(CHANNEL_KEY[p.channel as keyof typeof CHANNEL_KEY]) : (p.channel ?? "—")) },
+      { id: "gw", header: t("fn.col.gw"), accessorFn: (p) => p.gatewayRef ?? "—", cell: ({ getValue }) => <span className="ref text-xs text-muted">{getValue() as string}</span> },
+      { id: "amount", header: t("fn.col.amount"), accessorFn: (p) => p.amount, meta: { align: "right" }, cell: ({ getValue }) => <span className="tabular font-medium text-ink-strong">{formatBDT(getValue() as number, locale)}</span> },
       {
         id: "status",
-        header: "Status",
+        header: t("fn.col.status"),
         accessorFn: (p) => p.status,
         cell: ({ row: { original: p } }) => (
           <span className="flex items-center gap-1.5 whitespace-nowrap">
-            <Badge tone={p.status === "paid" ? "success" : p.status === "pending" ? "warning" : "danger"}>{p.status}</Badge>
-            {p.status === "paid" && !p.reconciled && <Badge tone="accent">unreconciled</Badge>}
+            <Badge tone={p.status === "paid" ? "success" : p.status === "pending" ? "warning" : "danger"}>{t(`pst.${p.status}`)}</Badge>
+            {p.status === "paid" && !p.reconciled && <Badge tone="accent">{t("fn.unreconciled")}</Badge>}
           </span>
         ),
       },
     ],
-    [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- labels change only with the locale
+    [locale],
   );
 
   const exportReport = () => {
@@ -278,90 +290,92 @@ export function FinanceDashboard() {
             ? ZONES.map((z) => ({ zone: z, transactions: paid.filter((p) => p.zone === z).length, amount_bdt: paid.filter((p) => p.zone === z).reduce((s, p) => s + p.amount, 0) }))
             : failed.map((p) => ({ date: p.createdAt.slice(0, 10), application: p.applicationRef, status: p.status, amount_bdt: p.amount }));
     downloadText(`ecps-finance-${report}-${period}d.csv`, toCsv(rows));
-    toast.success("Report exported", `${rows.length} rows · illustrative data`);
+    toast.success(t("fn.exported"), t("fn.exportedBody", { n: rows.length }));
   };
 
   return (
     <div className="space-y-6">
-      <PageHeader kicker="Finance dashboard · TOR 2.6" title="Payments & reconciliation" description="Collections, payment status and gateway reconciliation. All amounts are illustrative demonstration data, not RAJUK revenue." />
+      <PageHeader kicker={t("fn.kicker")} title={t("fn.title")} description={t("fn.desc")} />
       <div className="flex flex-wrap items-end gap-3">
         <SegmentedControl
-          label="Period"
+          label={t("fn.period")}
           value={period}
           onChange={setPeriod}
           options={[
-            { value: "30", label: "30 days" },
-            { value: "90", label: "90 days" },
-            { value: "180", label: "180 days" },
+            { value: "30", label: t("fn.days", { n: formatNumber(30, locale) }) },
+            { value: "90", label: t("fn.days", { n: formatNumber(90, locale) }) },
+            { value: "180", label: t("fn.days", { n: formatNumber(180, locale) }) },
           ]}
         />
-        <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label="Fee category" className="w-44">
-          <option value="">All categories</option>
-          {Object.entries(CAT_LABEL).map(([k, v]) => (
+        <Select value={cat} onChange={(e) => setCat(e.target.value)} aria-label={t("fn.feeCat")} className="w-44">
+          <option value="">{t("fn.allCats")}</option>
+          {Object.keys(CAT_LABEL).map((k) => (
             <option key={k} value={k}>
-              {v}
+              {t(`paycat.${k as Payment["category"]}`)}
             </option>
           ))}
         </Select>
-        <Select value={zone} onChange={(e) => setZone(e.target.value)} aria-label="Zone" className="w-36">
-          <option value="">All zones</option>
+        <Select value={zone} onChange={(e) => setZone(e.target.value)} aria-label={t("mg.zone")} className="w-36">
+          <option value="">{t("mg.allZones")}</option>
           {ZONES.map((z) => (
-            <option key={z}>{z}</option>
+            <option key={z} value={z}>
+              {term("zone", z)}
+            </option>
           ))}
         </Select>
       </div>
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line lg:grid-cols-4">
-        <HeroStat label="Collected" value={formatBDT(paid.reduce((s, p) => s + p.amount, 0))} sub={`${paid.length} transaction${paid.length === 1 ? "" : "s"}`} />
-        <HeroStat label="Pending payment" value={formatBDT(pending.reduce((s, p) => s + p.amount, 0))} sub={`${pending.length} request${pending.length === 1 ? "" : "s"} open`} />
-        <HeroStat label="Failed / refunded" value={String(failed.length)} sub="Gateway status" tone={failed.length ? "danger" : undefined} />
-        <HeroStat label="Awaiting reconciliation" value={String(unreconciled.length)} sub="Paid, not yet matched" />
+        <HeroStat label={t("fn.collected")} value={formatBDT(paid.reduce((s, p) => s + p.amount, 0), locale)} sub={paid.length === 1 ? t("fn.txn1") : t("fn.txn", { n: formatNumber(paid.length, locale) })} />
+        <HeroStat label={t("fn.pending")} value={formatBDT(pending.reduce((s, p) => s + p.amount, 0), locale)} sub={pending.length === 1 ? t("fn.reqOpen1") : t("fn.reqOpen", { n: formatNumber(pending.length, locale) })} />
+        <HeroStat label={t("fn.failed")} value={formatNumber(failed.length, locale)} sub={t("fn.gwStatus")} tone={failed.length ? "danger" : undefined} />
+        <HeroStat label={t("fn.awaitRecon")} value={formatNumber(unreconciled.length, locale)} sub={t("fn.awaitReconSub")} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <ChartFrame
-          title="Monthly collections by fee category"
-          description="Thousand Taka · last six months."
+          title={t("fn.monthly")}
+          description={t("fn.monthlyDesc")}
           series={[
-            { key: "permit", label: "Permit fee" },
-            { key: "application", label: "Application fee" },
-            { key: "oc", label: "OC fee" },
-            { key: "other", label: "Renewal & appeal" },
+            { key: "permit", label: t("paycat.permit_fee") },
+            { key: "application", label: t("paycat.application_fee") },
+            { key: "oc", label: t("paycat.oc_fee") },
+            { key: "other", label: t("fn.renewalAppeal") },
           ]}
-          table={{ columns: ["Month", "Permit", "Application", "OC", "Other"], rows: monthly.map((m) => [m.month, m.permit, m.application, m.oc, m.other]) }}
+          table={{ columns: [t("mg.month"), t("fn.permit"), t("fn.application"), t("fn.oc"), t("fn.other")], rows: monthly.map((m) => [m.month, m.permit, m.application, m.oc, m.other]) }}
         >
-          <VBarChart data={monthly} xKey="month" stacked format={(v) => `${v}k`} series={[{ key: "permit", label: "Permit fee" }, { key: "application", label: "Application fee" }, { key: "oc", label: "OC fee" }, { key: "other", label: "Renewal & appeal" }]} />
+          <VBarChart data={monthly} xKey="month" stacked format={(v) => `${v}k`} series={[{ key: "permit", label: t("paycat.permit_fee") }, { key: "application", label: t("paycat.application_fee") }, { key: "oc", label: t("paycat.oc_fee") }, { key: "other", label: t("fn.renewalAppeal") }]} />
         </ChartFrame>
-        <ChartFrame title="Payment channel" description="Collected, thousand Taka." table={{ columns: ["Channel", "Amount (k৳)"], rows: channels.map((c) => [c.channel, c.amount]) }}>
-          <HBarChart data={channels} yKey="channel" format={(v) => `${v}k`} series={[{ key: "amount", label: "Collected", color: SERIES[2] }]} />
+        <ChartFrame title={t("fn.channelTitle")} description={t("fn.channelDesc")} table={{ columns: [t("fn.col.channel"), t("fn.amountK")], rows: channels.map((c) => [c.channel, c.amount]) }}>
+          <HBarChart data={channels} yKey="channel" format={(v) => `${v}k`} series={[{ key: "amount", label: t("fn.collected"), color: SERIES[2] }]} />
         </ChartFrame>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <Panel title="Transactions" bodyClassName="p-0">
-          <DataTable data={scoped} columns={columns} caption="Payment transactions" initialSort={[{ id: "date", desc: true }]} pageSize={12} dense className="p-3" />
+        <Panel title={t("fn.txns")} bodyClassName="p-0">
+          <DataTable data={scoped} columns={columns} caption={t("fn.txnCaption")} initialSort={[{ id: "date", desc: true }]} pageSize={12} dense className="p-3" />
         </Panel>
         <div className="space-y-6">
-          <Panel title="Reports" description="Generate reports as defined by RAJUK (illustrative set).">
+          <Panel title={t("fn.reports")} description={t("fn.reportsDesc")}>
             <div className="space-y-3">
-              <Select value={report} onChange={(e) => setReport(e.target.value)} aria-label="Report type">
-                <option value="collection">Collection register</option>
-                <option value="category">Category-wise summary</option>
-                <option value="zone">Zone-wise summary</option>
-                <option value="exceptions">Failed & refunded</option>
+              <Select value={report} onChange={(e) => setReport(e.target.value)} aria-label={t("fn.reportType")}>
+                <option value="collection">{t("fn.r.collection")}</option>
+                <option value="category">{t("fn.r.category")}</option>
+                <option value="zone">{t("fn.r.zone")}</option>
+                <option value="exceptions">{t("fn.r.exceptions")}</option>
               </Select>
               <Button className="w-full" variant="secondary" onClick={exportReport}>
-                <Download /> Export CSV
+                <Download /> {t("fn.exportCsv")}
               </Button>
               <Button className="w-full" variant="ghost" onClick={() => window.print()}>
-                <FileBarChart2 /> Print / PDF
+                <FileBarChart2 /> {t("fn.printPdf")}
               </Button>
             </div>
           </Panel>
-          <Panel title="Reconciliation queue" description="Paid in ECPS, not yet matched to gateway settlement." bodyClassName="p-0">
+          <Panel title={t("fn.recon")} description={t("fn.reconDesc")} bodyClassName="p-0">
             {unreconciled.length === 0 ? (
               <p className="flex items-center gap-2 px-5 py-5 text-sm text-success-700">
-                <CheckCircle2 className="size-4" aria-hidden /> All matched for this period.
+                <CheckCircle2 className="size-4" aria-hidden /> {t("fn.allMatched")}
               </p>
             ) : (
               <ul className="scrollbar-thin max-h-80 divide-y divide-line overflow-y-auto">
@@ -370,7 +384,7 @@ export function FinanceDashboard() {
                     <div className="min-w-0 flex-1">
                       <p className="ref truncate text-ink-strong">{p.gatewayRef}</p>
                       <p className="text-xs text-muted">
-                        {p.applicationRef} · {formatBDT(p.amount)}
+                        {p.applicationRef} · {formatBDT(p.amount, locale)}
                       </p>
                     </div>
                     <Button
@@ -378,17 +392,17 @@ export function FinanceDashboard() {
                       variant="secondary"
                       onClick={() => {
                         reconcile(p.id);
-                        toast.success("Marked reconciled (simulated)");
+                        toast.success(t("fn.matched"));
                       }}
                     >
-                      <RefreshCw /> Match
+                      <RefreshCw /> {t("fn.match")}
                     </Button>
                   </li>
                 ))}
               </ul>
             )}
             <p className="flex items-center gap-1.5 border-t border-line px-5 py-2.5 text-[0.6875rem] text-muted">
-              <XCircle className="size-3.5" aria-hidden /> Live matching requires the payment gateway settlement API.
+              <XCircle className="size-3.5" aria-hidden /> {t("fn.liveNote")}
             </p>
           </Panel>
         </div>

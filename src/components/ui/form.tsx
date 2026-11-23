@@ -11,6 +11,7 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const controlBase =
@@ -46,7 +47,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
 ));
 Select.displayName = "Select";
 
-export function Label({ htmlFor, children, className, required, optional, requiredLabel = "Required", optionalLabel = "Optional" }: {
+export function Label({ htmlFor, children, className, required, optional, requiredLabel, optionalLabel }: {
   htmlFor?: string;
   children: ReactNode;
   className?: string;
@@ -55,16 +56,17 @@ export function Label({ htmlFor, children, className, required, optional, requir
   requiredLabel?: string;
   optionalLabel?: string;
 }) {
+  const { t } = useI18n();
   return (
     <label htmlFor={htmlFor} className={cn("flex items-baseline gap-2 text-[0.8125rem] font-medium text-ink-strong", className)}>
       <span>{children}</span>
       {required && (
         <span className="text-[0.6875rem] font-normal text-danger-700">
           <span aria-hidden>*</span>
-          <span className="sr-only">{requiredLabel}</span>
+          <span className="sr-only">{requiredLabel ?? t("ui.required")}</span>
         </span>
       )}
-      {optional && <span className="text-[0.6875rem] font-normal text-subtle">{optionalLabel}</span>}
+      {optional && <span className="text-[0.6875rem] font-normal text-subtle">{optionalLabel ?? t("ui.optional")}</span>}
     </label>
   );
 }

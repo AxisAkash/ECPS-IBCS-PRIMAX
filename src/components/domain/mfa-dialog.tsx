@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SimulatedTag } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/form";
 import { Dialog, DialogContent } from "@/components/ui/overlay";
+import { useI18n } from "@/lib/i18n";
 import { ecps } from "@/lib/services";
 import { useDemoStore } from "@/lib/store/demo-store";
 
@@ -14,6 +15,7 @@ import { useDemoStore } from "@/lib/store/demo-store";
  * Any 6-digit code except 000000 succeeds. Real MFA must be verified server-side.
  */
 export function MfaDialog({ open, onOpenChange, onVerified, action }: { open: boolean; onOpenChange: (o: boolean) => void; onVerified: () => void | Promise<void>; action: string }) {
+  const { t } = useI18n();
   const [code, setCode] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -24,7 +26,7 @@ export function MfaDialog({ open, onOpenChange, onVerified, action }: { open: bo
     const ok = await ecps.auth.verifyOtp(code);
     if (!ok) {
       setBusy(false);
-      setErr("Code not accepted. Check the authenticator and try again.");
+      setErr(t("mfa.err"));
       return;
     }
     markMfa();
@@ -37,25 +39,25 @@ export function MfaDialog({ open, onOpenChange, onVerified, action }: { open: bo
     <Dialog open={open} onOpenChange={(o) => !busy && onOpenChange(o)}>
       <DialogContent
         size="sm"
-        eyebrow="Multi-factor confirmation"
-        title="Confirm it's you"
-        description={`${action} requires a second factor. Enter the 6-digit code from your registered authenticator or SMS.`}
+        eyebrow={t("mfa.eyebrow")}
+        title={t("mfa.title")}
+        description={t("mfa.desc", { action })}
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={busy}>
-              Cancel
+              {t("mfa.cancel")}
             </Button>
             <Button form="mfa-form" type="submit" loading={busy} disabled={code.length !== 6}>
-              Verify and continue
+              {t("mfa.verify")}
             </Button>
           </>
         }
       >
         <form id="mfa-form" onSubmit={verify} className="space-y-4">
           <div className="flex items-center gap-3 rounded-lg bg-teal-50 px-3 py-2.5 text-sm text-teal-800">
-            <ShieldCheck className="size-4 shrink-0" aria-hidden /> Approval actions are protected by MFA.
+            <ShieldCheck className="size-4 shrink-0" aria-hidden /> {t("mfa.protected")}
           </div>
-          <Field label="Verification code" error={err}>
+          <Field label={t("mfa.code")} error={err}>
             {(a) => (
               <Input
                 {...a}
@@ -73,7 +75,7 @@ export function MfaDialog({ open, onOpenChange, onVerified, action }: { open: bo
             )}
           </Field>
           <p className="flex items-center gap-2 text-xs text-muted">
-            <SimulatedTag /> Demo: any 6 digits work; 000000 shows the failure state.
+            <SimulatedTag /> {t("mfa.demo")}
           </p>
         </form>
       </DialogContent>

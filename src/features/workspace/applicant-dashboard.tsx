@@ -12,6 +12,7 @@ import { SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application } from "@/lib/domain/types";
 import { holdingInfo, STAGE_LABEL } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { notifBody, notifTitle } from "@/lib/i18n/notify";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatDate, formatRelative } from "@/lib/utils";
 import { useMe, useMyApplications, useUsers } from "./hooks";
@@ -244,9 +245,9 @@ export function ApplicantDashboard() {
                   <Link href={n.href ?? "#"} className="group block">
                     <span className="flex items-center gap-2">
                       {!n.read && <span className="size-1.5 shrink-0 rounded-full bg-teal-600" aria-label="Unread" />}
-                      <span className="truncate text-sm font-medium text-ink-strong group-hover:text-teal-700">{n.title}</span>
+                      <span className="truncate text-sm font-medium text-ink-strong group-hover:text-teal-700">{notifTitle(n, locale)}</span>
                     </span>
-                    <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">{n.body}</span>
+                    <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">{notifBody(n, locale)}</span>
                     <span className="mt-1 block text-[0.6875rem] text-subtle">{formatRelative(n.at, undefined, locale)}</span>
                   </Link>
                 </li>

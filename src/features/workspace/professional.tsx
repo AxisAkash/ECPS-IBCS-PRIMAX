@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/toast";
 import { PROFESSIONAL_ROLE_LABEL, SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application, ProfessionalParticipation } from "@/lib/domain/types";
 import { useI18n } from "@/lib/i18n";
+import { notifBody, notifTitle } from "@/lib/i18n/notify";
 import { ecps } from "@/lib/services";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { formatDate, formatRelative } from "@/lib/utils";
@@ -210,8 +211,8 @@ export function ProfessionalDashboard() {
             <ul className="divide-y divide-line">
               {myNotes.map((n) => (
                 <li key={n.id} className="px-5 py-3">
-                  <p className="text-sm font-medium text-ink-strong">{n.title}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted">{n.body}</p>
+                  <p className="text-sm font-medium text-ink-strong">{notifTitle(n, locale)}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted">{notifBody(n, locale)}</p>
                   <p className="mt-1 flex items-center gap-1 text-[0.6875rem] text-subtle">
                     <Clock3 className="size-3" aria-hidden /> {formatDate(n.at, locale)}
                   </p>

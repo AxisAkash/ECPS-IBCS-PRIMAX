@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { Accordion as RAccordion, Dialog as RDialog, DropdownMenu as RMenu, Popover as RPopover, Tabs as RTabs, Tooltip as RTooltip } from "radix-ui";
 import { ChevronDown } from "lucide-react";
 import { useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -32,6 +33,7 @@ export function DialogContent({
   hideClose?: boolean;
   eyebrow?: ReactNode;
 }) {
+  const { t } = useI18n();
   const width = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-4xl" }[size];
   return (
     <RDialog.Portal>
@@ -55,7 +57,7 @@ export function DialogContent({
           </div>
           {!hideClose && (
             <RDialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Close dialog" className="-mr-2 -mt-1">
+              <Button variant="ghost" size="icon-sm" aria-label={t("ui.closeDialog")} className="-mr-2 -mt-1">
                 <X />
               </Button>
             </RDialog.Close>
@@ -77,8 +79,8 @@ export function ConfirmDialog({
   title,
   description,
   children,
-  confirmLabel = "Yes, continue",
-  cancelLabel = "No, go back",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   tone = "primary",
   loading,
@@ -98,6 +100,7 @@ export function ConfirmDialog({
   confirmDisabled?: boolean;
   eyebrow?: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <DialogContent
@@ -108,10 +111,10 @@ export function ConfirmDialog({
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={loading}>
-              {cancelLabel}
+              {cancelLabel ?? t("ui.noBack")}
             </Button>
             <Button variant={tone === "danger" ? "danger" : tone === "navy" ? "navy" : "primary"} onClick={onConfirm} loading={loading} disabled={confirmDisabled}>
-              {confirmLabel}
+              {confirmLabel ?? t("ui.yesContinue")}
             </Button>
           </>
         }
@@ -143,6 +146,7 @@ export function Sheet({
   className?: string;
   footer?: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <RDialog.Portal>
@@ -160,7 +164,7 @@ export function Sheet({
               {description ? <RDialog.Description className="mt-0.5 text-sm text-muted">{description}</RDialog.Description> : <RDialog.Description className="sr-only">{String(title)}</RDialog.Description>}
             </div>
             <RDialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Close panel">
+              <Button variant="ghost" size="icon-sm" aria-label={t("ui.closePanel")}>
                 <X />
               </Button>
             </RDialog.Close>

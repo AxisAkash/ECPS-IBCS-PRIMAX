@@ -179,42 +179,42 @@ export function holdingInfo(
 }
 
 /** Next action description for officer tables. */
-export function nextActionFor(app: Application): string {
+/** Message key for the next action on a file (rendered with `t()`; see useLabels().next). */
+export function nextActionKey(app: Application): string {
   switch (app.status) {
     case "submitted":
-      return "Scrutinise & assign";
+      return "next.scrutinise";
     case "correction_requested":
-      return "Awaiting applicant";
+      return "next.awaitApplicant";
     case "committee":
-      return "Committee decision";
+      return "next.committee";
     case "signing":
-      return "Sign approval documents";
+      return "next.sign";
     case "fee_pending":
-      return "Awaiting fee payment";
+      return "next.awaitFee";
     case "approved":
-      return "—";
     case "rejected":
-      return "—";
+      return "next.none";
     default:
       switch (app.stage) {
         case "building_inspector":
-          return "Site & drawing review";
+          return "next.siteReview";
         case "chief_building_inspector":
-          return "Verify inspection report";
+          return "next.verifyInspection";
         case "assistant_authorized_officer":
-          return "Recommend decision";
+          return "next.recommend";
         case "authorized_officer":
-          return "Decide / list for BCC";
+          return "next.decide";
         case "department_review":
-          return "Department opinion";
+          return "next.deptOpinion";
         case "deputy_town_planner":
-          return "Planning scrutiny";
+          return "next.planning";
         case "town_planner":
-          return "TP recommendation";
+          return "next.tpRecommend";
         case "chief_town_planner":
-          return "CTP decision";
+          return "next.ctpDecision";
         default:
-          return "Review";
+          return "next.review";
       }
   }
 }

@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/toast";
 import { DOCUMENT_CATEGORY_LABEL, PROFESSIONAL_ROLE_LABEL, SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application, DocumentRecord } from "@/lib/domain/types";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { notifBody, notifTitle } from "@/lib/i18n/notify";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatDate, formatDateTime, formatRelative } from "@/lib/utils";
 import { HelpdeskForUser } from "@/features/helpdesk/user-tickets";
@@ -185,7 +186,7 @@ export function PaymentsPage() {
 }
 
 export function NotificationsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const me = useMe();
   const all = useDemoStore((s) => s.notifications);
   const markRead = useDemoStore((s) => s.markNotificationRead);
@@ -212,8 +213,8 @@ export function NotificationsPage() {
             <li key={n.id} className={cn("flex gap-4 px-5 py-4", !n.read && "bg-teal-50/40")}>
               <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", n.read ? "bg-line-strong" : n.kind === "warning" ? "bg-amber-500" : n.kind === "action" ? "bg-danger-600" : n.kind === "success" ? "bg-success-600" : "bg-teal-600")} />
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-ink-strong">{n.title}</p>
-                <p className="mt-0.5 text-sm text-muted">{n.body}</p>
+                <p className="font-medium text-ink-strong">{notifTitle(n, locale)}</p>
+                <p className="mt-0.5 text-sm text-muted">{notifBody(n, locale)}</p>
                 <p className="mt-1 text-xs text-subtle">{formatDateTime(n.at)}</p>
               </div>
               {n.href && (

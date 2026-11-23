@@ -1,5 +1,8 @@
+"use client";
+
 import { AlertTriangle, CheckCircle2, Info, OctagonAlert, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function Spinner({ className, label }: { className?: string; label?: string }) {
@@ -16,8 +19,9 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 export function PageSkeleton() {
+  const { t } = useI18n();
   return (
-    <div className="space-y-6" role="status" aria-label="Loading">
+    <div className="space-y-6" role="status" aria-label={t("ui.loading")}>
       <Skeleton className="h-8 w-72" />
       <Skeleton className="h-4 w-96 max-w-full" />
       <div className="grid gap-4 md:grid-cols-3">
@@ -68,10 +72,11 @@ export function Callout({
 }
 
 /** Explicit label for demonstration-only behaviour. */
-export function SimulatedTag({ children = "Simulated", className }: { children?: ReactNode; className?: string }) {
+export function SimulatedTag({ children, className }: { children?: ReactNode; className?: string }) {
+  const { t } = useI18n();
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-xs border border-dashed border-slate-ink/40 px-1.5 py-px font-mono text-[0.625rem] uppercase tracking-wider text-slate-ink", className)}>
-      {children}
+      {children ?? t("common.simulated")}
     </span>
   );
 }

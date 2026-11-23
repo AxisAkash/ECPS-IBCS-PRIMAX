@@ -4,7 +4,7 @@ import { AlarmClock, Building, Building2, ClipboardCheck, FileCheck2, FilePen, G
 import { Badge } from "@/components/ui/display";
 import { Tooltip } from "@/components/ui/overlay";
 import type { Application, ApplicationStatus, ServiceType, StageKey } from "@/lib/domain/types";
-import { flowFor, holdingInfo, STAGE_LABEL, STAGE_SHORT, STATUS_TONE } from "@/lib/domain/workflow";
+import { flowFor, holdingInfo, STAGE_SHORT, STATUS_TONE } from "@/lib/domain/workflow";
 import { useI18n } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn } from "@/lib/utils";
@@ -33,10 +33,11 @@ export const SERVICE_ICON: Record<ServiceType | "REGISTER", LucideIcon> = {
 };
 
 export function HoldingIndicator({ app, compact }: { app: Pick<Application, "stage" | "stageEnteredAt" | "status">; compact?: boolean }) {
+  const { t } = useI18n();
   const limits = useDemoStore((s) => s.holdingLimits);
   const h = holdingInfo(app, limits);
   if (["approved", "rejected", "draft"].includes(app.status)) return <span className="text-xs text-subtle">—</span>;
-  const label = `${h.days} ${h.days === 1 ? "day" : "days"}`;
+  const label = t(h.days === 1 ? "ui.day" : "ui.days", { n: h.days });
   const content = (
     <span
       className={cn(
@@ -49,19 +50,20 @@ export function HoldingIndicator({ app, compact }: { app: Pick<Application, "sta
       {h.state === "exceeded" && <AlarmClock className="size-3" aria-hidden />}
       {label}
       {!compact && h.limit && <span className="font-normal text-muted">/ {h.limit}</span>}
-      {h.state === "exceeded" && <span className="sr-only">(exceeds holding limit)</span>}
+      {h.state === "exceeded" && <span className="sr-only">{t("ui.exceeds")}</span>}
     </span>
   );
-  return h.limit ? <Tooltip content={`Working days at ${STAGE_LABEL[app.stage]} · limit ${h.limit} (configurable)`}>{content}</Tooltip> : content;
+  return h.limit ? <Tooltip content={t("ui.holdingTip", { stage: t(`stage.${app.stage}`), limit: h.limit })}>{content}</Tooltip> : content;
 }
 
 /** Compact horizontal stage tracker for an application. */
 export function StageTrack({ type, stage, status, className, showLabels = false }: { type: ServiceType; stage: StageKey; status: ApplicationStatus; className?: string; showLabels?: boolean }) {
+  const { t } = useI18n();
   const flow = flowFor(type);
   const effective = stage === "department_review" ? flow[1] : stage;
   const idx = status === "approved" ? flow.length : status === "draft" ? -1 : flow.indexOf(effective as StageKey);
   return (
-    <ol className={cn("flex items-center gap-1", className)} aria-label="Application stages">
+    <ol className={cn("flex items-center gap-1", className)} aria-label={t("ui.stages")}>
       {flow.map((s, i) => {
         const done = i < idx;
         const current = i === idx;
@@ -76,12 +78,12 @@ export function StageTrack({ type, stage, status, className, showLabels = false 
               )}
             />
             {showLabels && (
-              <span className={cn("truncate font-mono text-[0.625rem] uppercase tracking-wide", current ? "font-semibold text-ink-strong" : done ? "text-teal-800" : "text-muted")} title={STAGE_LABEL[s]}>
+              <span className={cn("truncate font-mono text-[0.625rem] uppercase tracking-wide", current ? "font-semibold text-ink-strong" : done ? "text-teal-800" : "text-muted")} title={t(`stage.${s}`)}>
                 {STAGE_SHORT[s]}
               </span>
             )}
             <span className="sr-only">
-              {STAGE_LABEL[s]}: {done ? "complete" : current ? "current" : "upcoming"}
+              {t(`stage.${s}`)}: {done ? t("ui.stepDone") : current ? t("ui.stepCurrent") : t("ui.stepUpcoming")}
             </span>
           </li>
         );

@@ -17,6 +17,7 @@ import { calculateIllustrativeFee, ILLUSTRATIVE_RULESET } from "@/lib/domain/fee
 import type { Application, BuildingInfo, DocumentCategory, DocumentRecord, DrawingSheetKind, FeeLine, OccupancyKey, ProfessionalRole, ServiceType } from "@/lib/domain/types";
 import { flowFor } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { ecps } from "@/lib/services";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatRelative } from "@/lib/utils";
@@ -31,17 +32,8 @@ export interface StepProps {
 type DocInput = Omit<DocumentRecord, "id" | "uploadedAt" | "uploadedBy" | "sample" | "version" | "status">;
 
 /** Small helpers so translated labels for domain enums are consistent everywhere. */
-export function useDomainLabels() {
-  const { t } = useI18n();
-  return {
-    stage: (s: string) => t(`stage.${s}` as MessageKey),
-    occ: (o: OccupancyKey) => t(`occ.${o}` as MessageKey),
-    pro: (r: ProfessionalRole) => t(`pro.${r}` as MessageKey),
-    doc: (c: DocumentCategory) => t(`doc.${c}` as MessageKey),
-    sheet: (s: DrawingSheetKind) => t(`sheet.${s}` as MessageKey),
-    feeLine: (l: FeeLine) => t(l.key === "application" ? "fee.application" : l.label.startsWith("Planning") ? "fee.scrutiny" : "fee.area"),
-  };
-}
+/** @deprecated use useLabels() from @/lib/i18n/labels — kept as an alias for existing imports. */
+export const useDomainLabels = useLabels;
 
 function useDocs(app: Application) {
   const add = useDemoStore((s) => s.addDocument);

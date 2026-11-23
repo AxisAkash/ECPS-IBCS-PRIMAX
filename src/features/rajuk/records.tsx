@@ -15,7 +15,8 @@ import { toast } from "@/components/ui/toast";
 import { usePermits } from "@/features/public/register";
 import { can } from "@/lib/domain/roles";
 import type { RevertRequest, TwoCFile } from "@/lib/domain/types";
-import { STAGE_LABEL } from "@/lib/domain/workflow";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, downloadText, formatDate, formatDateTime, formatRelative, toCsv, workingDaysBetween } from "@/lib/utils";
 import { ACTIVE, useRajukData } from "./hooks";
@@ -23,6 +24,7 @@ import { ACTIVE, useRajukData } from "./hooks";
 /* ———————————————————————————— Estate (TOR 2.13) ———————————————————————————— */
 
 export function EstateWorkspace() {
+  const { t, locale } = useI18n();
   const { me, applications, users } = useRajukData();
   const nocs = useDemoStore((s) => s.nocs);
   const uploadNoc = useDemoStore((s) => s.uploadNoc);
@@ -38,12 +40,12 @@ export function EstateWorkspace() {
 
   return (
     <div>
-      <PageHeader kicker="Estate section · TOR 2.13" title="Estate · NOC and PP verification" description="Files routed to Estate for a no-objection certificate on RAJUK lease plots, and verification of issued Planning Permits." />
+      <PageHeader kicker={t("es.kicker")} title={t("es.title")} description={t("es.desc")} />
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <Panel title={`Awaiting Estate NOC (${routed.length})`} bodyClassName="p-0">
+        <Panel title={t("es.awaiting", { n: routed.length })} bodyClassName="p-0">
           {routed.length === 0 ? (
             <div className="p-5">
-              <EmptyState icon={FileCheck2} title="No files waiting" body="Files routed by Town Planning or Development Control appear here." />
+              <EmptyState icon={FileCheck2} title={t("es.none")} body={t("es.noneBody")} />
             </div>
           ) : (
             <ul className="divide-y divide-line">
@@ -54,16 +56,16 @@ export function EstateWorkspace() {
                       <Link href={`/rajuk/files/${a.id}`} className="ref font-medium text-ink-strong hover:text-teal-700">
                         {a.ref}
                       </Link>
-                      <Badge tone="info">{a.property.ownershipType === "rajuk_lease" ? "RAJUK lease plot" : a.property.ownershipType}</Badge>
+                      <Badge tone="info">{a.property.ownershipType === "rajuk_lease" ? t("es.leasePlot") : a.property.ownershipType}</Badge>
                       <HoldingIndicator app={a} />
                     </div>
                     <p className="mt-0.5 truncate text-sm text-muted">
                       {a.owners[0]?.name} · {a.property.address}
                     </p>
-                    <p className="mt-0.5 text-xs text-muted">Routed by {userName(users, [...a.history].reverse().find((h) => h.action === "routed")?.actorId)}</p>
+                    <p className="mt-0.5 text-xs text-muted">{t("es.routedBy", { who: userName(users, [...a.history].reverse().find((h) => h.action === "routed")?.actorId) })}</p>
                   </div>
                   <Button size="sm" onClick={() => { setTarget(a.id); setMemo(`EST/NOC/DEMO/${String(Math.floor(Math.random() * 9000) + 1000)}`); setFile(null); }}>
-                    <Upload /> Upload NOC
+                    <Upload /> {t("es.upload")}
                   </Button>
                 </li>
               ))}
@@ -72,7 +74,7 @@ export function EstateWorkspace() {
         </Panel>
 
         <div className="space-y-6">
-          <Panel title="Verify a Planning Permit" description="Checks the issued PP record directly (TOR 1.4, 2.13).">
+          <Panel title={t("es.verify")} description={t("es.verifyDesc")}>
             <form
               className="flex gap-2"
               onSubmit={(e) => {
@@ -80,8 +82,8 @@ export function EstateWorkspace() {
                 setChecked(q.trim());
               }}
             >
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="PP-26-Z1-01442" className="ref uppercase" aria-label="Planning Permit number" />
-              <Button type="submit" variant="secondary" aria-label="Verify">
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="PP-26-Z1-01442" className="ref uppercase" aria-label={t("es.ppNumber")} />
+              <Button type="submit" variant="secondary" aria-label={t("es.verifyBtn")}>
                 <Search />
               </Button>
             </form>
@@ -90,19 +92,19 @@ export function EstateWorkspace() {
                 {permit ? (
                   <div className="rounded-lg border border-success-600/25 bg-success-100/50 p-3 text-sm">
                     <p className="flex items-center gap-1.5 font-semibold text-success-700">
-                      <ShieldCheck className="size-4" aria-hidden /> Valid Planning Permit
+                      <ShieldCheck className="size-4" aria-hidden /> {t("es.valid")}
                     </p>
                     <p className="mt-1 text-ink">
-                      {permit.owners.join(", ")} · {permit.area} · approved {formatDate(permit.approvedOn)}
+                      {t("es.approvedOn", { owners: permit.owners.join(", "), area: permit.area, date: formatDate(permit.approvedOn, locale) })}
                     </p>
                   </div>
                 ) : (
-                  <p className="text-sm text-danger-700">No Planning Permit found with that number.</p>
+                  <p className="text-sm text-danger-700">{t("es.notFound")}</p>
                 )}
               </div>
             )}
           </Panel>
-          <Panel title="NOC register" bodyClassName="p-0">
+          <Panel title={t("es.register")} bodyClassName="p-0">
             <ul className="divide-y divide-line">
               {nocs.map((n) => {
                 const a = applications.find((x) => x.id === n.applicationId);
@@ -110,7 +112,7 @@ export function EstateWorkspace() {
                   <li key={n.id} className="px-5 py-3 text-sm">
                     <p className="ref font-medium text-ink-strong">{n.memoNo}</p>
                     <p className="text-xs text-muted">
-                      {a?.ref} · {userName(users, n.issuedBy)} · {formatDate(n.issuedOn)}
+                      {a?.ref} · {userName(users, n.issuedBy)} · {formatDate(n.issuedOn, locale)}
                     </p>
                   </li>
                 );
@@ -122,33 +124,33 @@ export function EstateWorkspace() {
 
       <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
         <DialogContent
-          title="Upload Estate NOC"
+          title={t("es.dlgTitle")}
           eyebrow={targetApp?.ref}
-          description="The NOC is attached to the file and the file returns to the processing desk."
+          description={t("es.dlgDesc")}
           footer={
             <>
               <Button variant="secondary" onClick={() => setTarget(null)}>
-                Cancel
+                {t("es.cancel")}
               </Button>
               <Button
                 disabled={!file || !memo.trim()}
                 onClick={() => {
                   uploadNoc(target!, memo.trim());
                   setTarget(null);
-                  toast.success("NOC uploaded", "File returned to processing.");
+                  toast.success(t("es.toast"), t("es.toastBody"));
                 }}
               >
-                Attach and return file
+                {t("es.attach")}
               </Button>
             </>
           }
         >
           <div className="space-y-4">
-            <Field label="Memo number" required>
+            <Field label={t("es.memo")} required>
               {(a) => <Input {...a} value={memo} onChange={(e) => setMemo(e.target.value)} className="ref" />}
             </Field>
-            {file ? <p className="rounded-md bg-surface-2 px-3 py-2 text-sm">{file} · sample</p> : <FileDrop label="Signed NOC (PDF)" accept=".pdf" sampleName="estate_noc_signed_sample.pdf" onUploaded={(f) => setFile(f.name)} />}
-            <p className="text-xs text-muted">Uploaded by {me?.name} · recorded in the audit trail.</p>
+            {file ? <p className="rounded-md bg-surface-2 px-3 py-2 text-sm">{t("es.sample", { name: file })}</p> : <FileDrop label={t("es.signedNoc")} accept=".pdf" sampleName="estate_noc_signed_sample.pdf" onUploaded={(f) => setFile(f.name)} />}
+            <p className="text-xs text-muted">{t("es.uploadedBy", { who: me?.name ?? "" })}</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -159,6 +161,8 @@ export function EstateWorkspace() {
 /* ———————————————————————————— Record monitoring (TOR 1.1 · 2.10) ———————————————————————————— */
 
 export function RecordMonitoring() {
+  const { t, term } = useI18n();
+  const L = useLabels();
   const { applications, users } = useRajukData();
   const audit = useDemoStore((s) => s.audit);
   const [level, setLevel] = useState("all");
@@ -183,11 +187,11 @@ export function RecordMonitoring() {
 
   const active = applications.filter(ACTIVE).sort((a, b) => b.holding.days - a.holding.days);
   const cat = {
-    constructed: [["Completed with OC", 412], ["Completed, OC pending", 138], ["Occupied without OC (reported)", 27]],
-    under: [["Foundation", 96], ["Up to plinth", 74], ["Superstructure", 211], ["Finishing", 88]],
-    floor: [["1–5 storeys", 640], ["6–9 storeys", 512], ["10–14 storeys", 141], ["15+ storeys", 38]],
-    usage: [["Residential (A)", 1022], ["Business (E)", 176], ["Mercantile (F)", 81], ["Mixed / other", 52]],
-  }[category].map(([k, v]) => ({ label: k as string, count: v as number }));
+    constructed: [["mo.c.ocDone", 412], ["mo.c.ocPending", 138], ["mo.c.noOc", 27]],
+    under: [["mo.c.foundation", 96], ["mo.c.plinth", 74], ["mo.c.super", 211], ["mo.c.finishing", 88]],
+    floor: [["mo.c.f1", 640], ["mo.c.f2", 512], ["mo.c.f3", 141], ["mo.c.f4", 38]],
+    usage: [["mo.c.res", 1022], ["mo.c.bus", 176], ["mo.c.mer", 81], ["mo.c.mixed", 52]],
+  }[category].map(([k, v]) => ({ label: t(k as MessageKey), count: v as number }));
 
   const exportCsv = () =>
     downloadText(
@@ -199,27 +203,29 @@ export function RecordMonitoring() {
     <div className="space-y-6">
       <PageHeader
         kicker="TOR 1.1 · 2.10"
-        title="Record monitoring"
-        description="Consolidated report of who holds each file, for how long, and how many files each officer has disposed of — down to Building Inspector level."
+        title={t("mo.title")}
+        description={t("mo.desc")}
         actions={
           <>
             <Button variant="secondary" onClick={exportCsv}>
-              <Download /> Excel (CSV)
+              <Download /> {t("mo.csv")}
             </Button>
             <Button variant="secondary" onClick={() => window.print()}>
-              <Printer /> PDF / print
+              <Printer /> {t("mo.print")}
             </Button>
           </>
         }
       />
       <Panel
-        title="Officer register"
-        description="Files held, files over the holding limit and disposal count (demo period)."
+        title={t("mo.register")}
+        description={t("mo.registerDesc")}
         actions={
-          <Select value={level} onChange={(e) => setLevel(e.target.value)} aria-label="Hierarchy level" className="h-8 w-56 text-xs">
-            <option value="all">All levels</option>
+          <Select value={level} onChange={(e) => setLevel(e.target.value)} aria-label={t("mo.level")} className="h-8 w-56 text-xs">
+            <option value="all">{t("mo.allLevels")}</option>
             {levels.map((l) => (
-              <option key={l}>{l}</option>
+              <option key={l} value={l}>
+                {term("desig", l)}
+              </option>
             ))}
           </Select>
         }
@@ -227,14 +233,14 @@ export function RecordMonitoring() {
       >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[40rem] text-left text-sm">
-            <caption className="sr-only">Officer register</caption>
+            <caption className="sr-only">{t("mo.register")}</caption>
             <thead className="bg-surface-2 text-[0.6875rem] uppercase tracking-[0.06em] text-muted">
               <tr>
-                <th scope="col" className="px-5 py-2.5 font-semibold">Officer</th>
-                <th scope="col" className="px-3 py-2.5 text-right font-semibold">Holding</th>
-                <th scope="col" className="px-3 py-2.5 text-right font-semibold">Over limit</th>
-                <th scope="col" className="px-3 py-2.5 text-right font-semibold">Avg days held</th>
-                <th scope="col" className="px-5 py-2.5 text-right font-semibold">Disposed (register)</th>
+                <th scope="col" className="px-5 py-2.5 font-semibold">{t("mo.officer")}</th>
+                <th scope="col" className="px-3 py-2.5 text-right font-semibold">{t("mo.holding")}</th>
+                <th scope="col" className="px-3 py-2.5 text-right font-semibold">{t("mo.over")}</th>
+                <th scope="col" className="px-3 py-2.5 text-right font-semibold">{t("mo.avg")}</th>
+                <th scope="col" className="px-5 py-2.5 text-right font-semibold">{t("mo.disposed")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -246,7 +252,7 @@ export function RecordMonitoring() {
                       <span>
                         <span className="block font-medium text-ink-strong">{r.user.name}</span>
                         <span className="block text-xs text-muted">
-                          {r.user.designation} · {r.user.zone}
+                          {term("desig", r.user.designation)} · {term("zone", r.user.zone)}
                         </span>
                       </span>
                     </span>
@@ -271,16 +277,16 @@ export function RecordMonitoring() {
       </Panel>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Panel title="Holding report" description="Current holder, days held at stage and total working days since submission." bodyClassName="p-0">
+        <Panel title={t("mo.holdingReport")} description={t("mo.holdingDesc")} bodyClassName="p-0">
           <div className="scrollbar-thin max-h-[26rem] overflow-auto">
             <table className="w-full text-left text-sm">
-              <caption className="sr-only">Holding report</caption>
+              <caption className="sr-only">{t("mo.holdingReport")}</caption>
               <thead className="sticky top-0 bg-surface-2 text-[0.6875rem] uppercase tracking-[0.06em] text-muted">
                 <tr>
-                  <th scope="col" className="px-5 py-2.5 font-semibold">File</th>
-                  <th scope="col" className="px-3 py-2.5 font-semibold">Holder</th>
-                  <th scope="col" className="px-3 py-2.5 font-semibold">At stage</th>
-                  <th scope="col" className="px-5 py-2.5 text-right font-semibold">Total</th>
+                  <th scope="col" className="px-5 py-2.5 font-semibold">{t("mo.file")}</th>
+                  <th scope="col" className="px-3 py-2.5 font-semibold">{t("mo.holder")}</th>
+                  <th scope="col" className="px-3 py-2.5 font-semibold">{t("mo.atStage")}</th>
+                  <th scope="col" className="px-5 py-2.5 text-right font-semibold">{t("mo.total")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -290,13 +296,13 @@ export function RecordMonitoring() {
                       <Link href={`/rajuk/files/${a.id}`} className="ref text-ink-strong hover:text-teal-700">
                         {a.ref}
                       </Link>
-                      <span className="block text-xs text-muted">{STAGE_LABEL[a.stage]}</span>
+                      <span className="block text-xs text-muted">{L.stage(a.stage)}</span>
                     </td>
-                    <td className="max-w-[10rem] truncate px-3 py-2.5">{a.holderName ?? <span className="text-muted">Queue / applicant</span>}</td>
+                    <td className="max-w-[10rem] truncate px-3 py-2.5">{a.holderName ?? <span className="text-muted">{t("mo.queue")}</span>}</td>
                     <td className="px-3 py-2.5">
                       <HoldingIndicator app={a} />
                     </td>
-                    <td className="tabular px-5 py-2.5 text-right">{workingDaysBetween(a.submittedAt ?? a.createdAt)} d</td>
+                    <td className="tabular px-5 py-2.5 text-right">{t("mo.days", { n: workingDaysBetween(a.submittedAt ?? a.createdAt) })}</td>
                   </tr>
                 ))}
               </tbody>
@@ -304,26 +310,26 @@ export function RecordMonitoring() {
           </div>
         </Panel>
         <ChartFrame
-          title="Advanced reporting categories"
-          description="Illustrative counts for the TOR 1.1 report categories."
-          table={{ columns: ["Category", "Buildings"], rows: cat.map((c) => [c.label, c.count]) }}
+          title={t("mo.cat")}
+          description={t("mo.catDesc")}
+          table={{ columns: [t("mo.category"), t("mo.buildings")], rows: cat.map((c) => [c.label, c.count]) }}
           actions={
             <SegmentedControl
               size="sm"
-              label="Report category"
+              label={t("mo.reportCat")}
               value={category}
               onChange={setCategory}
               options={[
-                { value: "constructed", label: "Constructed" },
-                { value: "under", label: "Under constr." },
-                { value: "floor", label: "Floor-wise" },
-                { value: "usage", label: "Usage-wise" },
+                { value: "constructed", label: t("mo.constructed") },
+                { value: "under", label: t("mo.under") },
+                { value: "floor", label: t("mo.floor") },
+                { value: "usage", label: t("mo.usage") },
               ]}
             />
           }
           height={260}
         >
-          <HBarChart data={cat} yKey="label" series={[{ key: "count", label: "Buildings", color: SERIES[0] }]} />
+          <HBarChart data={cat} yKey="label" series={[{ key: "count", label: t("mo.buildings"), color: SERIES[0] }]} />
         </ChartFrame>
       </div>
     </div>
@@ -333,6 +339,8 @@ export function RecordMonitoring() {
 /* ———————————————————————————— File reverts (TOR 2.12) ———————————————————————————— */
 
 export function FileReverts() {
+  const { t, locale } = useI18n();
+  const L = useLabels();
   const { applications, users, me } = useRajukData();
   const reverts = useDemoStore((s) => s.reverts);
   const requestRevert = useDemoStore((s) => s.requestRevert);
@@ -350,21 +358,21 @@ export function FileReverts() {
     <div>
       <PageHeader
         kicker="TOR 2.12"
-        title="File revert requests"
-        description="Move an on-process, archived, approved or rejected file back to an earlier desk — only with a recorded reason and a second approval."
+        title={t("rvt.title")}
+        description={t("rvt.desc")}
         actions={
           role === "officer" && (
             <Button onClick={() => { setOpen(true); setAppId(eligible[0]?.id ?? ""); setReason(""); }}>
-              <ArrowLeftRight /> New revert request
+              <ArrowLeftRight /> {t("rvt.new")}
             </Button>
           )
         }
       />
       <Callout tone="info" className="mb-5">
-        {isApprover ? "As administrator you approve or decline requests raised by officers." : "Requests are approved by an administrator (approval authority to be confirmed by RAJUK)."}
+        {isApprover ? t("rvt.adminNote") : t("rvt.note")}
       </Callout>
       {reverts.length === 0 ? (
-        <EmptyState title="No revert requests" />
+        <EmptyState title={t("rvt.none")} />
       ) : (
         <ul className="space-y-3">
           {reverts.map((r) => {
@@ -377,22 +385,22 @@ export function FileReverts() {
                       <Link href={`/rajuk/files/${r.applicationId}`} className="ref font-medium text-ink-strong hover:text-teal-700">
                         {a?.ref}
                       </Link>
-                      <Tag>{r.fromState.replace("_", " ")} → {STAGE_LABEL[r.toStage]}</Tag>
-                      <Badge tone={r.status === "approved" ? "success" : r.status === "declined" ? "danger" : "warning"}>{r.status}</Badge>
+                      <Tag>{t(`rvt.from.${r.fromState}`)} → {L.stage(r.toStage)}</Tag>
+                      <Badge tone={r.status === "approved" ? "success" : r.status === "declined" ? "danger" : "warning"}>{t(`rvt.st.${r.status}`)}</Badge>
                     </div>
                     <p className="mt-2 text-sm text-ink">{r.reason}</p>
                     <p className="mt-1 text-xs text-muted">
-                      Requested by {userName(users, r.requestedBy)} · {formatRelative(r.requestedAt)}
-                      {r.decidedBy && ` · decided by ${userName(users, r.decidedBy)} ${formatRelative(r.decidedAt!)}`}
+                      {t("rvt.requested", { who: userName(users, r.requestedBy), when: formatRelative(r.requestedAt, undefined, locale) })}
+                      {r.decidedBy && t("rvt.decided", { who: userName(users, r.decidedBy), when: formatRelative(r.decidedAt!, undefined, locale) })}
                     </p>
                   </div>
                   {r.status === "pending" && isApprover && (
                     <div className="flex gap-2">
                       <Button size="sm" variant="danger-outline" onClick={() => setDecision({ id: r.id, approve: false })}>
-                        Decline
+                        {t("rvt.decline")}
                       </Button>
                       <Button size="sm" onClick={() => setDecision({ id: r.id, approve: true })}>
-                        Approve revert
+                        {t("rvt.approve")}
                       </Button>
                     </div>
                   )}
@@ -405,55 +413,55 @@ export function FileReverts() {
       <ConfirmDialog
         open={open}
         onOpenChange={setOpen}
-        title="Request a file revert"
-        description="The request is recorded and must be approved before the file moves."
-        confirmLabel="Submit request"
+        title={t("rvt.q")}
+        description={t("rvt.qDesc")}
+        confirmLabel={t("rvt.submit")}
         confirmDisabled={!appId || reason.trim().length < 15}
         onConfirm={() => {
           requestRevert(appId, from, reason.trim());
           setOpen(false);
-          toast.success("Revert requested", "Sent for approval.");
+          toast.success(t("rvt.toast"), t("rvt.toastBody"));
         }}
       >
         <div className="space-y-4">
-          <Field label="File" required>
+          <Field label={t("rvt.file")} required>
             {(a) => (
               <Select {...a} value={appId} onChange={(e) => setAppId(e.target.value)}>
                 {eligible.map((x) => (
                   <option key={x.id} value={x.id}>
-                    {x.ref} — {x.status}
+                    {x.ref} — {L.status(x.status)}
                   </option>
                 ))}
               </Select>
             )}
           </Field>
-          <Field label="Current state" required>
+          <Field label={t("rvt.state")} required>
             {(a) => (
               <Select {...a} value={from} onChange={(e) => setFrom(e.target.value as RevertRequest["fromState"])}>
-                <option value="on_process">On process</option>
-                <option value="archive">Archive</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
+                <option value="on_process">{t("rvt.from.on_process")}</option>
+                <option value="archive">{t("rvt.from.archive")}</option>
+                <option value="approved">{t("rvt.from.approved")}</option>
+                <option value="rejected">{t("rvt.from.rejected")}</option>
               </Select>
             )}
           </Field>
-          <Field label="Reason" required hint="At least 15 characters.">
+          <Field label={t("rvt.reason")} required hint={t("rvt.reasonHint")}>
             {(a) => <Textarea {...a} rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />}
           </Field>
-          <p className="text-xs text-muted">Requested by {me?.name}</p>
+          <p className="text-xs text-muted">{t("rvt.by", { who: me?.name ?? "" })}</p>
         </div>
       </ConfirmDialog>
       <ConfirmDialog
         open={!!decision}
         onOpenChange={(o) => !o && setDecision(null)}
-        title={decision?.approve ? "Approve this revert?" : "Decline this revert?"}
-        description={decision?.approve ? "The file returns to the requesting officer's desk and the change is audited." : "The file stays in its current state."}
+        title={decision?.approve ? t("rvt.qApprove") : t("rvt.qDecline")}
+        description={decision?.approve ? t("rvt.dApprove") : t("rvt.dDecline")}
         tone={decision?.approve ? "primary" : "danger"}
-        confirmLabel={decision?.approve ? "Yes, approve" : "Yes, decline"}
+        confirmLabel={decision?.approve ? t("rvt.yesApprove") : t("rvt.yesDecline")}
         onConfirm={() => {
           decideRevert(decision!.id, decision!.approve);
           setDecision(null);
-          toast.success(decision?.approve ? "Revert approved" : "Revert declined");
+          toast.success(decision?.approve ? t("rvt.tApproved") : t("rvt.tDeclined"));
         }}
       />
     </div>
@@ -463,6 +471,7 @@ export function FileReverts() {
 /* ———————————————————————————— 2C file management (TOR 2.7) ———————————————————————————— */
 
 export function TwoCFiles() {
+  const { t, term, locale } = useI18n();
   const files = useDemoStore((s) => s.twoC);
   const users = useDemoStore((s) => s.users);
   const move = useDemoStore((s) => s.moveTwoC);
@@ -484,24 +493,24 @@ export function TwoCFiles() {
 
   return (
     <div>
-      <PageHeader kicker="TOR 2.7 · Building Construction Act, 1952" title="2C file management" description="Register, document and track 2C files with a complete movement history." />
+      <PageHeader kicker={t("tc.kicker")} title={t("tc.title")} description={t("tc.desc")} />
       <Callout tone="demo" className="mb-5">
-        Field structure is illustrative. Legal requirements for 2C documentation, notices and record-keeping must be confirmed with RAJUK Law and Development Control.
+        {t("tc.note")}
       </Callout>
       <div className="grid gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div>
-          <SegmentedControl className="mb-3" label="Filter" value={filter} onChange={setFilter} options={[{ value: "open", label: "Open" }, { value: "all", label: "All" }]} />
+          <SegmentedControl className="mb-3" label={t("tc.filter")} value={filter} onChange={setFilter} options={[{ value: "open", label: t("tc.open") }, { value: "all", label: t("tc.all") }]} />
           <ul className="space-y-2">
             {list.map((x) => (
               <li key={x.id}>
                 <button type="button" onClick={() => setSel(x.id)} aria-current={sel === x.id ? "true" : undefined} className={cn("w-full rounded-xl border p-4 text-left transition-colors", sel === x.id ? "border-teal-600 bg-teal-50/50" : "border-line bg-surface hover:border-slate-ink/40")}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="ref text-sm font-medium text-ink-strong">{x.fileNo}</span>
-                    <Badge tone={STATUS_TONE[x.status]}>{x.status.replace("_", " ")}</Badge>
+                    <Badge tone={STATUS_TONE[x.status]}>{t(`tc.st.${x.status}`)}</Badge>
                   </div>
                   <p className="mt-1 text-sm text-ink">{x.subject}</p>
                   <p className="mt-0.5 text-xs text-muted">
-                    {x.premises} · custodian {userName(users, x.custodianId)}
+                    {t("tc.custodian", { premises: x.premises, who: userName(users, x.custodianId) })}
                   </p>
                 </button>
               </li>
@@ -511,30 +520,30 @@ export function TwoCFiles() {
         {f ? (
           <Panel
             title={f.fileNo}
-            description={`${f.subject} · opened ${formatDate(f.openedOn)}`}
+            description={t("tc.opened", { subject: f.subject, date: formatDate(f.openedOn, locale) })}
             actions={
               canManage &&
               f.status !== "closed" && (
                 <Button size="sm" variant="secondary" onClick={() => { setMoving(true); setTo(officers[0]?.id ?? ""); setNote(""); }}>
-                  <ArrowLeftRight /> Move file
+                  <ArrowLeftRight /> {t("tc.move")}
                 </Button>
               )
             }
           >
             <Tabs defaultValue="movements">
               <TabsList>
-                <TabsTrigger value="movements">Movement log</TabsTrigger>
-                <TabsTrigger value="docs">Documents ({f.documents.length})</TabsTrigger>
+                <TabsTrigger value="movements">{t("tc.log")}</TabsTrigger>
+                <TabsTrigger value="docs">{t("tc.docs", { n: f.documents.length })}</TabsTrigger>
               </TabsList>
               <TabsContent value="movements" className="pt-4">
                 {f.movements.length === 0 ? (
-                  <p className="text-sm text-muted">No movements recorded.</p>
+                  <p className="text-sm text-muted">{t("tc.noMoves")}</p>
                 ) : (
                   <Timeline
                     items={[...f.movements].reverse().map((m, i) => ({
                       id: String(i),
                       title: `${userName(users, m.fromId)} → ${userName(users, m.toId)}`,
-                      meta: formatDateTime(m.at),
+                      meta: formatDateTime(m.at, locale),
                       body: m.note,
                       tone: i === 0 ? "current" : "default",
                     }))}
@@ -547,72 +556,72 @@ export function TwoCFiles() {
                     <li key={d.name} className="flex items-center gap-3 rounded-lg border border-line px-3 py-2 text-sm">
                       <FolderArchive className="size-4 text-subtle" aria-hidden />
                       <span className="flex-1 text-ink-strong">{d.name}</span>
-                      <span className="text-xs text-muted">{formatDate(d.addedOn)}</span>
+                      <span className="text-xs text-muted">{formatDate(d.addedOn, locale)}</span>
                     </li>
                   ))}
                 </ul>
                 {canManage && (
                   <Button size="sm" variant="ghost" className="mt-3" onClick={() => { setAdding(true); setDocName(""); setDocFile(null); }}>
-                    <FilePlus2 /> Add document
+                    <FilePlus2 /> {t("tc.addDoc")}
                   </Button>
                 )}
               </TabsContent>
             </Tabs>
           </Panel>
         ) : (
-          <EmptyState icon={Building2} title="Select a file" />
+          <EmptyState icon={Building2} title={t("tc.select")} />
         )}
       </div>
       <ConfirmDialog
         open={adding}
         onOpenChange={setAdding}
-        title="Add a document to this 2C file"
-        description="The document is listed in the file record and the addition is audited."
-        confirmLabel="Add document"
+        title={t("tc.qAdd")}
+        description={t("tc.qAddDesc")}
+        confirmLabel={t("tc.addDoc")}
         confirmDisabled={!docName.trim() || !docFile}
         onConfirm={() => {
           addDoc(f!.id, docName.trim());
           setAdding(false);
-          toast.success("Document added to the 2C file");
+          toast.success(t("tc.added"));
         }}
       >
         <div className="space-y-4">
-          <Field label="Document title" required hint="e.g. Hearing notice, Site inspection report">
+          <Field label={t("tc.docTitle")} required hint={t("tc.docHint")}>
             {(a) => <Input {...a} value={docName} onChange={(e) => setDocName(e.target.value)} />}
           </Field>
           {docFile ? (
-            <p className="rounded-md bg-surface-2 px-3 py-2 text-sm">{docFile} · sample</p>
+            <p className="rounded-md bg-surface-2 px-3 py-2 text-sm">{t("es.sample", { name: docFile })}</p>
           ) : (
-            <FileDrop compact label="Scanned document" accept=".pdf" sampleName="2c_record_sample.pdf" onUploaded={(x) => setDocFile(x.name)} />
+            <FileDrop compact label={t("tc.scanned")} accept=".pdf" sampleName="2c_record_sample.pdf" onUploaded={(x) => setDocFile(x.name)} />
           )}
         </div>
       </ConfirmDialog>
       <ConfirmDialog
         open={moving}
         onOpenChange={setMoving}
-        title="Move this 2C file?"
-        description="The new custodian becomes responsible and the movement is logged."
-        confirmLabel="Yes, move file"
+        title={t("tc.qMove")}
+        description={t("tc.qMoveDesc")}
+        confirmLabel={t("tc.yesMove")}
         confirmDisabled={!to || !note.trim()}
         onConfirm={() => {
           move(f!.id, to, note.trim());
           setMoving(false);
-          toast.success("File moved");
+          toast.success(t("tc.moved"));
         }}
       >
         <div className="space-y-4">
-          <Field label="New custodian" required>
+          <Field label={t("tc.newCustodian")} required>
             {(a) => (
               <Select {...a} value={to} onChange={(e) => setTo(e.target.value)}>
                 {officers.map((u) => (
                   <option key={u.id} value={u.id}>
-                    {u.name} — {u.designation}
+                    {u.name} — {term("desig", u.designation)}
                   </option>
                 ))}
               </Select>
             )}
           </Field>
-          <Field label="Purpose" required>
+          <Field label={t("tc.purpose")} required>
             {(a) => <Textarea {...a} rows={2} value={note} onChange={(e) => setNote(e.target.value)} />}
           </Field>
         </div>

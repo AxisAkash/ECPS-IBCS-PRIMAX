@@ -3,6 +3,7 @@
 import { BarChart3, Table2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
@@ -69,6 +70,7 @@ export function ChartFrame({
   className?: string;
   height?: number;
 }) {
+  const { t } = useI18n();
   const [asTable, setAsTable] = useState(false);
   return (
     <figure className={cn("rounded-xl border border-line bg-surface shadow-xs", className)}>
@@ -86,13 +88,13 @@ export function ChartFrame({
             className="inline-flex h-7 items-center gap-1.5 rounded-md border border-line px-2 text-xs text-muted hover:text-ink-strong"
           >
             {asTable ? <BarChart3 className="size-3.5" /> : <Table2 className="size-3.5" />}
-            {asTable ? "Chart" : "Table"}
+            {asTable ? t("ui.chart") : t("ui.table")}
           </button>
         </div>
       </figcaption>
       <div className="px-3 pb-4 pt-3">
         {series && series.length > 1 && !asTable && (
-          <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 px-2 text-xs text-muted" aria-label="Legend">
+          <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 px-2 text-xs text-muted" aria-label={t("ui.legend")}>
             {series.map((s, i) => (
               <li key={s.key} className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-sm" style={{ background: s.color ?? SERIES[i] }} aria-hidden />
@@ -131,7 +133,7 @@ export function ChartFrame({
             {children}
           </div>
         )}
-        {!asTable && <p className="sr-only">Chart. Use the Table button for the underlying values.</p>}
+        {!asTable && <p className="sr-only">{t("ui.chartSr")}</p>}
       </div>
     </figure>
   );

@@ -1,7 +1,10 @@
+"use client";
+
 import { Check, ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Tone } from "@/lib/domain/workflow";
+import { useI18n } from "@/lib/i18n";
 import { cn, initials } from "@/lib/utils";
 
 /* ———————————————————————————— Badge ———————————————————————————— */
@@ -86,8 +89,9 @@ export function Panel({
 /* ———————————————————————————— Page header & breadcrumbs ———————————————————————————— */
 
 export function Breadcrumbs({ items, className }: { items: Array<{ label: string; href?: string }>; className?: string }) {
+  const { t } = useI18n();
   return (
-    <nav aria-label="Breadcrumb" className={className}>
+    <nav aria-label={t("ui.breadcrumb")} className={className}>
       <ol className="flex flex-wrap items-center gap-1 text-[0.8125rem] text-muted">
         {items.map((it, i) => (
           <li key={i} className="flex items-center gap-1">
@@ -256,8 +260,9 @@ export function Stepper({
   orientation?: "vertical" | "horizontal";
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
-    <ol className={cn(orientation === "vertical" ? "space-y-0.5" : "flex items-center gap-2 overflow-x-auto", className)} aria-label="Progress">
+    <ol className={cn(orientation === "vertical" ? "space-y-0.5" : "flex items-center gap-2 overflow-x-auto", className)} aria-label={t("ui.progress")}>
       {steps.map((s, i) => {
         const clickable = onSelect && s.state !== "upcoming";
         const inner = (
