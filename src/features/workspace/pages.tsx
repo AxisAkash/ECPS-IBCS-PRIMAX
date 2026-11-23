@@ -12,9 +12,9 @@ import { Callout, EmptyState, SimulatedTag } from "@/components/ui/feedback";
 import { Input, SegmentedControl } from "@/components/ui/form";
 import { ConfirmDialog, Dialog, DialogContent } from "@/components/ui/overlay";
 import { toast } from "@/components/ui/toast";
-import { DOCUMENT_CATEGORY_LABEL, PROFESSIONAL_ROLE_LABEL, SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application, DocumentRecord } from "@/lib/domain/types";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { notifBody, notifTitle } from "@/lib/i18n/notify";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, formatBDT, formatDate, formatDateTime, formatRelative } from "@/lib/utils";
@@ -26,6 +26,7 @@ import { PaymentDialog } from "./payment-dialog";
 
 export function ApplicationsListPage() {
   const { t, locale } = useI18n();
+  const L = useLabels();
   const apps = useMyApplications();
   const role = useDemoStore((s) => s.session?.role);
   const [filter, setFilter] = useState<"all" | "action" | "progress" | "done">("all");
@@ -70,7 +71,7 @@ export function ApplicationsListPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-ink-strong group-hover:text-teal-700">{a.title}</p>
                       <p className="mt-0.5 text-xs text-muted">
-                        <span className="ref">{a.ref}</span> · {SERVICE_SHORT_LABEL[a.type]}
+                        <span className="ref">{a.ref}</span> · {L.service(a.type)}
                       </p>
                     </div>
                     <StatusBadge status={a.status} />
@@ -92,24 +93,26 @@ export function ApplicationsListPage() {
 }
 
 export function DocumentsPage() {
+  const { t } = useI18n();
+  const L = useLabels();
   const apps = useMyApplications();
   const [preview, setPreview] = useState<{ doc: DocumentRecord; app: Application } | null>(null);
   const [q, setQ] = useState("");
   return (
     <div>
-      <PageHeader title="Documents" description="All files attached to your applications, with their version history. Every file in this prototype is a fictional sample." />
+      <PageHeader title={t("wp.docs.title")} description={t("wp.docs.desc")} />
       <div className="mb-5 w-full sm:w-80">
-        <Input leading={<Search />} placeholder="Search file names" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search documents" />
+        <Input leading={<Search />} placeholder={t("wp.docs.search")} value={q} onChange={(e) => setQ(e.target.value)} aria-label={t("wp.docs.searchLabel")} />
       </div>
       <div className="space-y-5">
         {apps.map((a) => {
           const docs = a.documents.filter((d) => !q || d.name.toLowerCase().includes(q.toLowerCase()));
           if (!docs.length) return null;
           return (
-            <Panel key={a.id} title={a.title} description={`${a.ref} · ${docs.filter((d) => d.status !== "superseded").length} current files`}>
+            <Panel key={a.id} title={a.title} description={t("wp.docs.current", { ref: a.ref, n: docs.filter((d) => d.status !== "superseded").length })}>
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {docs.map((d) => (
-                  <FileRow key={d.id} name={d.name} sizeKb={d.sizeKb} kind={d.previewKind} status={d.status} meta={`${DOCUMENT_CATEGORY_LABEL[d.category]} · v${d.version}`} onPreview={() => setPreview({ doc: d, app: a })} />
+                  <FileRow key={d.id} name={d.name} sizeKb={d.sizeKb} kind={d.previewKind} status={d.status} meta={`${L.doc(d.category)} · v${d.version}`} onPreview={() => setPreview({ doc: d, app: a })} />
                 ))}
               </div>
             </Panel>
@@ -117,7 +120,7 @@ export function DocumentsPage() {
         })}
       </div>
       <Dialog open={preview !== null} onOpenChange={(o) => !o && setPreview(null)}>
-        <DialogContent size="xl" eyebrow="Document preview · sample" title={preview?.doc.name ?? ""}>
+        <DialogContent size="xl" eyebrow={t("wp.docs.preview")} title={preview?.doc.name ?? ""}>
           {preview && <DocumentPreview doc={preview.doc} app={preview.app} />}
         </DialogContent>
       </Dialog>
@@ -142,7 +145,7 @@ export function PaymentsPage() {
       ) : (
         <div className="overflow-hidden rounded-xl border border-line bg-surface">
           <table className="w-full text-left text-sm">
-            <caption className="sr-only">Payments</caption>
+            <caption className="sr-only">{t("wp.pay.caption")}</caption>
             <thead className="bg-surface-2 text-xs text-muted">
               <tr>
                 <th scope="col" className="px-4 py-2.5 font-medium">{t("pays.app")}</th>
@@ -161,7 +164,7 @@ export function PaymentsPage() {
                       <p className="ref text-ink-strong">{p.applicationRef}</p>
                       <p className="max-w-[16rem] truncate text-xs text-muted">{a.title}</p>
                     </td>
-                    <td className="hidden px-4 py-3 capitalize md:table-cell">{p.category.replace("_", " ")}</td>
+                    <td className="hidden px-4 py-3 md:table-cell">{t(`paycat.${p.category}`)}</td>
                     <td className="tabular hidden px-4 py-3 text-muted sm:table-cell">{formatDate(p.paidAt ?? p.createdAt, locale)}</td>
                     <td className="tabular px-4 py-3 text-right font-medium text-ink-strong">{formatBDT(p.amount, locale)}</td>
                     <td className="px-4 py-3 text-right">
@@ -170,7 +173,7 @@ export function PaymentsPage() {
                           {t("ws.pay")}
                         </Button>
                       ) : (
-                        <Badge tone={p.status === "paid" ? "success" : "danger"}>{p.status}</Badge>
+                        <Badge tone={p.status === "paid" ? "success" : "danger"}>{t(`pst.${p.status}`)}</Badge>
                       )}
                     </td>
                   </tr>
@@ -215,7 +218,7 @@ export function NotificationsPage() {
               <div className="min-w-0 flex-1">
                 <p className="font-medium text-ink-strong">{notifTitle(n, locale)}</p>
                 <p className="mt-0.5 text-sm text-muted">{notifBody(n, locale)}</p>
-                <p className="mt-1 text-xs text-subtle">{formatDateTime(n.at)}</p>
+                <p className="mt-1 text-xs text-subtle">{formatDateTime(n.at, locale)}</p>
               </div>
               {n.href && (
                 <Button asChild size="sm" variant="ghost" onClick={() => markRead(n.id)}>
@@ -231,18 +234,20 @@ export function NotificationsPage() {
 }
 
 export function InvitationsPage() {
+  const { t, locale } = useI18n();
+  const L = useLabels();
   const invites = useInvitations();
   const users = useUsers();
   const pending = invites.filter((i) => i.participation.status === "invited");
   const history = invites.filter((i) => i.participation.status !== "invited");
   return (
     <div>
-      <PageHeader title="Invitations" description="Owners invite you to participate in their applications. Accepting records you as the responsible professional for your discipline." />
+      <PageHeader title={t("wp.inv.title")} description={t("wp.inv.desc")} />
       <section className="mb-8">
-        <h2 className="mb-3 font-display text-[0.9375rem] font-semibold text-ink-strong">Awaiting your response ({pending.length})</h2>
-        {pending.length === 0 ? <EmptyState icon={MailPlus} title="No pending invitations" /> : <div className="space-y-3">{pending.map((i) => <InvitationCard key={i.app.id + i.participation.role} app={i.app} participation={i.participation} />)}</div>}
+        <h2 className="mb-3 font-display text-[0.9375rem] font-semibold text-ink-strong">{t("wp.inv.awaiting", { n: pending.length })}</h2>
+        {pending.length === 0 ? <EmptyState icon={MailPlus} title={t("wp.inv.none")} /> : <div className="space-y-3">{pending.map((i) => <InvitationCard key={i.app.id + i.participation.role} app={i.app} participation={i.participation} />)}</div>}
       </section>
-      <Panel title="Response history" bodyClassName="p-0">
+      <Panel title={t("wp.inv.history")} bodyClassName="p-0">
         <ul className="divide-y divide-line">
           {history.map(({ app, participation }) => (
             <li key={app.id + participation.role + participation.invitedAt} className="flex flex-wrap items-center gap-3 px-5 py-3 text-sm">
@@ -251,10 +256,10 @@ export function InvitationsPage() {
                   {app.title}
                 </Link>
                 <p className="text-xs text-muted">
-                  {PROFESSIONAL_ROLE_LABEL[participation.role]} · owner {userName(users, app.applicantId)} · responded {participation.respondedAt ? formatRelative(participation.respondedAt) : "—"}
+                  {t("wp.inv.meta", { role: L.pro(participation.role), owner: userName(users, app.applicantId), when: participation.respondedAt ? formatRelative(participation.respondedAt, undefined, locale) : "—" })}
                 </p>
               </div>
-              <Badge tone={participation.status === "accepted" ? "success" : participation.status === "declined" ? "danger" : "neutral"}>{participation.status}</Badge>
+              <Badge tone={participation.status === "accepted" ? "success" : participation.status === "declined" ? "danger" : "neutral"}>{t(`pst2.${participation.status}`)}</Badge>
             </li>
           ))}
         </ul>
@@ -264,6 +269,7 @@ export function InvitationsPage() {
 }
 
 export function ProfilePage() {
+  const { t, term, locale } = useI18n();
   const me = useMe();
   const security = useDemoStore((s) => s.security);
   const allDevices = useDemoStore((s) => s.trustedDevices);
@@ -273,53 +279,53 @@ export function ProfilePage() {
   if (!me) return null;
   return (
     <div>
-      <PageHeader title="Profile & security" description="Your account details and sign-in security. Personal information shown here is fictional." />
+      <PageHeader title={t("wp.pr.title")} description={t("wp.pr.desc")} />
       <div className="grid gap-6 lg:grid-cols-2">
-        <Panel title="Account">
+        <Panel title={t("wp.pr.account")}>
           <KeyValues
             items={[
-              { k: "Name", v: me.name },
-              { k: "Name (Bangla)", v: me.nameBn ?? "—" },
-              { k: "Role", v: me.designation },
-              { k: "Email", v: me.email },
-              { k: "Mobile", v: me.mobile, mono: true },
-              ...(me.membership ? [{ k: "Membership", v: `${me.membership.body} ${me.membership.number}` }] : [{ k: "NID", v: "•••• •••• 4711 (fictional)" }]),
+              { k: t("wp.pr.name"), v: me.name },
+              { k: t("wp.pr.nameBn"), v: me.nameBn ?? "—" },
+              { k: t("wp.pr.role"), v: term("desig", me.designation) },
+              { k: t("wp.pr.email"), v: me.email },
+              { k: t("wp.pr.mobile"), v: me.mobile, mono: true },
+              ...(me.membership ? [{ k: t("wp.pr.membership"), v: `${me.membership.body} ${me.membership.number}` }] : [{ k: t("wp.pr.nid"), v: t("wp.pr.nidVal") }]),
             ]}
           />
         </Panel>
-        <Panel title="Sign-in security" actions={<SimulatedTag />}>
+        <Panel title={t("wp.pr.security")} actions={<SimulatedTag />}>
           <ul className="space-y-4 text-sm">
             <li className="flex items-start gap-3">
               <ShieldCheck className="mt-0.5 size-4 text-success-700" aria-hidden />
               <div className="flex-1">
-                <p className="font-medium text-ink-strong">One-time code on untrusted devices</p>
-                <p className="text-xs text-muted">{security.otpForUntrustedDevice ? "On" : "Off"} · set by RAJUK policy</p>
+                <p className="font-medium text-ink-strong">{t("wp.pr.otp")}</p>
+                <p className="text-xs text-muted">{t("wp.pr.policy", { state: security.otpForUntrustedDevice ? t("wp.pr.on") : t("wp.pr.off") })}</p>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <KeyRound className="mt-0.5 size-4 text-slate-ink" aria-hidden />
               <div className="flex-1">
-                <p className="font-medium text-ink-strong">Password</p>
-                <p className="text-xs text-muted">Must be changed every {security.password.expiryDays} days · minimum {security.password.minLength} characters</p>
+                <p className="font-medium text-ink-strong">{t("wp.pr.password")}</p>
+                <p className="text-xs text-muted">{t("wp.pr.pwRule", { days: security.password.expiryDays, min: security.password.minLength })}</p>
               </div>
               <Button asChild size="sm" variant="secondary">
-                <Link href="/sign-in/change-password">Change</Link>
+                <Link href="/sign-in/change-password">{t("wp.pr.change")}</Link>
               </Button>
             </li>
           </ul>
-          <h3 className="mb-2 mt-6 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted">Trusted devices</h3>
+          <h3 className="mb-2 mt-6 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-muted [:lang(bn)_&]:font-sans [:lang(bn)_&]:text-xs [:lang(bn)_&]:normal-case [:lang(bn)_&]:tracking-normal">{t("wp.pr.devices")}</h3>
           {devices.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-line-strong px-3 py-3 text-sm text-muted">No trusted devices. You will be asked for a one-time code on every new device.</p>
+            <p className="rounded-lg border border-dashed border-line-strong px-3 py-3 text-sm text-muted">{t("wp.pr.noDevices")}</p>
           ) : (
             <ul className="divide-y divide-line rounded-lg border border-line text-sm">
               {devices.map((d) => (
                 <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
                   {d.kind === "laptop" ? <Laptop className="size-4 text-subtle" aria-hidden /> : <Smartphone className="size-4 text-subtle" aria-hidden />}
-                  <span className="flex-1">{d.label}</span>
-                  <span className="text-xs text-muted">{d.label === "This browser" ? "Now" : formatRelative(d.lastSeenAt)}</span>
+                  <span className="flex-1">{term("device", d.label)}</span>
+                  <span className="text-xs text-muted">{d.label === "This browser" ? t("wp.pr.now") : formatRelative(d.lastSeenAt, undefined, locale)}</span>
                   {d.label !== "This browser" && (
-                    <Button size="xs" variant="ghost" onClick={() => setRemoving(d.id)} aria-label={`Remove ${d.label}`}>
-                      Remove
+                    <Button size="xs" variant="ghost" onClick={() => setRemoving(d.id)} aria-label={t("wp.pr.removeAria", { device: term("device", d.label) })}>
+                      {t("wp.pr.remove")}
                     </Button>
                   )}
                 </li>
@@ -329,17 +335,17 @@ export function ProfilePage() {
           <ConfirmDialog
             open={!!removing}
             onOpenChange={(o) => !o && setRemoving(null)}
-            title="Remove this trusted device?"
-            description="The next sign-in from that device will require a one-time code (TOR 1.9)."
-            confirmLabel="Yes, remove"
+            title={t("wp.pr.qRemove")}
+            description={t("wp.pr.qRemoveDesc")}
+            confirmLabel={t("wp.pr.yesRemove")}
             tone="danger"
             onConfirm={() => {
               removeDevice(removing!);
               setRemoving(null);
-              toast.success("Device removed", "A one-time code will be required next time.");
+              toast.success(t("wp.pr.removed"), t("wp.pr.removedBody"));
             }}
           />
-          <p className="mt-3 text-xs text-muted">Automatic sign-out after {security.idleTimeoutMinutes} minutes without activity.</p>
+          <p className="mt-3 text-xs text-muted">{t("wp.pr.idle", { n: security.idleTimeoutMinutes })}</p>
         </Panel>
       </div>
     </div>
@@ -347,12 +353,13 @@ export function ProfilePage() {
 }
 
 export function SupportPage() {
+  const { t } = useI18n();
   return (
     <div>
-      <PageHeader title="Support" description="Raise a request with the ECPS helpdesk and follow its progress. Every request receives a tracking number (TOR §6)." />
+      <PageHeader title={t("wp.sup.title")} description={t("wp.sup.desc")} />
       <HelpdeskForUser />
       <p className="mt-6 flex items-center gap-2 text-xs text-muted">
-        <LifeBuoy className="size-3.5" aria-hidden /> Helpdesk operates during office hours. Response targets will follow the SLA agreed with RAJUK.
+        <LifeBuoy className="size-3.5" aria-hidden /> {t("wp.sup.hours")}
       </p>
     </div>
   );

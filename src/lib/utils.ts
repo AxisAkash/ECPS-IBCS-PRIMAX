@@ -67,7 +67,8 @@ export function formatDate(iso: string | undefined, locale: Locale = "en", opts?
 }
 
 export function formatDateTime(iso: string | undefined, locale: Locale = "en") {
-  return formatDate(iso, locale, { hour: "2-digit", minute: "2-digit" });
+  // Bangla uses the 24-hour clock so no Latin "AM/PM" appears in Bangla text.
+  return formatDate(iso, locale, { hour: "2-digit", minute: "2-digit", ...(locale === "bn" ? { hourCycle: "h23" as const } : {}) });
 }
 
 export function formatRelative(iso: string, now = Date.now(), locale: Locale = "en"): string {

@@ -13,7 +13,6 @@ import { EmptyState } from "@/components/ui/feedback";
 import { Input, SegmentedControl, Select } from "@/components/ui/form";
 import { ZONES } from "@/lib/domain/catalog";
 import type { ApplicationStatus } from "@/lib/domain/types";
-import { STAGE_SHORT } from "@/lib/domain/workflow";
 import { useI18n } from "@/lib/i18n";
 import { useLabels } from "@/lib/i18n/labels";
 import { cn, downloadText, formatDate, toCsv } from "@/lib/utils";
@@ -80,7 +79,7 @@ export function useInboxColumns(): ColumnDef<EnrichedApplication, unknown>[] {
         accessorFn: (r) => r.stage,
         cell: ({ row: { original: a } }) => (
           <span className="whitespace-nowrap" title={L.stage(a.stage)}>
-            <span className="ref mr-1.5 text-[0.6875rem] text-subtle">{STAGE_SHORT[a.stage]}</span>
+            <span className="ref mr-1.5 text-[0.6875rem] text-subtle">{t(`sts.${a.stage}`)}</span>
             {a.stage === "department_review" && a.department ? t("ib.deptStage", { dept: L.dept(a.department) }) : L.stage(a.stage)}
           </span>
         ),

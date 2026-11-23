@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown, Languages, LogOut, Menu as MenuIcon, RefreshCcw, Repeat2, ShieldAlert, X } from "lucide-react";
+import { Bell, ChevronDown, Languages, LogOut, Menu as MenuIcon, ShieldAlert, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -8,8 +8,7 @@ import { Logo } from "@/components/brand/logo";
 import { Avatar } from "@/components/ui/display";
 import { Button } from "@/components/ui/button";
 import { EmptyState, PageSkeleton } from "@/components/ui/feedback";
-import { ConfirmDialog, Dialog, DialogContent, Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Popover } from "@/components/ui/overlay";
-import { toast } from "@/components/ui/toast";
+import { Dialog, DialogContent, Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Popover } from "@/components/ui/overlay";
 import { DemoToggle } from "@/features/demo/demo-tools";
 import { useDemoUi } from "@/lib/store/demo-ui";
 import { ThemeToggle } from "./public-header";

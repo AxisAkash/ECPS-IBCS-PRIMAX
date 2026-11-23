@@ -1,6 +1,7 @@
 "use client";
 
 import type { Application, DocumentCategory, DrawingSheetKind, FeeLine, OccupancyKey, ProfessionalRole, ServiceType } from "@/lib/domain/types";
+import { ROLES } from "@/lib/domain/roles";
 import { nextActionKey } from "@/lib/domain/workflow";
 import { useI18n } from "./index";
 import type { MessageKey } from "./messages/en";
@@ -30,6 +31,13 @@ export function useLabels() {
     zone: (z: string | undefined) => term("zone", z),
     desig: (d: string | undefined) => term("desig", d),
     act: (a: string) => k(`act.${a}`),
+    /** Readable label for an audit action code; unknown codes are shown as recorded. */
+    audit: (code: string) => term("auditact", code),
+    /** Audit targets that are role names are shown in the reader's language. */
+    auditTarget: (target: string) => {
+      const role = ROLES.find((r) => r.label === target);
+      return role ? k(`role.${role.key}`) : target;
+    },
     chkSection: (id: string) => k(`chk.sec.${id}`),
     chkSource: (id: string) => k(`chk.src.${id}`),
     chkItem: (id: string) => k(`chk.${id}`),

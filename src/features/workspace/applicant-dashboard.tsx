@@ -8,9 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/display";
 import { EmptyState } from "@/components/ui/feedback";
 import { SegmentedControl } from "@/components/ui/form";
-import { SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Application } from "@/lib/domain/types";
-import { holdingInfo, STAGE_LABEL } from "@/lib/domain/workflow";
+import { holdingInfo } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { notifBody, notifTitle } from "@/lib/i18n/notify";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
@@ -200,7 +199,7 @@ export function ApplicantDashboard() {
                               <StatusBadge status={a.status} />
                             </div>
                             <p className="mt-0.5 text-xs text-muted">
-                              <span className="ref">{a.ref}</span> · {SERVICE_SHORT_LABEL[a.type]} · {a.property.area || "Location pending"}
+                              <span className="ref">{a.ref}</span> · {t(`svcs.${a.type}`)} · {a.property.area || t("ws2.locPending")}
                             </p>
                             {a.status !== "draft" && (
                               <div className="mt-3 grid gap-3 md:grid-cols-[minmax(0,1fr)_14rem] md:items-end">
@@ -244,7 +243,7 @@ export function ApplicantDashboard() {
                 <li key={n.id} className="px-5 py-3">
                   <Link href={n.href ?? "#"} className="group block">
                     <span className="flex items-center gap-2">
-                      {!n.read && <span className="size-1.5 shrink-0 rounded-full bg-teal-600" aria-label="Unread" />}
+                      {!n.read && <span className="size-1.5 shrink-0 rounded-full bg-teal-600" aria-label={t("ws2.unread")} />}
                       <span className="truncate text-sm font-medium text-ink-strong group-hover:text-teal-700">{notifTitle(n, locale)}</span>
                     </span>
                     <span className="mt-0.5 line-clamp-2 block text-xs leading-relaxed text-muted">{notifBody(n, locale)}</span>
@@ -279,8 +278,8 @@ export function ApplicantDashboard() {
                   <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-line-strong" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-ink">
-                      <span className="font-medium text-ink-strong">{userName(users, h.actorId)}</span> · {h.action.replace("_", " ")}
-                      {h.toStage && <> → {STAGE_LABEL[h.toStage]}</>}
+                      <span className="font-medium text-ink-strong">{userName(users, h.actorId)}</span> · {t(`act.${h.action}` as MessageKey)}
+                      {h.toStage && <> → {t(`stage.${h.toStage}`)}</>}
                     </span>
                     <span className="block truncate text-xs text-muted">
                       {h.app.ref} · {formatRelative(h.at, undefined, locale)}

@@ -74,15 +74,15 @@ export function Hero() {
           <div className="mt-auto pt-12">
             <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-on-dark-muted">{t("hero.framework")}</p>
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-[0.8125rem] text-on-dark-muted">
-              <li>BNBC 2020</li>
+              <li>{t("hero.fw.bnbc")}</li>
               <li aria-hidden className="text-white/20">
                 /
               </li>
-              <li>Imarat Bidhimala 2025</li>
+              <li>{t("hero.fw.rules")}</li>
               <li aria-hidden className="text-white/20">
                 /
               </li>
-              <li>DAP 2022–2035</li>
+              <li>{t("hero.fw.dap")}</li>
             </ul>
           </div>
         </div>

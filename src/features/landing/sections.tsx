@@ -25,7 +25,7 @@ import { Accordion } from "@/components/ui/overlay";
 import { PUBLIC_PERMITS } from "@/lib/data/seed";
 import { SERVICES, type ServiceDefinition } from "@/lib/domain/catalog";
 import type { ServiceType } from "@/lib/domain/types";
-import { flowFor, STAGE_LABEL } from "@/lib/domain/workflow";
+import { flowFor } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn, formatDate } from "@/lib/utils";
@@ -324,11 +324,11 @@ export function Lifecycle() {
               >
                 {i < current ? <Check className="size-4" aria-hidden /> : String(i + 1).padStart(2, "0")}
               </span>
-              <span className={cn("mt-4 max-w-[9rem] text-[0.8125rem] leading-snug", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>{STAGE_LABEL[s]}</span>
+              <span className={cn("mt-4 max-w-[9rem] text-[0.8125rem] leading-snug", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>{t(`stage.${s}`)}</span>
               {i === current && (
                 <span className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[0.6875rem] leading-tight text-amber-200">
                   {t("life.you")}
-                  <span className="block font-mono text-[0.625rem] text-amber-200/80">2 / 3 days</span>
+                  <span className="block font-mono text-[0.625rem] text-amber-200/80 [:lang(bn)_&]:font-sans">{t("lp.daysSample")}</span>
                 </span>
               )}
             </li>
@@ -350,7 +350,7 @@ export function Lifecycle() {
                 {i < current ? <Check className="size-3.5" aria-hidden /> : i + 1}
               </span>
               <span className={cn("pt-1.5 text-sm", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>
-                {STAGE_LABEL[s]}
+                {t(`stage.${s}`)}
                 {i === current && <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-200">{t("life.you")}</span>}
               </span>
             </li>
@@ -506,7 +506,7 @@ export function RegisterBand() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-5 text-xs text-subtle">Fictional demonstration records.</p>
+            <p className="mt-5 text-xs text-subtle">{t("lp.fictional")}</p>
           </div>
         </div>
       </div>

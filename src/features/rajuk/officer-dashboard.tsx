@@ -11,7 +11,6 @@ import { Panel } from "@/components/ui/display";
 import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/form";
 import { toast } from "@/components/ui/toast";
-import { STAGE_SHORT } from "@/lib/domain/workflow";
 import { useI18n } from "@/lib/i18n";
 import { useLabels } from "@/lib/i18n/labels";
 import type { StageKey } from "@/lib/domain/types";
@@ -21,7 +20,7 @@ import { cn, formatDate, formatRelative } from "@/lib/utils";
 import { ACTIVE, useRajukData } from "./hooks";
 
 export function OfficerDashboard() {
-  const { t, locale } = useI18n();
+  const { t, term, locale } = useI18n();
   const L = useLabels();
   const router = useRouter();
   const { me, applications } = useRajukData();
@@ -43,7 +42,7 @@ export function OfficerDashboard() {
   const stageOrder: StageKey[] = ["front_desk", "building_inspector", "chief_building_inspector", "assistant_authorized_officer", "authorized_officer", "department_review", "bc_committee", "signing", "fee_and_drawings"];
   const byStage = stageOrder.map((s) => {
     const files = zoneFiles.filter((a) => a.stage === s);
-    return { stage: STAGE_SHORT[s], label: L.stage(s), within: files.filter((a) => a.holding.state !== "exceeded").length, over: files.filter((a) => a.holding.state === "exceeded").length };
+    return { stage: t(`sts.${s}`), label: L.stage(s), within: files.filter((a) => a.holding.state !== "exceeded").length, over: files.filter((a) => a.holding.state === "exceeded").length };
   });
 
   const take = async (id: string) => {
@@ -179,7 +178,7 @@ export function OfficerDashboard() {
                         <span className="min-w-0 flex-1">
                           <span className="ref block text-sm font-medium text-ink-strong">{a?.ref}</span>
                           <span className="block truncate text-xs text-muted">
-                            {p.title} · v{p.version} · {t("rk.pages", { n: p.sheets.filter((s) => s.signable).length })}
+                            {term("pkg", p.title)} · v{p.version} · {t("rk.pages", { n: p.sheets.filter((s) => s.signable).length })}
                           </span>
                         </span>
                         <ArrowRight className="size-4 text-subtle" aria-hidden />
@@ -214,11 +213,9 @@ export function OfficerDashboard() {
               {myActivity.map((a) => (
                 <li key={a.id} className="text-sm">
                   <p className="text-ink-strong">
-                    <span className="ref text-xs text-muted">{a.action}</span> · {a.target}
+                    {L.audit(a.action)} · <span className="ref text-xs">{L.auditTarget(a.target)}</span>
                   </p>
-                  <p className="text-xs text-muted">
-                    {a.detail} · {formatRelative(a.at, undefined, locale)}
-                  </p>
+                  <p className="text-xs text-muted">{formatRelative(a.at, undefined, locale)}</p>
                 </li>
               ))}
             </ol>

@@ -774,6 +774,7 @@ export function AdminNotifications() {
 
 export function AdminAudit() {
   const { t, locale } = useI18n();
+  const L = useLabels();
   const audit = useDemoStore((s) => s.audit);
   const users = useDemoStore((s) => s.users);
   const [sev, setSev] = useState("");
@@ -783,8 +784,8 @@ export function AdminAudit() {
     () => [
       { id: "at", header: t("ad.a.time"), accessorFn: (a) => a.at, cell: ({ getValue }) => <span className="tabular whitespace-nowrap text-muted">{formatDateTime(getValue() as string, locale)}</span> },
       { id: "actor", header: t("ad.a.actor"), accessorFn: (a) => userName(users, a.actorId) },
-      { id: "action", header: t("ad.a.action"), accessorFn: (a) => a.action, cell: ({ getValue }) => <span className="ref text-xs text-teal-800">{getValue() as string}</span> },
-      { id: "target", header: t("ad.a.target"), accessorFn: (a) => a.target, cell: ({ getValue }) => <span className="block max-w-[12rem] truncate">{getValue() as string}</span> },
+      { id: "action", header: t("ad.a.action"), accessorFn: (a) => a.action, cell: ({ getValue }) => <span className="whitespace-nowrap text-xs"><span className="block font-medium text-teal-800">{L.audit(getValue() as string)}</span><span className="ref text-muted">{getValue() as string}</span></span> },
+      { id: "target", header: t("ad.a.target"), accessorFn: (a) => L.auditTarget(a.target), cell: ({ getValue }) => <span className="block max-w-[12rem] truncate">{getValue() as string}</span> },
       { id: "detail", header: t("ad.a.detail"), accessorFn: (a) => a.detail ?? "", cell: ({ getValue }) => <span className="block max-w-[18rem] truncate text-muted">{getValue() as string}</span> },
       { id: "ip", header: t("ad.a.ip"), accessorFn: (a) => a.ip ?? "", cell: ({ getValue }) => <span className="ref text-xs text-muted">{getValue() as string}</span> },
       { id: "sev", header: t("ad.a.severity"), accessorFn: (a) => a.severity, cell: ({ getValue }) => <Badge tone={getValue() === "warning" ? "warning" : getValue() === "notice" ? "info" : "neutral"}>{t(`sev.${getValue() as AuditEntry["severity"]}`)}</Badge> },

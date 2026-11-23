@@ -14,7 +14,7 @@ import { Dialog, DialogContent, Tabs, TabsContent, TabsList, TabsTrigger } from 
 import { HOUSING_PROJECTS } from "@/lib/data/seed";
 import { AREAS, OCCUPANCY, serviceByType, ZONES } from "@/lib/domain/catalog";
 import { calculateIllustrativeFee, ILLUSTRATIVE_RULESET } from "@/lib/domain/fees";
-import type { Application, BuildingInfo, DocumentCategory, DocumentRecord, DrawingSheetKind, FeeLine, OccupancyKey, ProfessionalRole, ServiceType } from "@/lib/domain/types";
+import type { Application, BuildingInfo, DocumentCategory, DocumentRecord, DrawingSheetKind, OccupancyKey, ProfessionalRole, ServiceType } from "@/lib/domain/types";
 import { flowFor } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useLabels } from "@/lib/i18n/labels";

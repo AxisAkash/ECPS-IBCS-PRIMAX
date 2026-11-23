@@ -155,7 +155,7 @@ export function ApplicationWizard({ id }: { id: string }) {
           <div className="sticky top-24 rounded-xl border border-line bg-surface p-2">
             <Stepper steps={stepStates} current={step} onSelect={(i) => setStep(i)} />
             <div className="mt-2 border-t border-line px-2.5 pb-1 pt-3">
-              <ProgressBar value={(app.draftStep ?? 0) / (STEP_KEYS.length - 1)} label="Draft completion" />
+              <ProgressBar value={(app.draftStep ?? 0) / (STEP_KEYS.length - 1)} label={t("wz2.draftCompletion")} />
               <p className="mt-1.5 text-[0.6875rem] text-muted">{t("wz.draftPct", { pct: Math.round(((app.draftStep ?? 0) / (STEP_KEYS.length - 1)) * 100) })}</p>
             </div>
           </div>

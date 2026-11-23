@@ -52,7 +52,7 @@ export function DialogContent({
             {description ? (
               <RDialog.Description className="text-sm leading-relaxed text-muted">{description}</RDialog.Description>
             ) : (
-              <RDialog.Description className="sr-only">{typeof title === "string" ? title : "Dialog"}</RDialog.Description>
+              <RDialog.Description className="sr-only">{typeof title === "string" ? title : t("ui.dialog")}</RDialog.Description>
             )}
           </div>
           {!hideClose && (

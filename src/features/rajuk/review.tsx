@@ -224,7 +224,7 @@ export function ReviewWorkspace({ id }: { id: string }) {
               <ObservationsPanel app={app} users={users} canAdd={isHolder || me?.role === "officer" || me?.role === "estate"} />
             </TabsContent>
             <TabsContent value="timeline" className="scrollbar-thin max-h-[34rem] overflow-y-auto p-4">
-              <Timeline items={eventsToTimeline(app, users, { internal: true, label: L.act, stage: L.stage })} />
+              <Timeline items={eventsToTimeline(app, users, { internal: true, label: L.act, stage: L.stage, simulated: t("ad2.simulated"), locale })} />
             </TabsContent>
             <TabsContent value="audit" className="p-4">
               {fileAudit.length === 0 ? (
@@ -233,7 +233,9 @@ export function ReviewWorkspace({ id }: { id: string }) {
                 <ol className="space-y-3 text-sm">
                   {fileAudit.map((a) => (
                     <li key={a.id} className="border-l-2 border-line pl-3">
-                      <p className="ref text-xs text-teal-800">{a.action}</p>
+                      <p className="text-xs font-medium text-teal-800">
+                        {L.audit(a.action)} <span className="ref font-normal text-muted">{a.action}</span>
+                      </p>
                       <p className="text-ink">
                         {userName(users, a.actorId)} — {a.detail}
                       </p>

@@ -1,6 +1,6 @@
 import type { LocalMessage, Notification, NotificationMessage } from "@/lib/domain/types";
 import type { Locale } from "@/lib/utils";
-import { translate, translateTerm } from "./index";
+import { translate, translateTerm } from "./core";
 import type { MessageKey } from "./messages/en";
 
 type Vars = Record<string, string | number>;

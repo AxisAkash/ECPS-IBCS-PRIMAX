@@ -4,7 +4,7 @@ import { AlarmClock, Building, Building2, ClipboardCheck, FileCheck2, FilePen, G
 import { Badge } from "@/components/ui/display";
 import { Tooltip } from "@/components/ui/overlay";
 import type { Application, ApplicationStatus, ServiceType, StageKey } from "@/lib/domain/types";
-import { flowFor, holdingInfo, STAGE_SHORT, STATUS_TONE } from "@/lib/domain/workflow";
+import { flowFor, holdingInfo, STATUS_TONE } from "@/lib/domain/workflow";
 import { useI18n } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn } from "@/lib/utils";
@@ -79,7 +79,7 @@ export function StageTrack({ type, stage, status, className, showLabels = false 
             />
             {showLabels && (
               <span className={cn("truncate font-mono text-[0.625rem] uppercase tracking-wide", current ? "font-semibold text-ink-strong" : done ? "text-teal-800" : "text-muted")} title={t(`stage.${s}`)}>
-                {STAGE_SHORT[s]}
+                {t(`sts.${s}`)}
               </span>
             )}
             <span className="sr-only">

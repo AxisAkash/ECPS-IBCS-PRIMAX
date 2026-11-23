@@ -8,9 +8,10 @@ import { SERVICE_ICON } from "@/components/domain/status";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/display";
 import { Callout } from "@/components/ui/feedback";
-import { DOCUMENT_CATEGORY_LABEL, PROFESSIONAL_ROLE_LABEL, SERVICES, serviceBySlug, type ServiceDefinition } from "@/lib/domain/catalog";
-import { flowFor, STAGE_LABEL } from "@/lib/domain/workflow";
+import { SERVICES, serviceBySlug, type ServiceDefinition } from "@/lib/domain/catalog";
+import { flowFor } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { ecps } from "@/lib/services";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,7 @@ export function ServicesIndex() {
   const { t } = useI18n();
   return (
     <>
-      <PageIntro breadcrumbs={[{ label: "Home", href: "/" }, { label: t("nav.services") }]} kicker={t("svc.kicker")} title={t("svc.title")} lead={t("svc.lead")} />
+      <PageIntro breadcrumbs={[{ label: t("pub.home"), href: "/" }, { label: t("nav.services") }]} kicker={t("svc.kicker")} title={t("svc.title")} lead={t("svc.lead")} />
       <Container>
         <div className="space-y-14">
           {GROUPS.map((g, gi) => (
@@ -83,8 +84,8 @@ export function ServicesIndex() {
             </section>
           ))}
         </div>
-        <Callout tone="info" className="mt-14" title="About fees and processing times">
-          Fees are calculated automatically from occupancy type and total project area under the applicable rules, and shown before you pay. This prototype does not state official fees or statutory processing times.
+        <Callout tone="info" className="mt-14" title={t("sv.feesTitle")}>
+          {t("sv.feesBody")}
         </Callout>
       </Container>
     </>
@@ -93,6 +94,7 @@ export function ServicesIndex() {
 
 export function ServiceDetail({ slug }: { slug: string }) {
   const { t } = useI18n();
+  const L = useLabels();
   const s = serviceBySlug(slug);
   const { start, busy } = useStartApplication();
   if (!s) return null;
@@ -100,12 +102,12 @@ export function ServiceDetail({ slug }: { slug: string }) {
   const flow = flowFor(s.type);
   return (
     <>
-      <PageIntro dark breadcrumbs={[{ label: "Home", href: "/" }, { label: t("nav.services"), href: "/services" }, { label: t(s.nameKey as MessageKey) }]} kicker={`${s.short} · ${t(`svc.scope.${s.scope}`)}`} title={t(s.nameKey as MessageKey)} lead={t(s.descKey as MessageKey)}>
+      <PageIntro dark breadcrumbs={[{ label: t("pub.home"), href: "/" }, { label: t("nav.services"), href: "/services" }, { label: t(s.nameKey as MessageKey) }]} kicker={`${s.short} · ${t(`svc.scope.${s.scope}`)}`} title={t(s.nameKey as MessageKey)} lead={t(s.descKey as MessageKey)}>
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="accent" size="lg" onClick={() => start(s)} loading={busy} disabled={!s.wizard}>
             {t("svc.start")} <ArrowRight />
           </Button>
-          {!s.wizard && <p className="text-sm text-on-dark-muted">The interactive journey for this service is not part of the prototype.</p>}
+          {!s.wizard && <p className="text-sm text-on-dark-muted">{t("sv.notInProto")}</p>}
         </div>
       </PageIntro>
       <Container>
@@ -118,26 +120,26 @@ export function ServiceDetail({ slug }: { slug: string }) {
               <ul className="mt-5 grid gap-2 sm:grid-cols-2">
                 {s.keyDocuments.map((d) => (
                   <li key={d} className="flex items-center gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm text-ink">
-                    <Check className="size-4 shrink-0 text-teal-700" aria-hidden /> {DOCUMENT_CATEGORY_LABEL[d]}
-                    {["nid", "tax_return", "photo"].includes(d) && <span className="text-xs text-muted">— for every owner</span>}
+                    <Check className="size-4 shrink-0 text-teal-700" aria-hidden /> {L.doc(d)}
+                    {["nid", "tax_return", "photo"].includes(d) && <span className="text-xs text-muted">{t("sv.everyOwner")}</span>}
                   </li>
                 ))}
               </ul>
             </section>
             <section aria-labelledby="route">
               <h2 id="route" className="flex items-center gap-2 font-display text-xl font-semibold text-ink-strong">
-                <Clock className="size-5 text-teal-700" aria-hidden /> How it is processed
+                <Clock className="size-5 text-teal-700" aria-hidden /> {t("sv.processed")}
               </h2>
               <ol className="mt-5 space-y-0">
                 {flow.map((st, i) => (
                   <li key={st} className="relative flex gap-4 pb-5 last:pb-0">
                     {i < flow.length - 1 && <span aria-hidden className="absolute left-[13px] top-7 h-[calc(100%-1.25rem)] w-px bg-line" />}
                     <span className="ref relative z-10 grid size-7 shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-[0.6875rem] font-semibold text-slate-ink">{i + 1}</span>
-                    <span className="pt-0.5 text-[0.9375rem] text-ink-strong">{STAGE_LABEL[st]}</span>
+                    <span className="pt-0.5 text-[0.9375rem] text-ink-strong">{L.stage(st)}</span>
                   </li>
                 ))}
               </ol>
-              <p className="mt-4 text-xs text-muted">Illustrative stage sequence; RAJUK configures the approved workflow, routing and holding limits.</p>
+              <p className="mt-4 text-xs text-muted">{t("sv.illustrative")}</p>
             </section>
           </div>
           <aside className="space-y-5">
@@ -149,17 +151,17 @@ export function ServiceDetail({ slug }: { slug: string }) {
               {s.requiresProfessionals.length ? (
                 <ul className="mt-2 space-y-1.5 text-sm text-ink">
                   {s.requiresProfessionals.map((p) => (
-                    <li key={p}>{PROFESSIONAL_ROLE_LABEL[p]}</li>
+                    <li key={p}>{L.pro(p)}</li>
                   ))}
                 </ul>
               ) : (
-                <p className="mt-2 text-sm text-muted">Owner only</p>
+                <p className="mt-2 text-sm text-muted">{t("sv.ownerOnly")}</p>
               )}
               <h2 className="mt-5 text-sm font-semibold text-ink-strong">{t("svc.torref")}</h2>
               <p className="ref mt-1 text-sm text-muted">{s.torRefs.join(" · ")}</p>
             </div>
             <Callout tone="info" icon={Info}>
-              Fees are calculated automatically and shown with their rule version before payment. Amounts in this prototype are illustrative.
+              {t("sv.feesNote")}
             </Callout>
             <Link href="/guides" className={cn("flex items-center justify-between rounded-xl border border-line bg-surface p-5 text-sm font-medium text-ink-strong hover:border-teal-600/40")}>
               {t("guide.read")} <ArrowRight className="size-4 text-teal-700" aria-hidden />

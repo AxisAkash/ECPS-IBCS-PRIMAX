@@ -36,7 +36,7 @@ export default function ChangePasswordPage() {
     setBusy(true);
     await sleep(800);
     setBusy(false);
-    toast.success("Password updated (simulated)", "Choose a demo role to continue exploring.");
+    toast.success(t("cp.toast"), t("cp.toastBody"));
     router.push("/demo");
   };
 
@@ -77,12 +77,12 @@ export default function ChangePasswordPage() {
               <span key={i} className={cn("h-1 flex-1 rounded-full", strength * 4 > i ? (strength === 1 ? "bg-success-600" : strength >= 0.5 ? "bg-amber-500" : "bg-danger-600") : "bg-surface-3")} />
             ))}
           </div>
-          <ul className="mt-3 grid gap-1.5 sm:grid-cols-2" aria-label="Password requirements">
+          <ul className="mt-3 grid gap-1.5 sm:grid-cols-2" aria-label={t("cp2.requirements")}>
             {rules.map((r) => (
               <li key={r.label} className={cn("flex items-center gap-2 text-xs", r.ok ? "text-success-700" : "text-muted")}>
                 {r.ok ? <Check className="size-3.5" aria-hidden /> : <X className="size-3.5 text-subtle" aria-hidden />}
                 {r.label}
-                <span className="sr-only">{r.ok ? "met" : "not met"}</span>
+                <span className="sr-only">{r.ok ? t("cp.met") : t("cp.notMet")}</span>
               </li>
             ))}
           </ul>
@@ -95,7 +95,7 @@ export default function ChangePasswordPage() {
         </Button>
       </form>
       <Callout tone="demo" className="mt-8">
-        Policy values come from Admin → Security (configurable per TOR 1.9). Nothing is stored; enforcement must happen on the server.
+        {t("cp.policy")}
       </Callout>
     </div>
   );

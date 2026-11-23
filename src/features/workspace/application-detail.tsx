@@ -22,7 +22,7 @@ import { flowFor, holdingInfo, STAGE_LABEL } from "@/lib/domain/workflow";
 import { translate, useI18n, type MessageKey } from "@/lib/i18n";
 import { ecps } from "@/lib/services";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
-import { cn, daysBetween, formatBDT, formatDate, formatDateTime, formatRelative, workingDaysBetween } from "@/lib/utils";
+import { cn, daysBetween, formatBDT, formatDate, formatDateTime, formatRelative, workingDaysBetween, type Locale } from "@/lib/utils";
 import { useApplication, useMe, useUsers } from "./hooks";
 import { PaymentDialog } from "./payment-dialog";
 
@@ -30,7 +30,7 @@ type Labeler = (action: WorkflowEvent["action"]) => string;
 const englishAction: Labeler = (a) => translate("en", `act.${a}` as MessageKey);
 
 /** Converts workflow history into timeline items. Officer views pass `internal` to show internal notes. */
-export function eventsToTimeline(app: Application, users: { id: string; name: string }[], opts: { internal?: boolean; label?: Labeler; stage?: (s: string) => string } = {}): TimelineItem[] {
+export function eventsToTimeline(app: Application, users: { id: string; name: string }[], opts: { internal?: boolean; label?: Labeler; stage?: (s: string) => string; simulated?: string; locale?: Locale } = {}): TimelineItem[] {
   const label = opts.label ?? englishAction;
   const stage = opts.stage ?? ((s: string) => STAGE_LABEL[s as keyof typeof STAGE_LABEL]);
   return [...app.history]
@@ -42,10 +42,10 @@ export function eventsToTimeline(app: Application, users: { id: string; name: st
         <>
           {label(h.action)}
           {h.toStage && h.action !== "submitted" ? <span className="font-normal text-muted"> → {stage(h.toStage)}</span> : null}
-          {h.simulated && <span className="ml-2 rounded-xs border border-dashed border-slate-ink/40 px-1 font-mono text-[0.5625rem] uppercase text-slate-ink">Simulated</span>}
+          {h.simulated && <span className="ml-2 rounded-xs border border-dashed border-slate-ink/40 px-1 font-mono text-[0.5625rem] uppercase text-slate-ink">{opts.simulated ?? "Simulated"}</span>}
         </>
       ),
-      meta: formatDateTime(h.at),
+      meta: formatDateTime(h.at, opts.locale),
       body: (
         <>
           <span className="text-ink">{userName(users, h.actorId)}</span>
@@ -443,7 +443,7 @@ export function ApplicationDetail({ id }: { id: string }) {
 
         <TabsContent value="timeline" className="pt-6">
           <Panel>
-            <Timeline items={eventsToTimeline(app, users, { label: (a) => t(`act.${a}` as MessageKey), stage: (s) => L.stage(s) })} />
+            <Timeline items={eventsToTimeline(app, users, { label: (a) => t(`act.${a}` as MessageKey), stage: (s) => L.stage(s), simulated: t("ad2.simulated"), locale })} />
           </Panel>
         </TabsContent>
 

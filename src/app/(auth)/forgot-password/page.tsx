@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
           {t("fp.sent.body", { id })}
         </p>
         <Callout tone="demo" className="mt-6 text-left">
-          Simulation — no message was sent. A generic response is shown whether or not an account exists, to avoid revealing registered users.
+          {t("fp.simNote")}
         </Callout>
         <Button asChild variant="secondary" className="mt-6">
           <Link href="/sign-in">{t("exp.again")}</Link>
