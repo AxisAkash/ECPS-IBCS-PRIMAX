@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description:
     "Proposed modernised frontend for RAJUK's Electronic Construction Permitting System. Demonstration prototype by IBCS-PRIMAX — all records are fictional.",
   robots: { index: false, follow: false },
-  icons: { icon: "/favicon.svg" },
 };
 
 export const viewport: Viewport = {

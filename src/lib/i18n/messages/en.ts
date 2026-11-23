@@ -11,6 +11,8 @@ const core = {
   "brand.name": "ECPS",
   "brand.full": "Electronic Construction Permitting System",
   "brand.tagline": "RAJUK building permission services",
+  "brand.short": "RAJUK · Building permission",
+  "brand.home": "ECPS home — RAJUK",
   "proto.badge": "Prototype",
   "proto.label": "Demonstration environment — all records are fictional",
   "lang.switch": "বাংলা",

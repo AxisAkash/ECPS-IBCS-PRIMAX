@@ -1,32 +1,33 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
- * ECPS mark — an original symbol (not the RAJUK emblem): a surveyed plot boundary,
- * a building footprint set back within it, and an amber survey point.
+ * RAJUK emblem, used as supplied (public/brand/rajuk-logo.png, 300×300, transparent background).
+ * The seal's white areas are transparent in the source file, so it always sits on a white disc —
+ * that keeps the emblem's colours intact on navy headers and in dark mode.
  */
-export function LogoMark({ className, onDark }: { className?: string; onDark?: boolean }) {
+export function LogoMark({ className, alt = "" }: { className?: string; alt?: string }) {
   return (
-    <svg viewBox="0 0 32 32" className={cn("size-8", className)} aria-hidden>
-      <rect x="1.5" y="1.5" width="29" height="29" rx="6" fill={onDark ? "#1b3250" : "#14263d"} />
-      <rect x="6.5" y="6.5" width="19" height="19" rx="1" fill="none" stroke={onDark ? "#7cc6d1" : "#2196a8"} strokeWidth="1.2" strokeDasharray="2.2 1.6" />
-      <rect x="9.5" y="12" width="10.5" height="10.5" fill="#ffffff" />
-      <path d="M9.5 15.5h10.5M13 12v10.5" stroke="#14263d" strokeWidth="0.9" opacity="0.35" />
-      <circle cx="25.5" cy="6.5" r="2.2" fill="#e7a23b" />
-    </svg>
+    <span className={cn("relative inline-grid size-9 shrink-0 place-items-center rounded-full bg-white shadow-[0_0_0_1px_rgb(20_38_61/0.08)]", className)}>
+      <Image src="/brand/rajuk-logo.png" alt={alt} width={300} height={300} priority className="size-[94%] object-contain" />
+    </span>
   );
 }
 
 export function Logo({ onDark, compact, href = "/", subtitle }: { onDark?: boolean; compact?: boolean; href?: string; subtitle?: string }) {
+  const { t } = useI18n();
   return (
-    <Link href={href} className="group inline-flex items-center gap-2.5 rounded-md">
-      {compact && <span className="sr-only">ECPS home</span>}
-      <LogoMark onDark={onDark} />
+    <Link href={href} className="group inline-flex shrink-0 items-center gap-2.5 rounded-md">
+      <LogoMark alt={compact ? t("brand.home") : ""} />
       {!compact && (
         <span className="leading-none">
-          <span className={cn("block font-display text-[1.0625rem] font-extrabold tracking-[-0.01em]", onDark ? "text-white" : "text-navy-900")}>ECPS</span>
-          <span className={cn("mt-1 block font-mono text-[0.5625rem] uppercase tracking-[0.16em]", onDark ? "text-on-dark-muted" : "text-muted")}>
-            {subtitle ?? "RAJUK · Building permission"}
+          <span className={cn("block font-display text-[1.0625rem] font-extrabold tracking-[-0.01em]", onDark ? "text-white" : "text-ink-strong")}>{t("brand.name")}</span>
+          <span className={cn("mt-1 block whitespace-nowrap font-mono text-[0.5625rem] uppercase tracking-[0.16em] [:lang(bn)_&]:font-sans [:lang(bn)_&]:text-[0.6875rem] [:lang(bn)_&]:tracking-normal [:lang(bn)_&]:normal-case", onDark ? "text-on-dark-muted" : "text-muted")}>
+            {subtitle ?? t("brand.short")}
           </span>
         </span>
       )}

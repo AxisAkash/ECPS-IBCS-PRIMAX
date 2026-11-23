@@ -242,8 +242,8 @@ export default function DesignSystemPage() {
             <SiteMap lat={23.7461} lng={90.3742} height={260} />
           </div>
           <div className="mt-6 flex items-center gap-4">
-            <LogoMark className="size-12" />
-            <p className="max-w-md text-sm text-muted">The ECPS mark is an original symbol — a surveyed plot boundary, a set-back footprint and a survey point — not the RAJUK emblem.</p>
+            <LogoMark className="size-14" />
+            <p className="max-w-md text-sm text-muted">The RAJUK emblem is used exactly as supplied (public/brand/rajuk-logo.png). Its white areas are transparent, so it always sits on a white disc to stay correct on navy and dark surfaces.</p>
           </div>
         </Section>
       </main>
