@@ -138,7 +138,7 @@ test("Scenario 4: inspector completes a field inspection", async ({ page }) => {
   await page.getByLabel("Observations").fill("Plinth completed as per approved drawing.");
   await page.getByRole("button", { name: "Submit" }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Yes, submit" }).click();
-  await expect(page.getByText(/Submitted .* outcome: compliant/)).toBeVisible();
+  await expect(page.getByText(/Submitted .* outcome: Compliant/)).toBeVisible();
 });
 
 test("Scenario 5: Public Register, verification and management insight", async ({ page }) => {

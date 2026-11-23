@@ -46,14 +46,20 @@ test("dark theme passes automated colour-contrast checks on key screens", async 
   for (const p of ["/rajuk", "/rajuk/inbox", "/rajuk/files/a-203"]) await check(p);
 });
 
-/** THEME_SHOTS=<dir> saves a dark-mode screenshot of every screen for visual review. */
+/**
+ * THEME_SHOTS=<dir> saves a screenshot of every screen for visual review — dark by default;
+ * SHOTS_THEME=light and SHOTS_LANG=bn change the theme and language.
+ */
 for (const { role, paths } of ROUTES) {
-  test(`dark screenshots · ${role ?? "public"}`, async ({ page }) => {
+  test(`screenshots · ${role ?? "public"}`, async ({ page }) => {
     test.skip(!process.env.THEME_SHOTS, "set THEME_SHOTS=<dir> to capture");
     test.setTimeout(240_000);
     await freshDemo(page);
-    await page.evaluate(() => (document.cookie = "ecps-theme=dark; path=/"));
+    const themeCookie = `ecps-theme=${process.env.SHOTS_THEME ?? "dark"}; path=/`;
+    const langCookie = `ecps-locale=${process.env.SHOTS_LANG ?? "en"}; path=/`;
+    await page.evaluate((c) => (document.cookie = c), themeCookie);
     if (role) await enterAs(page, role);
+    await page.evaluate((c) => (document.cookie = c), langCookie);
     for (const path of paths) {
       await page.goto(path);
       await page.waitForLoadState("networkidle");

@@ -60,9 +60,15 @@ No environment variables or credentials are needed. Optional settings are docume
 | `npm run test:e2e` | Builds must exist first (`npm run build`); runs Playwright scenarios + axe scans against `npm start` on port 3100 |
 | `npm run check` | Typecheck + lint + unit tests |
 
+## Theme, language and branding
+
+- **Logo:** the supplied RAJUK emblem (`public/brand/rajuk-logo.png`, unmodified) appears in every header, the sign-in panel, the footer and as the favicon. Its white areas are transparent, so it always sits on a white disc to stay correct on navy and dark surfaces.
+- **Theme:** light by default. The sun/moon button switches to a designed dark theme; the choice is stored in the `ecps-theme` cookie and rendered on the server, so there is no flash on load.
+- **Language:** the বাংলা / English button switches the entire interface; the choice is stored in the `ecps-locale` cookie. All text comes from one typed dictionary (`src/lib/i18n/messages/`).
+
 ## Demo roles
 
-Open **`/sign-in`** (or **`/demo`**) and choose a role. No credentials are checked.
+Demo tools are **hidden by default**. Click the dashed **Demo** button (top utility bar, sign-in page, or workspace header) to reveal them: on `/sign-in` the role list appears; elsewhere a **Demo tools** panel opens. Click **Demo** again, the close button or Esc to hide them. Every fresh page load starts hidden. No credentials are checked.
 
 | Role | Persona (fictional) | Lands on |
 | --- | --- | --- |
@@ -77,7 +83,7 @@ Open **`/sign-in`** (or **`/demo`**) and choose a role. No credentials are check
 | Administrator | Imran Kabir | `/rajuk/admin` |
 | Support | Rumana Sultana, Technical Support Engineer | `/rajuk/helpdesk` |
 
-Switch roles at any time from the user menu (top right) → **Switch demo role**. **Reset demo data** restores every record. See **[DEMO_GUIDE.md](DEMO_GUIDE.md)** for a 10–15 minute presentation script.
+Switch roles at any time with **Demo → Switch demo role**; **Demo → Reset demo data** restores every record. Choosing a role closes the demo tools so they never cover the workspace. See **[DEMO_GUIDE.md](DEMO_GUIDE.md)** for a 10–15 minute presentation script.
 
 ## Mock data and the service boundary
 
@@ -99,7 +105,7 @@ src/
     design-system/     Component and token showcase
   components/
     ui/                Design-system primitives
-    brand/             ECPS mark and hero cadastral composition
+    brand/             RAJUK emblem (supplied asset) and hero cadastral composition
     domain/            Drawing sheets, document preview, site map, MFA dialog, status
     charts/            Chart frame, palette and chart components
     layout/            Public header/footer, workspace shell, navigation config
@@ -126,5 +132,6 @@ tests/
 
 - No backend, authentication, persistence beyond the browser, file storage, payments, signing, SMS, maps or partner integrations — all are simulated or scaffolded.
 - Fees, FAR values, holding limits, workflow sequences and checklist items are **illustrative** and must be replaced with RAJUK-approved rules.
-- Bangla translation covers the public portal, authentication, service names and the full applicant journey (dashboard, every wizard step and its validation messages, application detail, payments, notifications and timeline); internal RAJUK screens are English-only in this prototype. Bangla copy needs review by RAJUK's language team.
+- The whole interface is available in English and Bangla (public portal, authentication, applicant and professional workspaces, every RAJUK internal screen, administration, dialogs, notifications and page titles). Kept as recorded: names, addresses, project titles and notes people typed, references and codes, audit-log details, CSV exports and engineering drawing title blocks. The developer-facing `/design-system` page is English only. Bangla copy needs review by RAJUK's language team.
+- Light theme is the default; a dark theme is available from the sun/moon switch and remembered in a cookie.
 - The official ECPS portal could not be fetched while building this prototype (TLS certificate error on the site), so service terminology follows the TOR rather than the live site.

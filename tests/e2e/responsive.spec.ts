@@ -47,6 +47,8 @@ for (const [role, pages] of byRole) {
     test.setTimeout(180_000);
     await freshDemo(page);
     if (role) await enterAs(page, role);
+    // RESPONSIVE_LANG=bn runs the same guard with Bangla copy, which wraps differently.
+    if (process.env.RESPONSIVE_LANG) await page.evaluate((l) => (document.cookie = `ecps-locale=${l}; path=/`), process.env.RESPONSIVE_LANG);
     const failures: string[] = [];
     for (const { path } of pages) {
       for (const w of WIDTHS) {
