@@ -37,10 +37,6 @@ const core = {
   "hero.quicktrack.placeholder": "e.g. CP-26-Z4-01491",
   "hero.quicktrack.go": "Track",
   "hero.framework": "Aligned to",
-  "hero.card.title": "Construction Permit",
-  "hero.card.stage": "With Assistant Authorized Officer",
-  "hero.card.held": "Held 2 working days",
-  "hero.card.next": "Next: Authorized Officer",
 
   // Discovery
   "disc.kicker": "Find a service",

@@ -38,10 +38,6 @@ export const bn: Record<MessageKey, string> = {
   "hero.quicktrack.placeholder": "যেমন CP-26-Z4-01491",
   "hero.quicktrack.go": "দেখুন",
   "hero.framework": "যে বিধিবিধান অনুসারে",
-  "hero.card.title": "কনস্ট্রাকশন পারমিট",
-  "hero.card.stage": "সহকারী অথরাইজড অফিসারের কাছে",
-  "hero.card.held": "২ কর্মদিবস ধরে",
-  "hero.card.next": "পরবর্তী: অথরাইজড অফিসার",
 
   "disc.kicker": "সেবা খুঁজুন",
   "disc.title": "আপনি কী করতে চান?",

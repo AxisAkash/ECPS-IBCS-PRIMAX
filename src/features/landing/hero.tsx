@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Clock3, Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -87,55 +87,13 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Floating sample status card */}
+        {/* Plan illustration on small screens (large screens show it as the background) */}
         <div className="relative lg:col-span-6">
           <div className="relative mx-auto aspect-[9/8] max-w-xl lg:hidden" aria-hidden>
             <HeroPlan className="absolute inset-0 h-full w-full rounded-xl" />
           </div>
-          <StatusPreviewCard />
         </div>
       </div>
     </section>
-  );
-}
-
-function StatusPreviewCard() {
-  const { t } = useI18n();
-  const stages = 9;
-  const current = 3;
-  return (
-    <div className="absolute bottom-4 left-4 right-4 animate-fade-up [animation-delay:500ms] sm:left-auto sm:right-8 sm:w-[19.5rem] lg:bottom-[9%] lg:left-[3%] lg:right-auto">
-      <div className="rounded-xl border border-white/10 bg-surface p-4 text-ink shadow-[0_24px_60px_-20px_rgb(0_0_0/0.55)]">
-        <div className="flex items-center justify-between gap-2">
-          <span className="ref text-xs font-medium text-ink-strong">CP-26-Z4-01491</span>
-          <span className="rounded-xs border border-dashed border-line-strong px-1.5 font-mono text-[0.5625rem] uppercase tracking-wider text-subtle">Sample</span>
-        </div>
-        <p className="mt-2 font-display text-[0.9375rem] font-semibold text-ink-strong">{t("hero.card.title")}</p>
-        <div className="mt-3 flex gap-1" aria-hidden>
-          {Array.from({ length: stages }).map((_, i) => (
-            <span key={i} className={`h-1.5 flex-1 rounded-full ${i < current ? "bg-teal-600" : i === current ? "bg-navy-900" : "bg-surface-3"}`} />
-          ))}
-        </div>
-        <dl className="mt-3.5 space-y-2 text-[0.8125rem]">
-          <div className="flex items-center gap-2">
-            <dt className="sr-only">Current desk</dt>
-            <dd className="flex items-center gap-2 font-medium text-ink-strong">
-              <span aria-hidden className="relative grid size-2 place-items-center text-teal-600">
-                <span className="pulse-dot relative size-2 rounded-full bg-teal-600" />
-              </span>
-              {t("hero.card.stage")}
-            </dd>
-          </div>
-          <div className="flex items-center gap-2 text-muted">
-            <dt className="sr-only">Time held</dt>
-            <dd className="flex items-center gap-2">
-              <Clock3 className="size-3.5" aria-hidden />
-              {t("hero.card.held")}
-            </dd>
-          </div>
-        </dl>
-        <p className="mt-3 border-t border-line pt-3 text-xs text-muted">{t("hero.card.next")}</p>
-      </div>
-    </div>
   );
 }

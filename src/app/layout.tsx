@@ -28,8 +28,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const store = await cookies();
   const locale = store.get(LOCALE_COOKIE)?.value === "bn" ? "bn" : "en";
   return (
-    <html lang={locale} className={`${inter.variable} ${manrope.variable} ${plexMono.variable} ${bengali.variable}`}>
-      <body className="min-h-dvh">
+    // suppressHydrationWarning: browser extensions (e.g. writing assistants) add attributes to <html>/<body>
+    // before React hydrates. This only ignores those elements' own attributes, not their children.
+    <html lang={locale} className={`${inter.variable} ${manrope.variable} ${plexMono.variable} ${bengali.variable}`} suppressHydrationWarning>
+      <body className="min-h-dvh" suppressHydrationWarning>
         <Providers locale={locale}>{children}</Providers>
       </body>
     </html>

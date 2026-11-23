@@ -13,7 +13,7 @@ A presenter script for showing the ECPS prototype to company management alongsid
 
 | # | Time | Screen | Say / do | TOR |
 | --- | --- | --- | --- | --- |
-| 1 | 1:30 | **Landing** `/` | Scroll the hero: one clear path “from plot to permit”, the sample status card shows *who holds the file and for how long*. Type “add floors” in **Find a service**. Point to **What is improving** (before → proposed). Click **বাংলা** in the top bar, then back. | 2.14, 1.1 |
+| 1 | 1:30 | **Landing** `/` | Scroll the hero: one clear path “from plot to permit”; enter a reference in **Already applied?** to show quick tracking. Type “add floors” in **Find a service**. Point to **What is improving** (before → proposed). Click **বাংলা** in the top bar, then back. | 2.14, 1.1 |
 | 2 | 1:00 | **Sign in** `/sign-in` | Split composition, validation, OTP/first-login screens exist (`/sign-in/verify`). Explain the amber **demo role** panel is separate from production authentication. Enter as **Applicant**. | 1.9 |
 | 3 | 1:30 | **Applicant dashboard** | The most important action is first: a correction request, then fee due, then the draft. Open **Continue draft** (Dhanmondi PP). | — |
 | 4 | 2:30 | **PP wizard** | Step through: per-owner tabs (NID, tax, photo); press **Save and continue** with missing docs to show the error summary; **Use sample file**; location step — click the map, **Confirm plot position**, add plot/road photos (mandatory); building step FAR check; review — fee breakdown with rule-set label marked *illustrative*; declaration; **Submit** → Yes/No → success with reference. | 2.9, 2.3, 1.4, 1.15 |
