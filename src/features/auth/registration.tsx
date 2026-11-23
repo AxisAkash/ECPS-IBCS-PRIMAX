@@ -125,7 +125,7 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
         <ol className="mt-2 flex gap-1.5" aria-label="Registration progress">
           {steps.map((s, i) => (
             <li key={s.key} className="flex-1">
-              <span className={cn("block h-1 rounded-full", i < step ? "bg-teal-600" : i === step ? "bg-navy-900" : "bg-surface-3")} />
+              <span className={cn("block h-1 rounded-full", i < step ? "bg-teal-600" : i === step ? "bg-emphasis" : "bg-surface-3")} />
               <span className={cn("mt-1.5 block truncate text-[0.6875rem]", i === step ? "font-semibold text-ink-strong" : "text-subtle")}>{t(s.key)}</span>
               <span className="sr-only">{i < step ? "complete" : i === step ? "current" : "upcoming"}</span>
             </li>

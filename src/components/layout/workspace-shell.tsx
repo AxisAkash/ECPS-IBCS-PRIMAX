@@ -11,6 +11,7 @@ import { EmptyState, PageSkeleton } from "@/components/ui/feedback";
 import { ConfirmDialog, Dialog, DialogContent, Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger, Popover } from "@/components/ui/overlay";
 import { toast } from "@/components/ui/toast";
 import { DemoRoleGrid } from "@/features/auth/demo-roles";
+import { ThemeToggle } from "./public-header";
 import { can, roleMeta, type Permission } from "@/lib/domain/roles";
 import type { RoleKey } from "@/lib/domain/types";
 import { useI18n } from "@/lib/i18n";
@@ -385,6 +386,7 @@ export function WorkspaceShell({ workspace, children }: { workspace: "workspace"
           </div>
           {hydrated && session && (
             <div className="flex items-center gap-1.5">
+              <ThemeToggle className="size-9" />
               <NotificationsButton workspace={workspace} />
               <UserMenu />
             </div>

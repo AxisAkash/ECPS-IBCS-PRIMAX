@@ -88,7 +88,7 @@ export function OfficerDashboard() {
       <nav aria-label="Workload summary" className="grid grid-cols-2 overflow-hidden rounded-xl border border-line bg-surface sm:grid-cols-3 xl:grid-cols-5">
         {strip.map((s, i) => (
           <Link key={s.label} href={s.href} className={cn("group flex items-center gap-3 border-line px-5 py-4 transition-colors hover:bg-surface-2", i > 0 && "border-l", s.danger && "bg-danger-100/40")}>
-            <s.icon className={cn("size-5 shrink-0", s.danger ? "text-danger-600" : "text-subtle group-hover:text-teal-700")} aria-hidden />
+            <s.icon className={cn("size-5 shrink-0", s.danger ? "text-danger-700" : "text-subtle group-hover:text-teal-700")} aria-hidden />
             <span className="min-w-0">
               <span className={cn("tabular block font-display text-2xl font-semibold leading-none", s.danger ? "text-danger-700" : "text-ink-strong")}>{s.value}</span>
               <span className="mt-1 block truncate text-xs text-muted">{s.label}</span>

@@ -314,9 +314,9 @@ export function ApplicantDashboard() {
 
 function PrimaryAction({ item }: { item: ActionItem }) {
   const tone = {
-    warning: { bar: "bg-amber-500", chip: "bg-amber-50 text-amber-700 ring-amber-500/30", icon: "text-amber-600" },
-    danger: { bar: "bg-danger-600", chip: "bg-danger-100 text-danger-700 ring-danger-600/20", icon: "text-danger-600" },
-    info: { bar: "bg-teal-600", chip: "bg-teal-50 text-teal-800 ring-teal-600/20", icon: "text-teal-600" },
+    warning: { bar: "bg-amber-500", chip: "bg-amber-50 text-amber-700 ring-amber-500/30", icon: "text-amber-700" },
+    danger: { bar: "bg-danger-600", chip: "bg-danger-100 text-danger-700 ring-danger-600/20", icon: "text-danger-700" },
+    info: { bar: "bg-teal-600", chip: "bg-teal-50 text-teal-800 ring-teal-600/20", icon: "text-teal-700" },
   }[item.tone];
   return (
     <div className="relative overflow-hidden rounded-xl border border-line bg-surface shadow-sm">

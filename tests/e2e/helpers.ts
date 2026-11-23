@@ -5,6 +5,7 @@ export async function freshDemo(page: Page) {
   await page.evaluate(() => {
     localStorage.clear();
     document.cookie = "ecps-locale=en; path=/";
+    document.cookie = "ecps-theme=; path=/; max-age=0";
   });
 }
 

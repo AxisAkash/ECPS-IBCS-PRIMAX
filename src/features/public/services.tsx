@@ -48,7 +48,7 @@ export function ServicesIndex() {
           {GROUPS.map((g, gi) => (
             <section key={g.key} aria-labelledby={`g-${g.key}`}>
               <div className="mb-5 flex items-center gap-3">
-                <span className="ref grid size-8 place-items-center rounded-full border border-navy-900 text-xs font-semibold text-navy-900">{String(gi + 1).padStart(2, "0")}</span>
+                <span className="ref grid size-8 place-items-center rounded-full border border-ink-strong text-xs font-semibold text-ink-strong">{String(gi + 1).padStart(2, "0")}</span>
                 <h2 id={`g-${g.key}`} className="font-display text-xl font-semibold text-ink-strong">
                   {t(g.title)}
                 </h2>

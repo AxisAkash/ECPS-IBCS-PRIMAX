@@ -184,10 +184,10 @@ export function Tooltip({ content, children, side = "top" }: { content: ReactNod
           <RTooltip.Content
             side={side}
             sideOffset={6}
-            className="z-50 max-w-xs rounded-md bg-navy-900 px-2.5 py-1.5 text-xs leading-relaxed text-on-dark shadow-md data-[state=delayed-open]:animate-fade-in"
+            className="z-50 max-w-xs rounded-md bg-emphasis px-2.5 py-1.5 text-xs leading-relaxed text-on-dark shadow-md data-[state=delayed-open]:animate-fade-in"
           >
             {content}
-            <RTooltip.Arrow className="fill-navy-900" />
+            <RTooltip.Arrow className="fill-emphasis" />
           </RTooltip.Content>
         </RTooltip.Portal>
       </RTooltip.Root>
@@ -238,7 +238,7 @@ export function MenuItem({ className, destructive, ...props }: ComponentPropsWit
     <RMenu.Item
       className={cn(
         "flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-ink outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-surface-3 data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:text-muted",
-        destructive && "text-danger-700 data-[highlighted]:bg-danger-100 [&_svg]:text-danger-600",
+        destructive && "text-danger-700 data-[highlighted]:bg-danger-100 [&_svg]:text-danger-700",
         className,
       )}
       {...props}

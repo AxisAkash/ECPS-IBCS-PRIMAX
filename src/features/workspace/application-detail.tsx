@@ -222,7 +222,7 @@ export function ApplicationDetail({ id }: { id: string }) {
       {app.status === "correction_requested" && (
         <section aria-labelledby="corr-title" className="mb-6 overflow-hidden rounded-xl border border-amber-500/40 bg-amber-50/60">
           <div className="flex items-start gap-3 border-b border-amber-500/30 px-5 py-4">
-            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden />
+            <AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-700" aria-hidden />
             <div>
               <h2 id="corr-title" className="font-display font-semibold text-ink-strong">
                 {t("ad.corrTitle", { stage: L.stage(app.stage) })}
@@ -264,7 +264,7 @@ export function ApplicationDetail({ id }: { id: string }) {
       {app.status === "fee_pending" && (
         <section aria-labelledby="fee-title" className="mb-6 overflow-hidden rounded-xl border border-amber-500/40 bg-surface">
           <div className="flex items-start gap-3 border-b border-line bg-amber-50/60 px-5 py-4">
-            <Stamp className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden />
+            <Stamp className="mt-0.5 size-5 shrink-0 text-amber-700" aria-hidden />
             <div>
               <h2 id="fee-title" className="font-display font-semibold text-ink-strong">
                 {t("ad.feeTitle")}

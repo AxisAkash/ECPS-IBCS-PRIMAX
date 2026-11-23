@@ -363,7 +363,7 @@ function SignStep({ n, title, state, children }: { n: number; title: string; sta
   return (
     <li className={cn("px-5 py-4", state === "upcoming" && "opacity-55")} aria-current={state === "current" ? "step" : undefined}>
       <div className="mb-2.5 flex items-center gap-2.5">
-        <span className={cn("grid size-6 place-items-center rounded-full text-[0.6875rem] font-semibold", state === "done" ? "bg-teal-600 text-white" : state === "current" ? "bg-navy-900 text-white" : "border border-line-strong text-muted")}>
+        <span className={cn("grid size-6 place-items-center rounded-full text-[0.6875rem] font-semibold", state === "done" ? "bg-teal-600 text-white" : state === "current" ? "bg-emphasis text-white" : "border border-line-strong text-muted")}>
           {state === "done" ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : n}
         </span>
         <p className="text-sm font-semibold text-ink-strong">{title}</p>
@@ -405,7 +405,7 @@ function SignedSummary({ pkg, appId, justSigned }: { pkg: SigningPackage; appId:
       {justSigned && app && (
         <div className="border-t border-line bg-surface-2 px-5 py-4 text-sm">
           <p className="flex items-center gap-2 text-ink">
-            <Sparkles className="size-4 text-amber-600" aria-hidden />
+            <Sparkles className="size-4 text-amber-700" aria-hidden />
             {app.status === "fee_pending" ? "Applicant automatically asked for the permit fee and service drawings." : "Approval issued to the applicant."}
           </p>
           <Button asChild size="sm" variant="secondary" className="mt-3">

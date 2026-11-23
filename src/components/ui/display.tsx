@@ -177,7 +177,7 @@ export function Metric({ label, value, hint, tone, icon: Icon, href, className }
     <>
       <div className="flex items-center justify-between gap-3">
         <span className="text-[0.8125rem] text-muted">{label}</span>
-        {Icon && <Icon aria-hidden className={cn("size-4", tone === "danger" ? "text-danger-600" : tone === "warning" ? "text-amber-600" : tone === "success" ? "text-success-600" : "text-subtle")} />}
+        {Icon && <Icon aria-hidden className={cn("size-4", tone === "danger" ? "text-danger-700" : tone === "warning" ? "text-amber-700" : tone === "success" ? "text-success-700" : "text-subtle")} />}
       </div>
       <div className={cn("tabular mt-2 font-display text-[1.75rem] font-semibold leading-none tracking-tight", tone === "danger" ? "text-danger-700" : "text-ink-strong")}>{value}</div>
       {hint && <div className="mt-2 text-xs text-muted">{hint}</div>}
@@ -266,7 +266,7 @@ export function Stepper({
               className={cn(
                 "grid size-6 shrink-0 place-items-center rounded-full border text-[0.6875rem] font-semibold tabular",
                 s.state === "complete" && "border-teal-600 bg-teal-600 text-white",
-                s.state === "current" && "border-navy-900 bg-navy-900 text-white",
+                s.state === "current" && "border-emphasis bg-emphasis text-white",
                 s.state === "upcoming" && "border-line-strong bg-surface text-muted",
                 s.state === "error" && "border-amber-500 bg-amber-50 text-amber-700",
               )}

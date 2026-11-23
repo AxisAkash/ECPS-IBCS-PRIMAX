@@ -4,6 +4,8 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/toast";
 import { I18nProvider } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
+import { ThemeProvider } from "@/lib/theme";
+import type { Theme } from "@/lib/theme/constants";
 import type { Locale } from "@/lib/utils";
 
 function StoreHydrator() {
@@ -13,13 +15,15 @@ function StoreHydrator() {
   return null;
 }
 
-export function Providers({ locale, children }: { locale: Locale; children: ReactNode }) {
+export function Providers({ locale, theme, children }: { locale: Locale; theme: Theme; children: ReactNode }) {
   return (
-    <I18nProvider initialLocale={locale}>
-      <StoreHydrator />
-      {children}
-      <Toaster />
-    </I18nProvider>
+    <ThemeProvider initialTheme={theme}>
+      <I18nProvider initialLocale={locale}>
+        <StoreHydrator />
+        {children}
+        <Toaster />
+      </I18nProvider>
+    </ThemeProvider>
   );
 }
 

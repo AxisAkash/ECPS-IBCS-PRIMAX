@@ -95,14 +95,14 @@ export function PaymentDialog({ app, open, onOpenChange }: { app: Application; o
         )}
         {phase === "processing" && (
           <div className="flex flex-col items-center py-8 text-center" role="status">
-            <Spinner className="size-8 text-teal-600" />
+            <Spinner className="size-8 text-teal-700" />
             <p className="mt-4 font-medium text-ink-strong">{t("pay.waiting")}</p>
             <p className="mt-1 text-sm text-muted">{t("pay.simulated")}</p>
           </div>
         )}
         {phase === "done" && (
           <div className="flex flex-col items-center py-4 text-center" role="status">
-            <CheckCircle2 className="size-12 text-success-600" aria-hidden />
+            <CheckCircle2 className="size-12 text-success-700" aria-hidden />
             <p className="mt-3 font-display text-lg font-semibold text-ink-strong">{t("pay.done", { amount })}</p>
             <p className="mt-1 max-w-sm text-sm text-muted">{t("pay.doneBody")}</p>
           </div>

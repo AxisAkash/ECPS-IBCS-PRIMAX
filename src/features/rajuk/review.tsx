@@ -276,7 +276,7 @@ function KeyFacts({ app, far, users }: { app: Application; far: ReturnType<typeo
         <dd className={cn("mt-0.5 flex items-center gap-1.5 text-sm font-medium", farOk ? "text-ink-strong" : "text-amber-700")}>
           <span className="tabular">{proposed ? proposed.toFixed(2) : "—"}</span>
           <span className="text-muted">/ {limits?.far.toFixed(1) ?? "—"}</span>
-          {farOk ? <Check className="size-3.5 text-success-600" aria-label="Within limit" /> : <AlertTriangle className="size-3.5" aria-label="Exceeds limit" />}
+          {farOk ? <Check className="size-3.5 text-success-700" aria-label="Within limit" /> : <AlertTriangle className="size-3.5" aria-label="Exceeds limit" />}
         </dd>
       </div>
       {cell("Professionals", <span title={pros.map((p) => `${users.find((u) => u.id === p.userId)?.name} (${PROFESSIONAL_ROLE_LABEL[p.role]})`).join(", ")}>{pros.length} accepted</span>)}
@@ -339,7 +339,7 @@ function DocumentViewer({ app }: { app: Application }) {
                 >
                   {d.previewKind === "photo" ? <ImageIcon className="size-3.5 shrink-0" aria-hidden /> : d.previewKind === "drawing" ? <Building2 className="size-3.5 shrink-0" aria-hidden /> : <FileText className="size-3.5 shrink-0" aria-hidden />}
                   <span className="truncate">{d.drawingSheet ? `Sheet · ${d.drawingSheet}` : d.service ? `Service · ${d.service}` : DOCUMENT_CATEGORY_LABEL[d.category]}</span>
-                  {d.status === "verified" && <Check className="ml-auto size-3 shrink-0 text-success-600" aria-label="verified" />}
+                  {d.status === "verified" && <Check className="ml-auto size-3 shrink-0 text-success-700" aria-label="verified" />}
                 </button>
               </li>
             ))}
@@ -390,7 +390,7 @@ function ChecklistPanel({ app, editable }: { app: Application; editable: boolean
                         [
                           ["pass", Check, "Compliant", "bg-success-600 text-white"],
                           ["fail", X, "Not compliant", "bg-danger-600 text-white"],
-                          ["na", Minus, "Not applicable", "bg-slate-ink text-white"],
+                          ["na", Minus, "Not applicable", "bg-muted text-surface"],
                         ] as const
                       ).map(([v, Icon, label, on]) => (
                         <Tooltip key={v} content={label}>

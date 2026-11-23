@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Languages, Menu as MenuIcon, X } from "lucide-react";
+import { ArrowRight, Languages, Menu as MenuIcon, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { roleMeta } from "@/lib/domain/roles";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
+import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const NAV: Array<{ href: string; key: MessageKey }> = [
@@ -33,7 +34,29 @@ export function LanguageToggle({ onDark, className }: { onDark?: boolean; classN
     >
       <Languages className="size-4" aria-hidden />
       <span lang={locale === "en" ? "bn" : "en"}>{t("lang.switch")}</span>
-      <span className="sr-only"> (Switch to {locale === "en" ? "Bangla" : "English"})</span>
+      <span className="sr-only"> ({t("lang.switchTo")})</span>
+    </button>
+  );
+}
+
+/** Light/dark switch. Light is the default; the choice is saved in a cookie and applied instantly. */
+export function ThemeToggle({ onDark, className }: { onDark?: boolean; className?: string }) {
+  const { theme, toggle } = useTheme();
+  const { t } = useI18n();
+  const label = theme === "dark" ? t("theme.toLight") : t("theme.toDark");
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "inline-grid size-8 place-items-center rounded-md transition-colors",
+        onDark ? "text-on-dark hover:bg-white/10" : "text-ink hover:bg-surface-3",
+        className,
+      )}
+    >
+      {theme === "dark" ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
     </button>
   );
 }
@@ -60,6 +83,7 @@ export function UtilityBar() {
             <span className="size-1.5 rounded-full bg-amber-500" aria-hidden />
             {t("proto.badge")}
           </Link>
+          <ThemeToggle onDark className="size-7" />
           <LanguageToggle onDark className="h-7" />
         </div>
       </div>

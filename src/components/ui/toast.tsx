@@ -47,7 +47,7 @@ export function Toaster() {
           >
             <Icon
               aria-hidden
-              className={cn("mt-0.5 size-[18px] shrink-0", t.tone === "success" ? "text-success-600" : t.tone === "error" ? "text-danger-600" : "text-teal-600")}
+              className={cn("mt-0.5 size-[18px] shrink-0", t.tone === "success" ? "text-success-700" : t.tone === "error" ? "text-danger-700" : "text-teal-700")}
             />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink-strong">{t.title}</p>

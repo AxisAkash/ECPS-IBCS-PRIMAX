@@ -31,10 +31,10 @@ export function PageSkeleton() {
 }
 
 const CALLOUT = {
-  info: { icon: Info, cls: "border-teal-600/25 bg-teal-50 text-teal-800", iconCls: "text-teal-600" },
-  success: { icon: CheckCircle2, cls: "border-success-600/25 bg-success-100/70 text-success-700", iconCls: "text-success-600" },
-  warning: { icon: AlertTriangle, cls: "border-amber-500/40 bg-amber-50 text-amber-700", iconCls: "text-amber-600" },
-  danger: { icon: OctagonAlert, cls: "border-danger-600/25 bg-danger-100/70 text-danger-700", iconCls: "text-danger-600" },
+  info: { icon: Info, cls: "border-teal-600/25 bg-teal-50 text-teal-800", iconCls: "text-teal-700" },
+  success: { icon: CheckCircle2, cls: "border-success-600/25 bg-success-100/70 text-success-700", iconCls: "text-success-700" },
+  warning: { icon: AlertTriangle, cls: "border-amber-500/40 bg-amber-50 text-amber-700", iconCls: "text-amber-700" },
+  danger: { icon: OctagonAlert, cls: "border-danger-600/25 bg-danger-100/70 text-danger-700", iconCls: "text-danger-700" },
   demo: { icon: Info, cls: "border-dashed border-slate-ink/30 bg-surface-2 text-muted", iconCls: "text-slate-ink" },
 } as const;
 
@@ -105,7 +105,7 @@ export function EmptyState({
 
 export function ProgressBar({ value, className, tone = "teal", label }: { value: number; className?: string; tone?: "teal" | "amber" | "navy" | "success"; label?: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  const fill = { teal: "bg-teal-600", amber: "bg-amber-500", navy: "bg-navy-900", success: "bg-success-600" }[tone];
+  const fill = { teal: "bg-teal-600", amber: "bg-amber-500", navy: "bg-emphasis", success: "bg-success-600" }[tone];
   return (
     <div
       role="progressbar"

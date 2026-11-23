@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Inter, Manrope, Noto_Sans_Bengali } from "next/font/goog
 import { cookies } from "next/headers";
 import { Providers } from "@/components/layout/providers";
 import { LOCALE_COOKIE } from "@/lib/i18n/constants";
+import { parseTheme, THEME_COOKIE } from "@/lib/theme/constants";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
@@ -26,12 +27,13 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
   const locale = store.get(LOCALE_COOKIE)?.value === "bn" ? "bn" : "en";
+  const theme = parseTheme(store.get(THEME_COOKIE)?.value);
   return (
     // suppressHydrationWarning: browser extensions (e.g. writing assistants) add attributes to <html>/<body>
     // before React hydrates. This only ignores those elements' own attributes, not their children.
-    <html lang={locale} className={`${inter.variable} ${manrope.variable} ${plexMono.variable} ${bengali.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${manrope.variable} ${plexMono.variable} ${bengali.variable}`} data-theme={theme} style={{ colorScheme: theme }} suppressHydrationWarning>
       <body className="min-h-dvh" suppressHydrationWarning>
-        <Providers locale={locale}>{children}</Providers>
+        <Providers locale={locale} theme={theme}>{children}</Providers>
       </body>
     </html>
   );

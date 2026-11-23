@@ -42,7 +42,7 @@ export function DecisionLetter({ app, users, kind }: { app: Application; users: 
           <Printer /> Print
         </Button>
       </div>
-      <article className="relative mx-auto max-w-2xl overflow-hidden rounded-md border border-line bg-white px-10 py-10 font-serif text-[0.9375rem] leading-relaxed text-ink shadow-sm" aria-label="Decision letter">
+      <article data-theme="light" className="relative mx-auto max-w-2xl overflow-hidden rounded-md border border-line bg-white px-10 py-10 font-serif text-[0.9375rem] leading-relaxed text-ink shadow-sm" aria-label="Decision letter">
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center">
           <span className="-rotate-[24deg] font-mono text-5xl font-semibold tracking-[0.2em] text-line">DEMONSTRATION</span>
         </div>

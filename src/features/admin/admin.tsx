@@ -68,7 +68,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <Link
                   href={`/rajuk/admin${s.slug ? `/${s.slug}` : ""}`}
                   aria-current={on ? "page" : undefined}
-                  className={cn("flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.8125rem] font-medium transition-colors", on ? "bg-navy-900 text-white" : "text-ink hover:bg-surface-3")}
+                  className={cn("flex items-center gap-2.5 rounded-md px-3 py-2 text-[0.8125rem] font-medium transition-colors", on ? "bg-emphasis text-white" : "text-ink hover:bg-surface-3")}
                 >
                   <s.icon className={cn("size-4", on ? "text-amber-200" : "text-subtle")} aria-hidden />
                   {s.label}

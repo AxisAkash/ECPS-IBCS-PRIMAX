@@ -162,7 +162,7 @@ export function InspectionForm({ id }: { id: string }) {
       <section aria-labelledby="loc" className="mb-5 overflow-hidden rounded-xl border border-line bg-surface">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <h2 id="loc" className="flex items-center gap-2 font-display text-[0.9375rem] font-semibold text-ink-strong">
-            <MapPin className="size-4 text-amber-600" aria-hidden /> Location
+            <MapPin className="size-4 text-amber-700" aria-hidden /> Location
           </h2>
           {canEdit && (
             <Button size="sm" variant={inspection.gps ? "ghost" : "primary"} onClick={capture} loading={capturing}>
@@ -239,7 +239,7 @@ export function InspectionForm({ id }: { id: string }) {
                         [
                           ["pass", "Yes", Check, "border-success-600 bg-success-600 text-white"],
                           ["fail", "No", X, "border-danger-600 bg-danger-600 text-white"],
-                          ["na", "N/A", Minus, "border-slate-ink bg-slate-ink text-white"],
+                          ["na", "N/A", Minus, "border-muted bg-muted text-surface"],
                         ] as const
                       ).map(([v, label, Icon, on]) => (
                         <button
@@ -337,9 +337,9 @@ export function InspectionForm({ id }: { id: string }) {
         <div>
           <p className="mb-2 font-display text-[0.9375rem] font-semibold text-ink-strong">Outcome</p>
           <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as Inspection["outcome"])} disabled={!canEdit} className="grid gap-2" aria-label="Outcome">
-            <ChoiceCard value="compliant" title="Compliant" icon={<CircleDot className="size-4 text-success-600" />} />
-            <ChoiceCard value="minor_deviation" title="Minor deviation" description="Corrective action can be completed without stopping work." icon={<CircleDot className="size-4 text-amber-600" />} />
-            <ChoiceCard value="major_deviation" title="Major deviation" description="Escalate to the Authorized Officer (may open a 2C file)." icon={<CircleDot className="size-4 text-danger-600" />} />
+            <ChoiceCard value="compliant" title="Compliant" icon={<CircleDot className="size-4 text-success-700" />} />
+            <ChoiceCard value="minor_deviation" title="Minor deviation" description="Corrective action can be completed without stopping work." icon={<CircleDot className="size-4 text-amber-700" />} />
+            <ChoiceCard value="major_deviation" title="Major deviation" description="Escalate to the Authorized Officer (may open a 2C file)." icon={<CircleDot className="size-4 text-danger-700" />} />
           </RadioGroup>
         </div>
       </section>

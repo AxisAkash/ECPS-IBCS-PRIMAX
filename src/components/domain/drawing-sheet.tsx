@@ -35,7 +35,7 @@ const MONO = "var(--font-plex-mono), monospace";
  */
 export function DrawingSheet({ kind, title, page, total, appRef, project, version, storeys = 7, signatures = [], previewSlot, previewName, signable = true, className }: Props) {
   return (
-    <svg viewBox="0 0 420 297" className={cn("h-auto w-full bg-white", className)} role="img" aria-label={`${title}, sheet ${page} of ${total}, version ${version}`}>
+    <svg data-theme="light" viewBox="0 0 420 297" className={cn("h-auto w-full bg-white", className)} role="img" aria-label={`${title}, sheet ${page} of ${total}, version ${version}`}>
       {/* Sheet frame */}
       <rect x="0" y="0" width="420" height="297" fill="#fff" />
       <rect x="8" y="8" width="404" height="281" fill="none" stroke={INK} strokeWidth="0.8" />

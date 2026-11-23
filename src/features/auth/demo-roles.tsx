@@ -63,7 +63,7 @@ export function DemoRoleGrid({ columns = 2, next }: { columns?: 1 | 2 | 3; next?
               onClick={() => enter(r.key)}
               className="group flex w-full items-center gap-3 rounded-lg border border-line bg-surface px-3.5 py-3 text-left transition-[border-color,box-shadow,background-color] hover:border-teal-600/50 hover:shadow-sm disabled:cursor-wait disabled:opacity-60"
             >
-              <span className={cn("grid size-9 shrink-0 place-items-center rounded-md", r.workspace === "rajuk" ? "bg-navy-900 text-white" : "bg-teal-50 text-teal-700")}>
+              <span className={cn("grid size-9 shrink-0 place-items-center rounded-md", r.workspace === "rajuk" ? "bg-emphasis text-white" : "bg-teal-50 text-teal-700")}>
                 {busy ? <Spinner className="size-4" /> : <Icon className="size-4" aria-hidden />}
               </span>
               <span className="min-w-0 flex-1">

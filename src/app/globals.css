@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Theme: light is the default; dark applies when <html data-theme="dark"> (set server-side from the
+   ecps-theme cookie, so there is no flash). `dark:` utilities target that attribute, not the OS setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /*
  * ECPS design tokens
  * ------------------------------------------------------------------
@@ -43,6 +47,8 @@
   --color-line: #dfe6ed;
   --color-line-strong: #c9d4df;
   --color-line-dark: rgb(255 255 255 / 0.12);
+  /* Selected / current state fill (stepper, chips, tooltips). Holds white text. */
+  --color-emphasis: #14263d;
 
   /* Text */
   --color-ink: #253244;
@@ -97,6 +103,157 @@
   --animate-draw: draw 1600ms var(--ease-out-quint) both;
 
   --breakpoint-xs: 26rem;
+}
+
+/* Non-utility tokens: charts and the schematic site map read these via var() in SVG attributes. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --chart-1: #008aa8;
+  --chart-2: #b97000;
+  --chart-3: #5157c4;
+  --chart-4: #b23f7d;
+  --chart-critical: #b8322a;
+  --chart-warning: #c4861f;
+  --chart-good: #1f7f50;
+  --chart-grid: #e6ebf0;
+  --chart-axis: #7c8a9c;
+  --chart-ink: #253244;
+  --chart-cursor: #9aa8b8;
+  --chart-hover: rgb(20 38 61 / 0.04);
+  --chart-gap: #ffffff;
+  --map-ground: #f4f7fa;
+  --map-block: #ffffff;
+  --map-block-line: #c9d4df;
+  --map-hatch: #dfe6ed;
+  --map-road: #ffffff;
+  --map-road-line: #c9d4df;
+  --map-label: #7c8a9c;
+  --map-res: #dbeff2;
+  --map-com: #fbecd2;
+  --map-open: #e3f3ea;
+  --map-pin: #14263d;
+  --map-halo: #ffffff;
+  --drafting-line: rgb(20 38 61 / 0.045);
+}
+
+/*
+ * Dark theme — designed, not inverted. Deep navy canvas with lifted surfaces; text and tinted
+ * backgrounds are re-stepped so every pair still meets WCAG AA (see DESIGN_SYSTEM.md §2).
+ * Brand fills that carry white text (teal-600, danger-600, success-600, amber-500) keep their values.
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-navy-900: #172b45;
+  --color-navy-800: #1f3756;
+  --color-slate-ink: #b4c3d4;
+  --color-teal-800: #8fd3de;
+  --color-teal-700: #6cc4d2;
+  --color-teal-100: #123a44;
+  --color-teal-50: #0f2d36;
+  --color-amber-700: #f0b45a;
+  --color-amber-600: #d99a35;
+  --color-amber-100: #3a2c12;
+  --color-amber-50: #2a2112;
+
+  --color-canvas: #0b1521;
+  --color-surface: #111e2e;
+  --color-surface-2: #142335;
+  --color-surface-3: #1a2b40;
+  --color-line: #233650;
+  --color-line-strong: #36506f;
+  --color-line-dark: rgb(255 255 255 / 0.1);
+  --color-emphasis: #42628c;
+
+  --color-ink: #d3dce7;
+  --color-ink-strong: #f0f4f9;
+  --color-muted: #9aabbf;
+  --color-subtle: #8d9fb4;
+
+  --color-success-700: #6fd39e;
+  --color-success-100: #12301f;
+  --color-warning-700: #f0b45a;
+  --color-warning-100: #332508;
+  --color-danger-700: #ff8f85;
+  --color-danger-600: #c93d33;
+  --color-danger-100: #3a1715;
+  --color-info-700: #6cc4d2;
+  --color-info-100: #123a44;
+  --color-accent-700: #aab5ee;
+  --color-accent-100: #1f2747;
+
+  --shadow-xs: 0 1px 0 rgb(0 0 0 / 0.25);
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.35), 0 1px 1px rgb(0 0 0 / 0.2);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 16px 40px -12px rgb(0 0 0 / 0.6), 0 4px 10px -4px rgb(0 0 0 / 0.35);
+  --shadow-focus: 0 0 0 3px rgb(108 196 210 / 0.35);
+
+  /* Chart palette re-stepped for the dark surface (validated: lightness band, CVD, contrast). */
+  --chart-1: #1a9ab6;
+  --chart-2: #c4861f;
+  --chart-3: #787ee4;
+  --chart-4: #cc6399;
+  --chart-critical: #e05a4f;
+  --chart-warning: #d99a35;
+  --chart-good: #3aa874;
+  --chart-grid: #22344b;
+  --chart-axis: #8d9fb4;
+  --chart-ink: #d3dce7;
+  --chart-cursor: #4a6080;
+  --chart-hover: rgb(255 255 255 / 0.04);
+  --chart-gap: #111e2e;
+  --map-ground: #0f1b2a;
+  --map-block: #18283c;
+  --map-block-line: #2b405b;
+  --map-hatch: #22344b;
+  --map-road: #24374f;
+  --map-road-line: #3a5272;
+  --map-label: #8d9fb4;
+  --map-res: #123a44;
+  --map-com: #3a2c12;
+  --map-open: #12301f;
+  --map-pin: #f0f4f9;
+  --map-halo: #111e2e;
+  --drafting-line: rgb(255 255 255 / 0.035);
+}
+
+/* "Paper" islands — letters, document previews and drawing sheets stay printed-page light in any theme. */
+[data-theme="dark"] [data-theme="light"] {
+  color-scheme: light;
+  --color-navy-900: #14263d;
+  --color-navy-800: #1b3250;
+  --color-slate-ink: #304a68;
+  --color-teal-800: #0d5965;
+  --color-teal-700: #11697a;
+  --color-teal-100: #dbeff2;
+  --color-teal-50: #eef8f9;
+  --color-amber-700: #8a5a10;
+  --color-amber-600: #c4861f;
+  --color-amber-100: #fbecd2;
+  --color-amber-50: #fdf7ec;
+  --color-canvas: #f4f7fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #f9fbfc;
+  --color-surface-3: #eef2f6;
+  --color-line: #dfe6ed;
+  --color-line-strong: #c9d4df;
+  --color-emphasis: #14263d;
+  --color-ink: #253244;
+  --color-ink-strong: #14263d;
+  --color-muted: #5a6a7e;
+  --color-subtle: #637287;
+  --color-success-700: #1b6b45;
+  --color-success-100: #e3f3ea;
+  --color-warning-700: #8f5200;
+  --color-warning-100: #fcefd9;
+  --color-danger-700: #a3241b;
+  --color-danger-600: #b8322a;
+  --color-danger-100: #fbe8e6;
+  --color-info-700: #0d5965;
+  --color-info-100: #dbeff2;
+  --color-accent-700: #3b4f8c;
+  --color-accent-100: #e7ebf7;
+  color: var(--color-ink);
 }
 
 @keyframes fade-up {
@@ -174,6 +331,9 @@
   ::selection {
     background: rgb(22 125 141 / 0.18);
   }
+  [data-theme="dark"] ::selection {
+    background: rgb(108 196 210 / 0.3);
+  }
   :focus-visible {
     outline: 2px solid var(--color-teal-600);
     outline-offset: 2px;
@@ -231,8 +391,8 @@
   }
   .bg-drafting {
     background-image:
-      linear-gradient(to right, rgb(20 38 61 / 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(20 38 61 / 0.045) 1px, transparent 1px);
+      linear-gradient(to right, var(--drafting-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--drafting-line) 1px, transparent 1px);
     background-size: 32px 32px;
   }
   .hairline {

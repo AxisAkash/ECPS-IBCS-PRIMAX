@@ -71,7 +71,7 @@ export function StageTrack({ type, stage, status, className, showLabels = false 
               className={cn(
                 "h-1.5 rounded-full",
                 done && "bg-teal-600",
-                current && (status === "correction_requested" ? "bg-amber-500" : status === "rejected" ? "bg-danger-600" : "bg-navy-900"),
+                current && (status === "correction_requested" ? "bg-amber-500" : status === "rejected" ? "bg-danger-600" : "bg-emphasis"),
                 !done && !current && "bg-surface-3",
               )}
             />

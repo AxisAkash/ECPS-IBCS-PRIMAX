@@ -37,6 +37,9 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
+/** Light / dark values behind the chart CSS variables (globals.css). */
+const CHART_HEX = ["#008aa8 / #1a9ab6", "#b97000 / #c4861f", "#5157c4 / #787ee4", "#b23f7d / #cc6399", "#b8322a / #e05a4f"];
+
 export default function DesignSystemPage() {
   const [seg, setSeg] = useState<"a" | "b" | "c">("a");
   const [confirm, setConfirm] = useState(false);
@@ -77,10 +80,10 @@ export default function DesignSystemPage() {
             ))}
           </ul>
           <p className="mt-6 text-sm font-medium text-ink-strong">Chart palette (validated: lightness band, chroma, CVD ΔE ≥ 8, contrast ≥ 3:1)</p>
-          <div className="mt-2 flex gap-2">
-            {[...SERIES, STATUS.critical].map((c) => (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {[...SERIES, STATUS.critical].map((c, i) => (
               <span key={c} className="ref flex items-center gap-2 rounded-md border border-line bg-surface px-2 py-1 text-xs">
-                <span className="size-3 rounded-sm" style={{ background: c }} /> {c}
+                <span className="size-3 rounded-sm" style={{ background: c }} /> {CHART_HEX[i]}
               </span>
             ))}
           </div>
@@ -226,7 +229,7 @@ export default function DesignSystemPage() {
             <div className="space-y-3 rounded-lg border border-line bg-surface p-4">
               <ProgressBar value={0.62} label="Progress" />
               <div className="flex items-center gap-3">
-                <Spinner className="text-teal-600" label="Loading" /> <Skeleton className="h-4 flex-1" />
+                <Spinner className="text-teal-700" label="Loading" /> <Skeleton className="h-4 flex-1" />
               </div>
             </div>
             <EmptyState icon={Check} title="Empty state" body="Explains why nothing is shown and what to do next." className="md:col-span-2" />

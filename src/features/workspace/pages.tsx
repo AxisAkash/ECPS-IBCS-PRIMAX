@@ -289,7 +289,7 @@ export function ProfilePage() {
         <Panel title="Sign-in security" actions={<SimulatedTag />}>
           <ul className="space-y-4 text-sm">
             <li className="flex items-start gap-3">
-              <ShieldCheck className="mt-0.5 size-4 text-success-600" aria-hidden />
+              <ShieldCheck className="mt-0.5 size-4 text-success-700" aria-hidden />
               <div className="flex-1">
                 <p className="font-medium text-ink-strong">One-time code on untrusted devices</p>
                 <p className="text-xs text-muted">{security.otpForUntrustedDevice ? "On" : "Off"} · set by RAJUK policy</p>

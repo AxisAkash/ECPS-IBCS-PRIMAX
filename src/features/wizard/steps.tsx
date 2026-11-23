@@ -615,7 +615,7 @@ function CheckTile({ label, value, limit, ok }: { label: string; value: string; 
     <div className={cn("rounded-lg border p-4", ok ? "border-line bg-surface-2" : "border-amber-500/50 bg-amber-50")}>
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted">{label}</p>
-        {ok ? <Check className="size-4 text-success-600" aria-label={t("st.bld.within")} /> : <AlertTriangle className="size-4 text-amber-600" aria-label={t("st.bld.exceeds")} />}
+        {ok ? <Check className="size-4 text-success-700" aria-label={t("st.bld.within")} /> : <AlertTriangle className="size-4 text-amber-700" aria-label={t("st.bld.exceeds")} />}
       </div>
       <p className="tabular mt-1 font-display text-xl font-semibold text-ink-strong">{value}</p>
       <p className={cn("text-xs", ok ? "text-muted" : "font-medium text-amber-700")}>{limit}</p>

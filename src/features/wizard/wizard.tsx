@@ -129,7 +129,7 @@ export function ApplicationWizard({ id }: { id: string }) {
             t("wiz.saving")
           ) : savedAt ? (
             <>
-              <Check className="size-3.5 text-success-600" aria-hidden /> {t("wiz.saved")} · {formatRelative(savedAt)}
+              <Check className="size-3.5 text-success-700" aria-hidden /> {t("wiz.saved")} · {formatRelative(savedAt)}
             </>
           ) : (
             <>{t("wz.autosave")}</>

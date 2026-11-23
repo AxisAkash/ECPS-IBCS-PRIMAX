@@ -29,7 +29,7 @@ export function DocumentPreview({ doc, app, className }: { doc: DocumentRecord; 
   }
   if (doc.previewKind === "photo") return <PhotoPlaceholder label={doc.name} kind={doc.category === "road_photo" ? "road" : doc.category === "plot_photo" ? "plot" : "portrait"} className={className} />;
   return (
-    <div className={cn("mx-auto aspect-[1/1.414] w-full max-w-md rounded-md border border-line bg-white p-8 shadow-sm", className)} role="img" aria-label={`Sample document preview: ${doc.name}`}>
+    <div data-theme="light" className={cn("mx-auto aspect-[1/1.414] w-full max-w-md rounded-md border border-line bg-white p-8 shadow-sm", className)} role="img" aria-label={`Sample document preview: ${doc.name}`}>
       <div className="flex items-start justify-between">
         <div className="space-y-1.5">
           <div className="h-2 w-28 rounded bg-navy-900/80" />
