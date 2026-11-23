@@ -81,23 +81,21 @@ export const ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
 export interface RoleMeta {
   key: RoleKey;
   label: string;
-  labelBn: string;
   workspace: "workspace" | "rajuk";
   home: string;
-  summary: string;
 }
 
 export const ROLES: RoleMeta[] = [
-  { key: "applicant", label: "Applicant", labelBn: "আবেদনকারী", workspace: "workspace", home: "/workspace", summary: "Building owner submitting and tracking permit applications." },
-  { key: "professional", label: "Professional", labelBn: "পেশাজীবী", workspace: "workspace", home: "/workspace", summary: "Architect responding to invitations and preparing drawings." },
-  { key: "officer", label: "RAJUK Officer", labelBn: "রাজউক কর্মকর্তা", workspace: "rajuk", home: "/rajuk", summary: "Authorized Officer processing, routing and signing files." },
-  { key: "inspector", label: "Inspector", labelBn: "পরিদর্শক", workspace: "rajuk", home: "/rajuk/inspections", summary: "Building Inspector completing field inspections on mobile." },
-  { key: "committee", label: "Committee User", labelBn: "কমিটি সদস্য", workspace: "rajuk", home: "/rajuk/committee", summary: "BC Committee member reviewing cases and recording votes." },
-  { key: "estate", label: "Estate Officer", labelBn: "এস্টেট কর্মকর্তা", workspace: "rajuk", home: "/rajuk/estate", summary: "Estate section uploading NOCs and verifying planning permits." },
-  { key: "finance", label: "Finance Officer", labelBn: "অর্থ কর্মকর্তা", workspace: "rajuk", home: "/rajuk/finance", summary: "Finance staff monitoring payments and reconciliation." },
-  { key: "management", label: "Management", labelBn: "ব্যবস্থাপনা", workspace: "rajuk", home: "/rajuk/management", summary: "Senior management overseeing workload and holding times." },
-  { key: "admin", label: "Administrator", labelBn: "প্রশাসক", workspace: "rajuk", home: "/rajuk/admin", summary: "System administrator managing users, roles and settings." },
-  { key: "support", label: "Support", labelBn: "সহায়তা", workspace: "rajuk", home: "/rajuk/helpdesk", summary: "Helpdesk engineer resolving user tickets." },
+  { key: "applicant", label: "Applicant", workspace: "workspace", home: "/workspace" },
+  { key: "professional", label: "Professional", workspace: "workspace", home: "/workspace" },
+  { key: "officer", label: "RAJUK Officer", workspace: "rajuk", home: "/rajuk" },
+  { key: "inspector", label: "Inspector", workspace: "rajuk", home: "/rajuk/inspections" },
+  { key: "committee", label: "Committee User", workspace: "rajuk", home: "/rajuk/committee" },
+  { key: "estate", label: "Estate Officer", workspace: "rajuk", home: "/rajuk/estate" },
+  { key: "finance", label: "Finance Officer", workspace: "rajuk", home: "/rajuk/finance" },
+  { key: "management", label: "Management", workspace: "rajuk", home: "/rajuk/management" },
+  { key: "admin", label: "Administrator", workspace: "rajuk", home: "/rajuk/admin" },
+  { key: "support", label: "Support", workspace: "rajuk", home: "/rajuk/helpdesk" },
 ];
 
 export const roleMeta = (k: RoleKey) => ROLES.find((r) => r.key === k)!;

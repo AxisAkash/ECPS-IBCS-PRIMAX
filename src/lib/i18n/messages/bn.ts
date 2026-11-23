@@ -1,4 +1,8 @@
+import { bnAdmin } from "./bn-admin";
 import { bnApplicant } from "./bn-applicant";
+import { bnPublic } from "./bn-public";
+import { bnRajuk } from "./bn-rajuk";
+import { bnShell } from "./bn-shell";
 import type { MessageKey } from "./en";
 
 /**
@@ -8,6 +12,10 @@ import type { MessageKey } from "./en";
  */
 export const bn: Record<MessageKey, string> = {
   ...bnApplicant,
+  ...bnShell,
+  ...bnRajuk,
+  ...bnAdmin,
+  ...bnPublic,
   "gov.country": "গণপ্রজাতন্ত্রী বাংলাদেশ সরকার",
   "gov.agency": "রাজধানী উন্নয়ন কর্তৃপক্ষ (রাজউক)",
   "brand.name": "ECPS",
@@ -245,7 +253,7 @@ export const bn: Record<MessageKey, string> = {
   "auth.back": "পাবলিক পোর্টালে ফিরে যান",
   "auth.err.identifier": "আপনার ইমেইল, মোবাইল নম্বর বা ইউজারনেম লিখুন।",
   "auth.err.password": "আপনার পাসওয়ার্ড লিখুন।",
-  "auth.err.demo": "এই প্রোটোটাইপে কোনো প্রকৃত অ্যাকাউন্ট নেই। ঘুরে দেখতে নিচের একটি ডেমো ভূমিকা বেছে নিন।",
+  "auth.err.demo": "এই প্রোটোটাইপে কোনো প্রকৃত অ্যাকাউন্ট নেই। নমুনা ভূমিকা নিয়ে ঘুরে দেখতে ডেমো টুলস খুলুন।",
   "auth.or": "অথবা",
   "auth.demo.title": "ডেমো ভূমিকায় ঘুরে দেখুন",
   "auth.demo.lead": "শুধু প্রদর্শনের জন্য — কোনো পরিচয় যাচাই হয় না এবং কোনো প্রকৃত অ্যাকাউন্ট ব্যবহৃত হয় না।",
@@ -423,4 +431,26 @@ export const bn: Record<MessageKey, string> = {
   "common.yes": "হ্যাঁ",
   "common.no": "না",
   "common.back": "পেছনে",
+  "demo.toggle": "ডেমো",
+  "demo.show": "ডেমো টুলস দেখান",
+  "demo.hide": "ডেমো টুলস লুকান",
+  "demo.kicker": "প্রদর্শনী",
+  "demo.title": "ডেমো টুলস",
+  "demo.lead": "কাল্পনিক তথ্য দিয়ে প্রোটোটাইপটি ঘুরে দেখুন। এখানকার কোনো কিছুই রাজউকের প্রকৃত সেবার সঙ্গে যুক্ত নয়।",
+  "demo.close": "ডেমো টুলস বন্ধ করুন",
+  "demo.current": "বর্তমান ভূমিকা:",
+  "demo.enter": "ডেমো ভূমিকায় প্রবেশ করুন",
+  "demo.scenarios": "নির্দেশিত ডেমো দৃশ্যপট",
+  "demo.roles.lead": "সংযুক্ত অভিজ্ঞতাগুলোর মধ্যে যাতায়াত করুন। আপনার পরিবর্তিত তথ্য যেমন আছে তেমনই থাকবে, তাই বিভিন্ন ভূমিকা থেকে একই নথি অনুসরণ করতে পারবেন।",
+  "demo.reset.title": "সব ডেমো তথ্য রিসেট করবেন?",
+  "demo.reset.body": "প্রতিটি আবেদন, স্বাক্ষর, ভোট, পরিদর্শন ও টিকিট শুরুর কাল্পনিক অবস্থায় ফিরে যাবে। বর্তমান ভূমিকায় আপনার সাইন-ইন বজায় থাকবে।",
+  "demo.reset.confirm": "হ্যাঁ, রিসেট করুন",
+  "demo.reset.toast": "ডেমো তথ্য রিসেট হয়েছে",
+  "demo.reset.toastBody": "সব কাল্পনিক তথ্য শুরুর অবস্থায় ফিরে গেছে।",
+  "demo.signinHint": "ডেমো প্রবেশাধিকার দেখান",
+  "auth.err.otpLink": "অপরিচিত ডিভাইসের ওটিপি ও প্রথম লগইনের পাসওয়ার্ড পরিবর্তন দেখুন",
+  "auth.err.otpNote": "শুধু ইন্টারফেস সিমুলেশন।",
+  "nav.signedin": "সাইন-ইন করা আছে",
+  "shell.proto": "কাল্পনিক তথ্য। SIMULATED চিহ্নিত ধাপগুলো কোনো প্রকৃত সেবার সঙ্গে যুক্ত নয়।",
+  "shell.portal": "পাবলিক পোর্টাল",
 };

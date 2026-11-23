@@ -12,6 +12,7 @@ import { Callout } from "@/components/ui/feedback";
 import { Checkbox, Field, Input } from "@/components/ui/form";
 import { DemoRoleGrid } from "@/features/auth/demo-roles";
 import { useI18n } from "@/lib/i18n";
+import { useDemoUi } from "@/lib/store/demo-ui";
 import { sleep } from "@/lib/utils";
 
 function SignInInner() {
@@ -21,6 +22,8 @@ function SignInInner() {
   const expired = params.get("reason") === "expired";
   const [show, setShow] = useState(false);
   const [notice, setNotice] = useState(false);
+  const demoVisible = useDemoUi((s) => s.visible);
+  const showDemo = useDemoUi((s) => s.show);
 
   const schema = useMemo(
     () =>
@@ -91,9 +94,14 @@ function SignInInner() {
 
         {notice && (
           <Callout tone="demo" icon={Info} title={t("auth.err.demo")}>
-            <span>
-              <Link href="/sign-in/verify">Preview the untrusted-device OTP and first-login password change</Link> — interface simulation only.
+            <span className="block">
+              <Link href="/sign-in/verify">{t("auth.err.otpLink")}</Link> — {t("auth.err.otpNote")}
             </span>
+            {!demoVisible && (
+              <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={showDemo}>
+                {t("demo.signinHint")}
+              </Button>
+            )}
           </Callout>
         )}
 
@@ -109,7 +117,8 @@ function SignInInner() {
         </Link>
       </p>
 
-      <section aria-labelledby="demo-title" className="mt-10 rounded-xl border border-dashed border-amber-500/50 bg-amber-50/60 p-5">
+      {demoVisible && (
+      <section aria-labelledby="demo-title" className="mt-10 animate-fade-in rounded-xl border border-dashed border-amber-500/50 bg-amber-50/60 p-5">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h2 id="demo-title" className="font-display text-base font-semibold text-ink-strong">
@@ -117,10 +126,11 @@ function SignInInner() {
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-amber-700">{t("auth.demo.lead")}</p>
           </div>
-          <span className="shrink-0 rounded-xs border border-amber-600/40 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-wider text-amber-700">Demo</span>
+          <span className="shrink-0 rounded-xs border border-amber-600/40 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-wider text-amber-700">{t("demo.toggle")}</span>
         </div>
         <DemoRoleGrid columns={1} next={next} />
       </section>
+      )}
     </div>
   );
 }

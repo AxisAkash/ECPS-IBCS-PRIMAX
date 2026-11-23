@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/toast";
+import { DemoPanel } from "@/features/demo/demo-tools";
 import { I18nProvider } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { ThemeProvider } from "@/lib/theme";
@@ -21,6 +22,7 @@ export function Providers({ locale, theme, children }: { locale: Locale; theme: 
       <I18nProvider initialLocale={locale}>
         <StoreHydrator />
         {children}
+        <DemoPanel />
         <Toaster />
       </I18nProvider>
     </ThemeProvider>

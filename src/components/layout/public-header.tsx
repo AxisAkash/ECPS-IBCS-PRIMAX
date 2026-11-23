@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { DemoToggle } from "@/features/demo/demo-tools";
 import { roleMeta } from "@/lib/domain/roles";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
@@ -75,14 +76,7 @@ export function UtilityBar() {
           <span className="text-on-dark">{t("gov.agency")}</span>
         </p>
         <div className="flex shrink-0 items-center gap-3">
-          <Link href="/demo" className="hidden items-center gap-1.5 rounded px-1 text-amber-200 hover:text-amber-100 md:inline-flex">
-            <span className="size-1.5 rounded-full bg-amber-500" aria-hidden />
-            {t("proto.badge")} · {t("proto.label")}
-          </Link>
-          <Link href="/demo" className="inline-flex items-center gap-1.5 rounded px-1 text-amber-200 md:hidden">
-            <span className="size-1.5 rounded-full bg-amber-500" aria-hidden />
-            {t("proto.badge")}
-          </Link>
+          <DemoToggle onDark className="h-7" />
           <ThemeToggle onDark className="size-7" />
           <LanguageToggle onDark className="h-7" />
         </div>

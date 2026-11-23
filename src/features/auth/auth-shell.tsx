@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { HeroPlan } from "@/components/brand/hero-plan";
 import { Logo } from "@/components/brand/logo";
 import { LanguageToggle, ThemeToggle } from "@/components/layout/public-header";
+import { DemoToggle } from "@/features/demo/demo-tools";
 import { useI18n } from "@/lib/i18n";
 
 export function AuthShell({ children }: { children: ReactNode }) {
@@ -47,13 +48,19 @@ export function AuthShell({ children }: { children: ReactNode }) {
       <div className="flex min-h-dvh flex-col bg-surface">
         <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-3 lg:border-0 lg:px-10 lg:pt-6">
           <div className="lg:hidden">
-            <Logo />
+            <span className="sm:hidden">
+              <Logo compact />
+            </span>
+            <span className="hidden sm:inline">
+              <Logo />
+            </span>
           </div>
           <Link href="/" className="hidden items-center gap-1.5 rounded text-sm text-muted hover:text-ink-strong lg:inline-flex">
             <ArrowLeft className="size-4" aria-hidden />
             {t("auth.back")}
           </Link>
           <div className="flex items-center gap-1">
+            <DemoToggle compact className="mr-1" />
             <ThemeToggle />
             <LanguageToggle />
           </div>

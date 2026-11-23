@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Locale } from "@/lib/utils";
+import { toBnDigits, type Locale } from "@/lib/utils";
 import { LOCALE_COOKIE } from "./constants";
 import { bn } from "./messages/bn";
 import { en, type MessageKey } from "./messages/en";
@@ -14,6 +14,8 @@ interface I18nValue {
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: (key: MessageKey, vars?: Vars) => string;
+  /** Glossary lookup for data values (job titles, zones, departments…): `term("desig", "Town Planner")`. Falls back to the value. */
+  term: (group: string, value: string | undefined) => string;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -25,6 +27,15 @@ export function interpolate(template: string, vars?: Vars) {
 
 export function translate(locale: Locale, key: MessageKey, vars?: Vars) {
   return interpolate(DICTS[locale][key] ?? en[key] ?? key, vars);
+}
+
+/** Look up a data value in the glossary keys (`<group>.<value>`); unknown values are shown as stored. */
+export function translateTerm(locale: Locale, group: string, value: string | undefined) {
+  if (!value) return "";
+  const zone = group === "zone" ? /^Zone (\d+)$/.exec(value) : null;
+  if (zone) return translate(locale, "term.zone", { n: locale === "bn" ? toBnDigits(zone[1]!) : zone[1]! });
+  const key = `${group}.${value}` as MessageKey;
+  return DICTS[locale][key] ?? value;
 }
 
 export function I18nProvider({ initialLocale, children }: { initialLocale: Locale; children: ReactNode }) {
@@ -40,7 +51,8 @@ export function I18nProvider({ initialLocale, children }: { initialLocale: Local
   }, [locale]);
 
   const t = useCallback((key: MessageKey, vars?: Vars) => translate(locale, key, vars), [locale]);
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+  const term = useCallback((group: string, v: string | undefined) => translateTerm(locale, group, v), [locale]);
+  const value = useMemo(() => ({ locale, setLocale, t, term }), [locale, setLocale, t, term]);
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
