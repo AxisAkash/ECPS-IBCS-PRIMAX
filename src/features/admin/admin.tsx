@@ -790,7 +790,7 @@ export function AdminAudit() {
       { id: "ip", header: t("ad.a.ip"), accessorFn: (a) => a.ip ?? "", cell: ({ getValue }) => <span className="ref text-xs text-muted">{getValue() as string}</span> },
       { id: "sev", header: t("ad.a.severity"), accessorFn: (a) => a.severity, cell: ({ getValue }) => <Badge tone={getValue() === "warning" ? "warning" : getValue() === "notice" ? "info" : "neutral"}>{t(`sev.${getValue() as AuditEntry["severity"]}`)}</Badge> },
     ],
-    [users, t, locale],
+    [users, t, locale, L],
   );
   return (
     <AdminShell>
