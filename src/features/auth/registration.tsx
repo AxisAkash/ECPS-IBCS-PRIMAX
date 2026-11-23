@@ -16,7 +16,7 @@ import { cn, sleep } from "@/lib/utils";
 type Kind = "applicant" | "professional";
 
 export function RegistrationWizard({ kind }: { kind: Kind }) {
-  const { t } = useI18n();
+  const { t, term } = useI18n();
 
   const schema = useMemo(
     () =>
@@ -86,19 +86,19 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
           {t("reg2.done.body")}
         </p>
         <div className="mt-6 rounded-lg border border-line bg-surface-2 p-4 text-sm">
-          <p className="text-xs text-muted">Next steps in the live system</p>
+          <p className="text-xs text-muted">{t("rg.next")}</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5 text-ink">
             {kind === "applicant" ? (
               <>
-                <li>NID details verified with the Election Commission service (TOR 3.2b).</li>
-                <li>Mobile number confirmed by OTP.</li>
-                <li>First sign-in requires a password change (TOR 1.9).</li>
+                <li>{t("rg.a1")}</li>
+                <li>{t("rg.a2")}</li>
+                <li>{t("rg.a3")}</li>
               </>
             ) : (
               <>
-                <li>Membership verified with {v.body || "the professional body"} (TOR 1.8).</li>
-                <li>Account activated once verification succeeds.</li>
-                <li>Invitations from owners appear in your workspace.</li>
+                <li>{t("rg.p1", { body: v.body || t("rg.theBody") })}</li>
+                <li>{t("rg.p2")}</li>
+                <li>{t("rg.p3")}</li>
               </>
             )}
           </ol>
@@ -122,12 +122,12 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
         <div className="flex items-center justify-between text-xs text-muted">
           <span>{t("reg2.step", { n: step + 1, total: steps.length })}</span>
         </div>
-        <ol className="mt-2 flex gap-1.5" aria-label="Registration progress">
+        <ol className="mt-2 flex gap-1.5" aria-label={t("rg.progress")}>
           {steps.map((s, i) => (
             <li key={s.key} className="flex-1">
-              <span className={cn("block h-1 rounded-full", i < step ? "bg-teal-600" : i === step ? "bg-navy-900" : "bg-surface-3")} />
+              <span className={cn("block h-1 rounded-full", i < step ? "bg-teal-600" : i === step ? "bg-emphasis" : "bg-surface-3")} />
               <span className={cn("mt-1.5 block truncate text-[0.6875rem]", i === step ? "font-semibold text-ink-strong" : "text-subtle")}>{t(s.key)}</span>
-              <span className="sr-only">{i < step ? "complete" : i === step ? "current" : "upcoming"}</span>
+              <span className="sr-only">{i < step ? t("ui.stepDone") : i === step ? t("ui.stepCurrent") : t("ui.stepUpcoming")}</span>
             </li>
           ))}
         </ol>
@@ -194,33 +194,33 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
             <Field label={t("f.body")} required error={errors.body?.message}>
               {(a) => (
                 <Select {...a} {...register("body")}>
-                  <option value="">Select…</option>
-                  <option value="IAB">Institute of Architects Bangladesh (IAB)</option>
-                  <option value="IEB">Institution of Engineers, Bangladesh (IEB)</option>
-                  <option value="BIP">Bangladesh Institute of Planners (BIP)</option>
-                  <option value="IDEB">Institution of Diploma Engineers, Bangladesh (IDEB)</option>
+                  <option value="">{t("rg.select")}</option>
+                  {(["IAB", "IEB", "BIP", "IDEB"] as const).map((b) => (
+                    <option key={b} value={b}>
+                      {t(`body.${b}`)}
+                    </option>
+                  ))}
                 </Select>
               )}
             </Field>
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label={t("f.membership")} required error={errors.membership?.message}>
-                {(a) => <Input {...a} {...register("membership")} className="ref" placeholder="e.g. A-0000" />}
+                {(a) => <Input {...a} {...register("membership")} className="ref" placeholder={t("rg.membershipPh")} />}
               </Field>
               <Field label={t("f.discipline")} required error={errors.discipline?.message}>
                 {(a) => (
                   <Select {...a} {...register("discipline")}>
-                    <option value="">Select…</option>
-                    <option>Architect</option>
-                    <option>Structural Engineer</option>
-                    <option>Electrical Engineer</option>
-                    <option>Plumbing Engineer</option>
-                    <option>Construction Supervision Engineer</option>
-                    <option>Planner</option>
+                    <option value="">{t("rg.select")}</option>
+                    {["Architect", "Structural Engineer", "Electrical Engineer", "Plumbing Engineer", "Construction Supervision Engineer", "Planner"].map((d) => (
+                      <option key={d} value={d}>
+                        {term("desig", d)}
+                      </option>
+                    ))}
                   </Select>
                 )}
               </Field>
             </div>
-            <Callout tone="info">Membership is verified against the professional body&apos;s records through an approved integration (TOR 1.8). In this prototype no lookup is made.</Callout>
+            <Callout tone="info">{t("rg.memberNote")}</Callout>
           </>
         )}
         {step === 2 && (
@@ -244,7 +244,7 @@ export function RegistrationWizard({ kind }: { kind: Kind }) {
             })}
             {(errors.docA || errors.docB) && (
               <p role="alert" className="text-xs font-medium text-danger-700">
-                Both documents are required to continue.
+                {t("rg.bothDocs")}
               </p>
             )}
           </div>

@@ -12,19 +12,13 @@ import { ChoiceCard, RadioGroup, SegmentedControl, Textarea } from "@/components
 import { ConfirmDialog } from "@/components/ui/overlay";
 import { toast } from "@/components/ui/toast";
 import { checklistCompletion, INSPECTION_CHECKLIST } from "@/lib/domain/checklists";
-import { OCCUPANCY, SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import type { Inspection } from "@/lib/domain/types";
 import { ecps } from "@/lib/services";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn, formatDate, formatDateTime, uid } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 
-const KIND_LABEL: Record<Inspection["kind"], string> = {
-  construction_start: "Construction start verification",
-  plinth: "Plinth-level inspection",
-  frcm_monitoring: "FRCM monitoring visit",
-  occupancy: "Occupancy Certificate inspection",
-  complaint: "Complaint / site verification",
-};
 
 function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const dy = (a.lat - b.lat) * 111_320;
@@ -33,6 +27,7 @@ function distanceM(a: { lat: number; lng: number }, b: { lat: number; lng: numbe
 }
 
 export function InspectionList() {
+  const { t, locale } = useI18n();
   const session = useDemoStore((s) => s.session);
   const inspections = useDemoStore((s) => s.inspections);
   const applications = useDemoStore((s) => s.applications);
@@ -41,19 +36,19 @@ export function InspectionList() {
   const list = mine.filter((i) => (tab === "open" ? i.status !== "submitted" : i.status === "submitted")).sort((a, b) => a.scheduledFor.localeCompare(b.scheduledFor));
   return (
     <div className="mx-auto max-w-3xl">
-      <PageHeader kicker="Field inspections · TOR 1.12 · 2.3" title="Inspections" description="Assigned site visits with location, checklist and photographs. Designed for use on a phone in the field." />
+      <PageHeader kicker={t("in.kicker")} title={t("in.title")} description={t("in.desc")} />
       <SegmentedControl
         className="mb-4"
-        label="Inspection status"
+        label={t("in.statusLabel")}
         value={tab}
         onChange={setTab}
         options={[
-          { value: "open", label: "To do", count: mine.filter((i) => i.status !== "submitted").length },
-          { value: "submitted", label: "Submitted", count: mine.filter((i) => i.status === "submitted").length },
+          { value: "open", label: t("in.todo"), count: mine.filter((i) => i.status !== "submitted").length },
+          { value: "submitted", label: t("in.submitted"), count: mine.filter((i) => i.status === "submitted").length },
         ]}
       />
       {list.length === 0 ? (
-        <EmptyState title="No inspections here" />
+        <EmptyState title={t("in.none")} />
       ) : (
         <ul className="space-y-3">
           {list.map((i) => {
@@ -66,18 +61,18 @@ export function InspectionList() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        {today && i.status !== "submitted" && <Badge tone="danger">Today</Badge>}
-                        <Badge tone={i.status === "submitted" ? "success" : i.status === "draft" ? "warning" : "info"}>{i.status === "assigned" ? "Assigned" : i.status === "draft" ? "Draft saved" : "Submitted"}</Badge>
+                        {today && i.status !== "submitted" && <Badge tone="danger">{t("in.today")}</Badge>}
+                        <Badge tone={i.status === "submitted" ? "success" : i.status === "draft" ? "warning" : "info"}>{i.status === "assigned" ? t("in.assigned") : i.status === "draft" ? t("in.draftSaved") : t("in.submitted")}</Badge>
                       </div>
-                      <p className="mt-2 font-display text-base font-semibold text-ink-strong">{KIND_LABEL[i.kind]}</p>
+                      <p className="mt-2 font-display text-base font-semibold text-ink-strong">{t(`inkind.${i.kind}`)}</p>
                       <p className="mt-0.5 text-sm text-muted">{a.property.address}</p>
                     </div>
                     <ChevronRight className="mt-1 size-5 shrink-0 text-subtle group-hover:text-teal-700" aria-hidden />
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
                     <span className="ref text-ink">{a.ref}</span>
-                    <span>{formatDateTime(i.scheduledFor)}</span>
-                    {i.status !== "assigned" && <span>{c.done}/{c.total} checks · {i.photos.length} photo(s)</span>}
+                    <span>{formatDateTime(i.scheduledFor, locale)}</span>
+                    {i.status !== "assigned" && <span>{t("in.progress", { done: c.done, total: c.total, n: i.photos.length })}</span>}
                   </div>
                 </Link>
               </li>
@@ -90,6 +85,8 @@ export function InspectionList() {
 }
 
 export function InspectionForm({ id }: { id: string }) {
+  const { t, locale } = useI18n();
+  const L = useLabels();
   const inspection = useDemoStore((s) => s.inspections.find((i) => i.id === id));
   const app = useDemoStore((s) => s.applications.find((a) => a.id === inspection?.applicationId));
   const setItem = useDemoStore((s) => s.setInspectionChecklist);
@@ -101,7 +98,7 @@ export function InspectionForm({ id }: { id: string }) {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  if (!inspection || !app) return <EmptyState title="Inspection not found" action={<Button asChild><Link href="/rajuk/inspections">Back</Link></Button>} />;
+  if (!inspection || !app) return <EmptyState title={t("in.notFound")} action={<Button asChild><Link href="/rajuk/inspections">{t("in.back")}</Link></Button>} />;
   const locked = inspection.status === "submitted";
   const canEdit = !locked && (session?.role === "inspector" ? inspection.inspectorId === session.userId : false);
   const c = checklistCompletion(INSPECTION_CHECKLIST, inspection.checklist);
@@ -117,14 +114,14 @@ export function InspectionForm({ id }: { id: string }) {
 
   const addPhoto = async (caption: string, dataUrl?: string) => {
     await ecps.inspections.saveDraft(inspection.id, { photos: [...inspection.photos, { id: uid("ph"), caption, takenAt: new Date().toISOString(), sample: true, dataUrl }] });
-    toast.success("Photo attached");
+    toast.success(t("in.photoAttached"));
   };
 
   const saveDraft = async () => {
     setBusy(true);
     await ecps.inspections.saveDraft(inspection.id, { observations: notes, outcome });
     setBusy(false);
-    toast.success("Draft saved", "You can finish later, even offline in the field app.");
+    toast.success(t("in.toast.draft"), t("in.toast.draftBody"));
   };
 
   const submit = async () => {
@@ -133,28 +130,28 @@ export function InspectionForm({ id }: { id: string }) {
     await ecps.inspections.submit(inspection.id, outcome);
     setBusy(false);
     setConfirm(false);
-    toast.success("Inspection submitted", "The file holder has been notified.");
+    toast.success(t("in.toast.submitted"), t("in.toast.submittedBody"));
   };
 
   return (
     <div className="mx-auto max-w-3xl pb-28">
       <Link href="/rajuk/inspections" className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink-strong">
-        <ArrowLeft className="size-4" aria-hidden /> Inspections
+        <ArrowLeft className="size-4" aria-hidden /> {t("in.title")}
       </Link>
       <div className="mb-5">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={locked ? "success" : inspection.status === "draft" ? "warning" : "info"}>{locked ? "Submitted" : inspection.status === "draft" ? "Draft" : "Assigned"}</Badge>
+          <Badge tone={locked ? "success" : inspection.status === "draft" ? "warning" : "info"}>{locked ? t("in.submitted") : inspection.status === "draft" ? t("in.draft") : t("in.assigned")}</Badge>
           <span className="ref text-sm text-muted">{app.ref}</span>
         </div>
-        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink-strong">{KIND_LABEL[inspection.kind]}</h1>
+        <h1 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink-strong">{t(`inkind.${inspection.kind}`)}</h1>
         <p className="mt-1 text-sm text-muted">
-          {app.property.address} · scheduled {formatDateTime(inspection.scheduledFor)}
+          {t("in.scheduled", { address: app.property.address, when: formatDateTime(inspection.scheduledFor, locale) })}
         </p>
       </div>
 
       {locked && (
-        <Callout tone="success" className="mb-5" title={`Submitted ${formatDate(inspection.submittedAt)} · outcome: ${inspection.outcome?.replace("_", " ")}`}>
-          The record is locked. Corrections require a new inspection entry.
+        <Callout tone="success" className="mb-5" title={t("in.lockedTitle", { date: formatDate(inspection.submittedAt, locale), outcome: L.outcome(inspection.outcome ?? "compliant") })}>
+          {t("in.lockedBody")}
         </Callout>
       )}
 
@@ -162,24 +159,24 @@ export function InspectionForm({ id }: { id: string }) {
       <section aria-labelledby="loc" className="mb-5 overflow-hidden rounded-xl border border-line bg-surface">
         <div className="flex items-center justify-between gap-3 px-4 py-3">
           <h2 id="loc" className="flex items-center gap-2 font-display text-[0.9375rem] font-semibold text-ink-strong">
-            <MapPin className="size-4 text-amber-600" aria-hidden /> Location
+            <MapPin className="size-4 text-amber-700" aria-hidden /> {t("in.location")}
           </h2>
           {canEdit && (
             <Button size="sm" variant={inspection.gps ? "ghost" : "primary"} onClick={capture} loading={capturing}>
-              <Crosshair /> {inspection.gps ? "Re-capture" : "Capture GPS"}
+              <Crosshair /> {inspection.gps ? t("in.recapture") : t("in.capture")}
             </Button>
           )}
         </div>
-        <SiteMap lat={plot.lat} lng={plot.lng} device={inspection.gps} height={240} label="Plot and inspector position" className="rounded-none border-x-0 border-b-0" />
+        <SiteMap lat={plot.lat} lng={plot.lng} device={inspection.gps} height={240} label={t("in.mapLabel")} className="rounded-none border-x-0 border-b-0" />
         <div className="grid grid-cols-2 gap-px border-t border-line bg-line text-sm">
           <div className="bg-surface px-4 py-2.5">
-            <p className="text-xs text-muted">Device position</p>
-            <p className="ref text-ink-strong">{inspection.gps ? `${inspection.gps.lat.toFixed(5)}, ${inspection.gps.lng.toFixed(5)}` : "Not captured"}</p>
+            <p className="text-xs text-muted">{t("in.device")}</p>
+            <p className="ref text-ink-strong">{inspection.gps ? `${inspection.gps.lat.toFixed(5)}, ${inspection.gps.lng.toFixed(5)}` : t("in.notCaptured")}</p>
           </div>
           <div className="bg-surface px-4 py-2.5">
-            <p className="text-xs text-muted">Distance to recorded plot</p>
+            <p className="text-xs text-muted">{t("in.distance")}</p>
             <p className={cn("font-medium", dist === undefined ? "text-muted" : dist <= 30 ? "text-success-700" : "text-amber-700")}>
-              {dist === undefined ? "—" : `${dist} m ${dist <= 30 ? "· on site" : "· check position"}`} {inspection.gps?.simulated && <SimulatedTag className="ml-1" />}
+              {dist === undefined ? "—" : dist <= 30 ? t("in.onSite", { m: dist }) : t("in.check", { m: dist })} {inspection.gps?.simulated && <SimulatedTag className="ml-1" />}
             </p>
           </div>
         </div>
@@ -187,23 +184,23 @@ export function InspectionForm({ id }: { id: string }) {
 
       {/* Project summary */}
       <section className="mb-5 rounded-xl border border-line bg-surface p-4 text-sm">
-        <h2 className="mb-3 font-display text-[0.9375rem] font-semibold text-ink-strong">Approved project</h2>
+        <h2 className="mb-3 font-display text-[0.9375rem] font-semibold text-ink-strong">{t("in.approved")}</h2>
         <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div>
-            <dt className="text-xs text-muted">Permit</dt>
-            <dd className="font-medium text-ink-strong">{SERVICE_SHORT_LABEL[app.type]}</dd>
+            <dt className="text-xs text-muted">{t("in.permit")}</dt>
+            <dd className="font-medium text-ink-strong">{L.service(app.type)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Storeys</dt>
+            <dt className="text-xs text-muted">{t("in.storeys")}</dt>
             <dd className="font-medium text-ink-strong">{app.building?.storeys ?? "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Use</dt>
-            <dd className="font-medium text-ink-strong">{app.building ? OCCUPANCY[app.building.occupancy] : "—"}</dd>
+            <dt className="text-xs text-muted">{t("in.use")}</dt>
+            <dd className="font-medium text-ink-strong">{app.building ? L.occ(app.building.occupancy) : "—"}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted">Front setback</dt>
-            <dd className="font-medium text-ink-strong">{app.building?.setbacks.front ?? "—"} m</dd>
+            <dt className="text-xs text-muted">{t("in.setback")}</dt>
+            <dd className="font-medium text-ink-strong">{app.building ? t("in.meters", { n: app.building.setbacks.front }) : "—"}</dd>
           </div>
         </dl>
       </section>
@@ -213,33 +210,33 @@ export function InspectionForm({ id }: { id: string }) {
         <div className="border-b border-line px-4 py-3">
           <div className="flex items-center justify-between">
             <h2 id="chk" className="font-display text-[0.9375rem] font-semibold text-ink-strong">
-              Checklist
+              {t("in.checklist")}
             </h2>
             <span className="tabular text-xs text-muted">
               {c.done}/{c.total}
             </span>
           </div>
-          <ProgressBar value={c.done / c.total} className="mt-2" tone={c.failed ? "amber" : "teal"} label="Checklist progress" />
+          <ProgressBar value={c.done / c.total} className="mt-2" tone={c.failed ? "amber" : "teal"} label={t("in.chkProgress")} />
         </div>
         {INSPECTION_CHECKLIST.map((sec) => (
           <fieldset key={sec.id} className="border-b border-line px-4 py-3 last:border-0">
-            <legend className="sr-only">{sec.title}</legend>
+            <legend className="sr-only">{L.chkSection(sec.id)}</legend>
             <p className="mb-2 flex items-center justify-between text-xs">
-              <span className="font-mono uppercase tracking-[0.12em] text-muted">{sec.title}</span>
-              <span className="text-subtle">{sec.source}</span>
+              <span className="font-mono uppercase tracking-[0.12em] text-muted [:lang(bn)_&]:font-sans [:lang(bn)_&]:normal-case [:lang(bn)_&]:tracking-normal">{L.chkSection(sec.id)}</span>
+              <span className="text-subtle">{L.chkSource(sec.id)}</span>
             </p>
             <ul className="space-y-3">
               {sec.items.map((it) => {
                 const st = inspection.checklist[it.id]?.result ?? null;
                 return (
                   <li key={it.id}>
-                    <p className="text-sm text-ink">{it.label}</p>
-                    <div role="radiogroup" aria-label={it.label} className="mt-2 grid grid-cols-3 gap-2">
+                    <p className="text-sm text-ink">{L.chkItem(it.id)}</p>
+                    <div role="radiogroup" aria-label={L.chkItem(it.id)} className="mt-2 grid grid-cols-3 gap-2">
                       {(
                         [
-                          ["pass", "Yes", Check, "border-success-600 bg-success-600 text-white"],
-                          ["fail", "No", X, "border-danger-600 bg-danger-600 text-white"],
-                          ["na", "N/A", Minus, "border-slate-ink bg-slate-ink text-white"],
+                          ["pass", t("in.yes"), Check, "border-success-600 bg-success-600 text-white"],
+                          ["fail", t("in.no"), X, "border-danger-600 bg-danger-600 text-white"],
+                          ["na", t("in.na"), Minus, "border-muted bg-muted text-surface"],
                         ] as const
                       ).map(([v, label, Icon, on]) => (
                         <button
@@ -267,9 +264,9 @@ export function InspectionForm({ id }: { id: string }) {
       <section aria-labelledby="ph" className="mb-5 rounded-xl border border-line bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="ph" className="font-display text-[0.9375rem] font-semibold text-ink-strong">
-            Photographs
+            {t("in.photos")}
           </h2>
-          <span className="text-xs text-muted">{inspection.photos.length} attached</span>
+          <span className="text-xs text-muted">{t("in.attached", { n: inspection.photos.length })}</span>
         </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {inspection.photos.map((p) =>
@@ -287,10 +284,10 @@ export function InspectionForm({ id }: { id: string }) {
             <div className="flex aspect-[4/3] flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-line-strong bg-surface-2 p-3 text-center">
               <Camera className="size-6 text-teal-700" aria-hidden />
               <Button size="xs" variant="secondary" onClick={() => fileRef.current?.click()}>
-                Take / choose photo
+                {t("in.take")}
               </Button>
-              <Button size="xs" variant="subtle" onClick={() => addPhoto(`Site photo ${inspection.photos.length + 1} (sample)`)}>
-                Use sample photo
+              <Button size="xs" variant="subtle" onClick={() => addPhoto(t("in.sampleCaption", { n: inspection.photos.length + 1 }))}>
+                {t("in.sample")}
               </Button>
               <input
                 ref={fileRef}
@@ -299,7 +296,7 @@ export function InspectionForm({ id }: { id: string }) {
                 capture="environment"
                 className="sr-only"
                 tabIndex={-1}
-                aria-label="Photograph"
+                aria-label={t("in.photoLabel")}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
                   if (!f) return;
@@ -323,23 +320,23 @@ export function InspectionForm({ id }: { id: string }) {
             </div>
           )}
         </div>
-        <p className="mt-3 text-xs text-muted">Photos stay in this browser for the demo. Production uploads would include timestamp and GPS metadata.</p>
+        <p className="mt-3 text-xs text-muted">{t("in.photoNote")}</p>
       </section>
 
       {/* Observations & outcome */}
       <section className="mb-5 space-y-4 rounded-xl border border-line bg-surface p-4">
         <div>
           <label htmlFor="obs" className="font-display text-[0.9375rem] font-semibold text-ink-strong">
-            Observations
+            {t("in.observations")}
           </label>
-          <Textarea id="obs" className="mt-2" rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!canEdit} placeholder="What did you observe on site?" />
+          <Textarea id="obs" className="mt-2" rows={4} value={notes} onChange={(e) => setNotes(e.target.value)} disabled={!canEdit} placeholder={t("in.obsPlaceholder")} />
         </div>
         <div>
-          <p className="mb-2 font-display text-[0.9375rem] font-semibold text-ink-strong">Outcome</p>
-          <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as Inspection["outcome"])} disabled={!canEdit} className="grid gap-2" aria-label="Outcome">
-            <ChoiceCard value="compliant" title="Compliant" icon={<CircleDot className="size-4 text-success-600" />} />
-            <ChoiceCard value="minor_deviation" title="Minor deviation" description="Corrective action can be completed without stopping work." icon={<CircleDot className="size-4 text-amber-600" />} />
-            <ChoiceCard value="major_deviation" title="Major deviation" description="Escalate to the Authorized Officer (may open a 2C file)." icon={<CircleDot className="size-4 text-danger-600" />} />
+          <p className="mb-2 font-display text-[0.9375rem] font-semibold text-ink-strong">{t("in.outcome")}</p>
+          <RadioGroup value={outcome} onValueChange={(v) => setOutcome(v as Inspection["outcome"])} disabled={!canEdit} className="grid gap-2" aria-label={t("in.outcome")}>
+            <ChoiceCard value="compliant" title={L.outcome("compliant")} icon={<CircleDot className="size-4 text-success-700" />} />
+            <ChoiceCard value="minor_deviation" title={L.outcome("minor_deviation")} description={t("in.minorDesc")} icon={<CircleDot className="size-4 text-amber-700" />} />
+            <ChoiceCard value="major_deviation" title={L.outcome("major_deviation")} description={t("in.majorDesc")} icon={<CircleDot className="size-4 text-danger-700" />} />
           </RadioGroup>
         </div>
       </section>
@@ -349,16 +346,16 @@ export function InspectionForm({ id }: { id: string }) {
         <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur lg:left-64">
           <div className="mx-auto flex max-w-3xl gap-2">
             <Button variant="secondary" size="lg" className="flex-1" onClick={saveDraft} loading={busy && !confirm}>
-              <Save /> Save draft
+              <Save /> {t("in.saveDraft")}
             </Button>
             <Button size="lg" className="flex-1" onClick={() => setConfirm(true)} disabled={!inspection.gps || c.done < c.total}>
-              <Send /> Submit
+              <Send /> {t("in.submit")}
             </Button>
           </div>
-          {(!inspection.gps || c.done < c.total) && <p className="mx-auto mt-1.5 max-w-3xl text-center text-xs text-muted">Capture GPS and complete all checks to submit.</p>}
+          {(!inspection.gps || c.done < c.total) && <p className="mx-auto mt-1.5 max-w-3xl text-center text-xs text-muted">{t("in.needAll")}</p>}
         </div>
       )}
-      <ConfirmDialog open={confirm} onOpenChange={setConfirm} title="Submit this inspection?" description="The record is locked after submission and sent to the file holder." confirmLabel="Yes, submit" loading={busy} onConfirm={submit} />
+      <ConfirmDialog open={confirm} onOpenChange={setConfirm} title={t("in.q")} description={t("in.qDesc")} confirmLabel={t("in.yesSubmit")} loading={busy} onConfirm={submit} />
     </div>
   );
 }

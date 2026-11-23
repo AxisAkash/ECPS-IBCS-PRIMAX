@@ -98,6 +98,9 @@ export interface ProfessionalParticipation {
   invitedAt: string;
   respondedAt?: string;
   note?: string;
+  /** Set when the professional endorses the current drawing set. */
+  endorsedAt?: string;
+  replacementReason?: string;
 }
 
 export type DocumentCategory =
@@ -129,6 +132,8 @@ export interface DocumentRecord {
   sample: true;
   previewKind: "drawing" | "document" | "photo";
   drawingSheet?: DrawingSheetKind;
+  /** Service drawings requested after approval (TOR 1.13). */
+  service?: "electrical" | "plumbing";
 }
 
 export type DrawingSheetKind = "site" | "ground" | "typical" | "elevation" | "section" | "far";
@@ -197,7 +202,11 @@ export interface WorkflowEvent {
     | "noc_uploaded"
     | "revert_requested"
     | "reverted"
-    | "appeal_filed";
+    | "appeal_filed"
+    | "professional_replaced"
+    | "endorsed"
+    | "service_drawings"
+    | "letter_regenerated";
   fromStage?: StageKey;
   toStage?: StageKey;
   toUserId?: string;
@@ -269,6 +278,8 @@ export interface Application {
   linkedApplicationId?: string;
   permitNo?: string;
   correctionNote?: string;
+  /** Decision letter version; incremented when a letter is regenerated (TOR 1.16). */
+  letterVersion?: number;
   /** Records migrated from the legacy "Construction Permit (CP) system" (TOR 2.11). */
   legacy?: boolean;
 }
@@ -293,7 +304,8 @@ export interface SigningPackage {
   signatures: SignatureRecord[];
   status: "awaiting" | "signed";
   requiredSignerIds: string[];
-  audit: Array<{ at: string; actorId: string; text: string; simulated?: boolean }>;
+  /** `text` is English (exports/fallback); `msg` renders in the reader's language. */
+  audit: Array<{ at: string; actorId: string; text: string; msg?: LocalMessage; simulated?: boolean }>;
 }
 
 export interface CommitteeMeeting {
@@ -347,12 +359,38 @@ export interface Payment {
   reconciled: boolean;
 }
 
+/**
+ * Localisable notification text: message keys plus variables, rendered in the reader's language.
+ * `keys` are variables whose values are themselves message keys (e.g. a stage name); `terms` are
+ * glossary values such as a zone. Free text a person typed (reasons, notes) is passed as-is in `vars`.
+ */
+/** A localisable line of generated text: message key + variables (see i18n/notify.ts). */
+export interface LocalMessage {
+  key: string;
+  vars?: Record<string, string | number>;
+  /** Variables whose values are message keys. */
+  keys?: Record<string, string>;
+  /** Variables holding a list of message keys, joined with ", ". */
+  lists?: Record<string, string[]>;
+  terms?: Record<string, [group: string, value: string]>;
+}
+
+export interface NotificationMessage {
+  title: string;
+  body: string;
+  vars?: Record<string, string | number>;
+  keys?: Record<string, string>;
+  terms?: Record<string, [group: string, value: string]>;
+}
+
 export interface Notification {
   id: string;
   userId: string;
   at: string;
+  /** English text, kept for exports and as a fallback. */
   title: string;
   body: string;
+  msg?: NotificationMessage;
   href?: string;
   read: boolean;
   kind: "action" | "info" | "success" | "warning";
@@ -508,4 +546,26 @@ export interface DapZone {
   label: string;
   permittedOccupancies: OccupancyKey[];
   notes: string;
+}
+
+export interface CommitteeConfig {
+  id: string;
+  name: string;
+  type: string;
+  maxPresentations: number;
+  members: string[];
+}
+
+export interface ReportDelivery {
+  monthly: boolean;
+  weekly: boolean;
+  recipients: string;
+}
+
+export interface TrustedDevice {
+  id: string;
+  userId: string;
+  label: string;
+  kind: "laptop" | "phone";
+  lastSeenAt: string;
 }

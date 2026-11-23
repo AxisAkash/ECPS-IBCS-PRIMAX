@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { Accordion as RAccordion, Dialog as RDialog, DropdownMenu as RMenu, Popover as RPopover, Tabs as RTabs, Tooltip as RTooltip } from "radix-ui";
 import { ChevronDown } from "lucide-react";
 import { useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
@@ -32,6 +33,7 @@ export function DialogContent({
   hideClose?: boolean;
   eyebrow?: ReactNode;
 }) {
+  const { t } = useI18n();
   const width = { sm: "max-w-md", md: "max-w-lg", lg: "max-w-2xl", xl: "max-w-4xl" }[size];
   return (
     <RDialog.Portal>
@@ -50,12 +52,12 @@ export function DialogContent({
             {description ? (
               <RDialog.Description className="text-sm leading-relaxed text-muted">{description}</RDialog.Description>
             ) : (
-              <RDialog.Description className="sr-only">{typeof title === "string" ? title : "Dialog"}</RDialog.Description>
+              <RDialog.Description className="sr-only">{typeof title === "string" ? title : t("ui.dialog")}</RDialog.Description>
             )}
           </div>
           {!hideClose && (
             <RDialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Close dialog" className="-mr-2 -mt-1">
+              <Button variant="ghost" size="icon-sm" aria-label={t("ui.closeDialog")} className="-mr-2 -mt-1">
                 <X />
               </Button>
             </RDialog.Close>
@@ -77,8 +79,8 @@ export function ConfirmDialog({
   title,
   description,
   children,
-  confirmLabel = "Yes, continue",
-  cancelLabel = "No, go back",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   tone = "primary",
   loading,
@@ -98,6 +100,7 @@ export function ConfirmDialog({
   confirmDisabled?: boolean;
   eyebrow?: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={open} onOpenChange={(o) => !loading && onOpenChange(o)}>
       <DialogContent
@@ -108,10 +111,10 @@ export function ConfirmDialog({
         footer={
           <>
             <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={loading}>
-              {cancelLabel}
+              {cancelLabel ?? t("ui.noBack")}
             </Button>
             <Button variant={tone === "danger" ? "danger" : tone === "navy" ? "navy" : "primary"} onClick={onConfirm} loading={loading} disabled={confirmDisabled}>
-              {confirmLabel}
+              {confirmLabel ?? t("ui.yesContinue")}
             </Button>
           </>
         }
@@ -143,6 +146,7 @@ export function Sheet({
   className?: string;
   footer?: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <RDialog.Root open={open} onOpenChange={onOpenChange}>
       <RDialog.Portal>
@@ -160,7 +164,7 @@ export function Sheet({
               {description ? <RDialog.Description className="mt-0.5 text-sm text-muted">{description}</RDialog.Description> : <RDialog.Description className="sr-only">{String(title)}</RDialog.Description>}
             </div>
             <RDialog.Close asChild>
-              <Button variant="ghost" size="icon-sm" aria-label="Close panel">
+              <Button variant="ghost" size="icon-sm" aria-label={t("ui.closePanel")}>
                 <X />
               </Button>
             </RDialog.Close>
@@ -184,10 +188,10 @@ export function Tooltip({ content, children, side = "top" }: { content: ReactNod
           <RTooltip.Content
             side={side}
             sideOffset={6}
-            className="z-50 max-w-xs rounded-md bg-navy-900 px-2.5 py-1.5 text-xs leading-relaxed text-on-dark shadow-md data-[state=delayed-open]:animate-fade-in"
+            className="z-50 max-w-xs rounded-md bg-emphasis px-2.5 py-1.5 text-xs leading-relaxed text-on-dark shadow-md data-[state=delayed-open]:animate-fade-in"
           >
             {content}
-            <RTooltip.Arrow className="fill-navy-900" />
+            <RTooltip.Arrow className="fill-emphasis" />
           </RTooltip.Content>
         </RTooltip.Portal>
       </RTooltip.Root>
@@ -238,7 +242,7 @@ export function MenuItem({ className, destructive, ...props }: ComponentPropsWit
     <RMenu.Item
       className={cn(
         "flex cursor-pointer select-none items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-ink outline-none data-[disabled]:pointer-events-none data-[highlighted]:bg-surface-3 data-[disabled]:opacity-50 [&_svg]:size-4 [&_svg]:text-muted",
-        destructive && "text-danger-700 data-[highlighted]:bg-danger-100 [&_svg]:text-danger-600",
+        destructive && "text-danger-700 data-[highlighted]:bg-danger-100 [&_svg]:text-danger-700",
         className,
       )}
       {...props}

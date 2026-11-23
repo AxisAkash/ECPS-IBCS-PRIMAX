@@ -2,6 +2,7 @@
 
 import { Crosshair, Layers, MapPin } from "lucide-react";
 import { useId, useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { SimulatedTag } from "@/components/ui/feedback";
 
@@ -25,13 +26,14 @@ interface Props {
 const SPAN_LAT = 0.0054; // ≈ 600 m
 const SPAN_LNG = 0.0058;
 const ZONES = [
-  { d: "M0 0 H260 V150 H0 Z", fill: "#dbeff2", label: "Residential (urban)" },
-  { d: "M260 0 H560 V110 H260 Z", fill: "#fbecd2", label: "Commercial" },
-  { d: "M0 150 H200 V360 H0 Z", fill: "#e3f3ea", label: "Open space" },
-  { d: "M200 150 H560 V360 H200 Z", fill: "#dbeff2", label: "Residential (urban)" },
+  { d: "M0 0 H260 V150 H0 Z", fill: "var(--map-res)", label: "Residential (urban)" },
+  { d: "M260 0 H560 V110 H260 Z", fill: "var(--map-com)", label: "Commercial" },
+  { d: "M0 150 H200 V360 H0 Z", fill: "var(--map-open)", label: "Open space" },
+  { d: "M200 150 H560 V360 H200 Z", fill: "var(--map-res)", label: "Residential (urban)" },
 ];
 
 export function SiteMap({ lat, lng, onChange, device, className, height = 320, label = "Plot location", showDap: showDapInitial = true }: Props) {
+  const { t } = useI18n();
   const [center] = useState({ lat, lng });
   const [showDap, setShowDap] = useState(showDapInitial);
   const titleId = useId();
@@ -63,44 +65,44 @@ export function SiteMap({ lat, lng, onChange, device, className, height = 320, l
           role="img"
           aria-label={`${label}: latitude ${lat.toFixed(5)}, longitude ${lng.toFixed(5)}${onChange ? ". Click to move the pin, or use the arrow buttons." : ""}`}
         >
-          <rect width="560" height="360" fill="#f4f7fa" />
+          <rect width="560" height="360" fill="var(--map-ground)" />
           {showDap && ZONES.map((z, i) => <path key={i} d={z.d} fill={z.fill} opacity="0.75" />)}
           {/* Blocks */}
           {Array.from({ length: 7 }).map((_, c) =>
             Array.from({ length: 5 }).map((_, r) => (
-              <rect key={`${c}-${r}`} x={14 + c * 80} y={14 + r * 72} width="64" height="56" rx="2" fill="#ffffff" fillOpacity={showDap ? 0.55 : 0.9} stroke="#c9d4df" strokeWidth="0.6" />
+              <rect key={`${c}-${r}`} x={14 + c * 80} y={14 + r * 72} width="64" height="56" rx="2" fill="var(--map-block)" fillOpacity={showDap ? 0.55 : 0.9} stroke="var(--map-block-line)" strokeWidth="0.6" />
             )),
           )}
           {/* Plot subdivisions */}
           {Array.from({ length: 7 }).map((_, c) =>
             Array.from({ length: 5 }).map((_, r) =>
-              [1, 2, 3].map((k) => <line key={`${c}-${r}-${k}`} x1={14 + c * 80 + k * 16} x2={14 + c * 80 + k * 16} y1={14 + r * 72} y2={70 + r * 72} stroke="#dfe6ed" strokeWidth="0.5" />),
+              [1, 2, 3].map((k) => <line key={`${c}-${r}-${k}`} x1={14 + c * 80 + k * 16} x2={14 + c * 80 + k * 16} y1={14 + r * 72} y2={70 + r * 72} stroke="var(--map-hatch)" strokeWidth="0.5" />),
             ),
           )}
           {/* Roads */}
-          <path d="M0 140 C 160 120, 360 160, 560 132" stroke="#ffffff" strokeWidth="14" fill="none" />
-          <path d="M0 140 C 160 120, 360 160, 560 132" stroke="#c9d4df" strokeWidth="0.6" fill="none" strokeDasharray="8 6" />
-          <path d="M318 0 L 302 360" stroke="#ffffff" strokeWidth="11" />
-          <text x="20" y="128" fontSize="8" fill="#7c8a9c" fontFamily="var(--font-plex-mono), monospace" letterSpacing="1.5">
+          <path d="M0 140 C 160 120, 360 160, 560 132" stroke="var(--map-road)" strokeWidth="14" fill="none" />
+          <path d="M0 140 C 160 120, 360 160, 560 132" stroke="var(--map-road-line)" strokeWidth="0.6" fill="none" strokeDasharray="8 6" />
+          <path d="M318 0 L 302 360" stroke="var(--map-road)" strokeWidth="11" />
+          <text x="20" y="128" fontSize="8" fill="var(--map-label)" fontFamily="var(--font-plex-mono), monospace" letterSpacing="1.5">
             ROAD 11 (ILLUSTRATIVE)
           </text>
           {/* Device position (inspector) */}
           {dev && (
             <g>
               <circle cx={dev.x} cy={dev.y} r={Math.max(8, device!.accuracyM * 1.2)} fill="#167d8d" fillOpacity="0.12" stroke="#167d8d" strokeOpacity="0.4" />
-              <circle cx={dev.x} cy={dev.y} r="4.5" fill="#167d8d" stroke="#fff" strokeWidth="2" />
+              <circle cx={dev.x} cy={dev.y} r="4.5" fill="#167d8d" stroke="var(--map-halo)" strokeWidth="2" />
             </g>
           )}
           {/* Plot pin */}
           <g transform={`translate(${pin.x} ${pin.y})`}>
             <rect x="-14" y="-11" width="28" height="22" fill="#e7a23b" fillOpacity="0.22" stroke="#c4861f" strokeWidth="1.2" />
-            <path d="M0 -6 C -7 -6 -10 -1 -10 3 C -10 10 0 18 0 18 C 0 18 10 10 10 3 C 10 -1 7 -6 0 -6 Z" transform="translate(0 -22)" fill="#14263d" />
+            <path d="M0 -6 C -7 -6 -10 -1 -10 3 C -10 10 0 18 0 18 C 0 18 10 10 10 3 C 10 -1 7 -6 0 -6 Z" transform="translate(0 -22)" fill="var(--map-pin)" />
             <circle cx="0" cy="-19" r="3.2" fill="#e7a23b" />
           </g>
         </svg>
 
         <div className="pointer-events-none absolute left-3 top-3 flex items-center gap-2">
-          <SimulatedTag className="bg-surface/90">Simulated map</SimulatedTag>
+          <SimulatedTag className="bg-surface/90">{t("map.simulated")}</SimulatedTag>
         </div>
         <div className="absolute right-3 top-3 flex flex-col gap-1.5">
           <button
@@ -109,33 +111,33 @@ export function SiteMap({ lat, lng, onChange, device, className, height = 320, l
             aria-pressed={showDap}
             className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface/95 px-2 py-1 text-xs font-medium text-ink shadow-sm hover:bg-surface"
           >
-            <Layers className="size-3.5" /> DAP overlay
+            <Layers className="size-3.5" /> {t("map.dap")}
           </button>
         </div>
         {onChange && (
           <div className="absolute bottom-3 right-3 grid grid-cols-3 gap-0.5 rounded-md border border-line bg-surface/95 p-0.5 shadow-sm">
             <span />
-            <NudgeButton label="Move pin north" onClick={() => nudge(0.00005, 0)}>↑</NudgeButton>
+            <NudgeButton label={t("map.north")} onClick={() => nudge(0.00005, 0)}>↑</NudgeButton>
             <span />
-            <NudgeButton label="Move pin west" onClick={() => nudge(0, -0.00005)}>←</NudgeButton>
+            <NudgeButton label={t("map.west")} onClick={() => nudge(0, -0.00005)}>←</NudgeButton>
             <span className="grid place-items-center text-teal-700">
               <Crosshair className="size-3.5" aria-hidden />
             </span>
-            <NudgeButton label="Move pin east" onClick={() => nudge(0, 0.00005)}>→</NudgeButton>
+            <NudgeButton label={t("map.east")} onClick={() => nudge(0, 0.00005)}>→</NudgeButton>
             <span />
-            <NudgeButton label="Move pin south" onClick={() => nudge(-0.00005, 0)}>↓</NudgeButton>
+            <NudgeButton label={t("map.south")} onClick={() => nudge(-0.00005, 0)}>↓</NudgeButton>
             <span />
           </div>
         )}
       </div>
       <figcaption id={titleId} className="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface-2 px-3 py-2 text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <MapPin className="size-3.5 text-amber-600" aria-hidden />
+          <MapPin className="size-3.5 text-amber-700" aria-hidden />
           <span className="ref text-ink">
             {lat.toFixed(6)}° N, {lng.toFixed(6)}° E
           </span>
         </span>
-        <span>Google Maps integration enabled only with a RAJUK-provided key (TOR 2.3)</span>
+        <span>{t("map.keyNote")}</span>
       </figcaption>
     </figure>
   );

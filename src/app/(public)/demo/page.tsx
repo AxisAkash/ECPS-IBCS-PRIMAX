@@ -1,6 +1,9 @@
+import { pageTitle } from "@/lib/i18n/server";
 import { DemoHub } from "@/features/public/misc";
 
-export const metadata = { title: "Demonstration" };
+export async function generateMetadata() {
+  return pageTitle("meta.demo");
+}
 
 export default function Page() {
   return <DemoHub />;

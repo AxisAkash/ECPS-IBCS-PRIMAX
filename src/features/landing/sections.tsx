@@ -25,7 +25,7 @@ import { Accordion } from "@/components/ui/overlay";
 import { PUBLIC_PERMITS } from "@/lib/data/seed";
 import { SERVICES, type ServiceDefinition } from "@/lib/domain/catalog";
 import type { ServiceType } from "@/lib/domain/types";
-import { flowFor, STAGE_LABEL } from "@/lib/domain/workflow";
+import { flowFor } from "@/lib/domain/workflow";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
 import { cn, formatDate } from "@/lib/utils";
@@ -146,7 +146,7 @@ export function Discovery() {
                   onClick={() => setIntent(intent === i ? null : i)}
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-[0.8125rem] font-medium transition-colors",
-                    intent === i ? "border-navy-900 bg-navy-900 text-white" : "border-line-strong bg-surface text-ink hover:border-slate-ink/50 hover:text-ink-strong",
+                    intent === i ? "border-emphasis bg-emphasis text-white" : "border-line-strong bg-surface text-ink hover:border-slate-ink/50 hover:text-ink-strong",
                   )}
                 >
                   {t(it.key)}
@@ -235,7 +235,7 @@ export function ServicesLifecycle() {
         {groups.map((g, gi) => (
           <li key={g.key} className="relative bg-surface p-6 pt-7">
             <div className="flex items-center gap-3">
-              <span className="ref grid size-8 place-items-center rounded-full border border-navy-900 text-xs font-semibold text-navy-900">{String(gi + 1).padStart(2, "0")}</span>
+              <span className="ref grid size-8 place-items-center rounded-full border border-ink-strong text-xs font-semibold text-ink-strong">{String(gi + 1).padStart(2, "0")}</span>
               <h3 className="font-display text-base font-semibold text-ink-strong">{t(g.title)}</h3>
             </div>
             <ul className="mt-6 space-y-1">
@@ -324,11 +324,11 @@ export function Lifecycle() {
               >
                 {i < current ? <Check className="size-4" aria-hidden /> : String(i + 1).padStart(2, "0")}
               </span>
-              <span className={cn("mt-4 max-w-[9rem] text-[0.8125rem] leading-snug", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>{STAGE_LABEL[s]}</span>
+              <span className={cn("mt-4 max-w-[9rem] text-[0.8125rem] leading-snug", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>{t(`stage.${s}`)}</span>
               {i === current && (
                 <span className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 px-2.5 py-1.5 text-[0.6875rem] leading-tight text-amber-200">
                   {t("life.you")}
-                  <span className="block font-mono text-[0.625rem] text-amber-200/80">2 / 3 days</span>
+                  <span className="block font-mono text-[0.625rem] text-amber-200/80 [:lang(bn)_&]:font-sans">{t("lp.daysSample")}</span>
                 </span>
               )}
             </li>
@@ -350,7 +350,7 @@ export function Lifecycle() {
                 {i < current ? <Check className="size-3.5" aria-hidden /> : i + 1}
               </span>
               <span className={cn("pt-1.5 text-sm", i === current ? "font-semibold text-white" : "text-on-dark-muted")}>
-                {STAGE_LABEL[s]}
+                {t(`stage.${s}`)}
                 {i === current && <span className="ml-2 rounded bg-amber-500/15 px-1.5 py-0.5 text-xs text-amber-200">{t("life.you")}</span>}
               </span>
             </li>
@@ -506,7 +506,7 @@ export function RegisterBand() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-5 text-xs text-subtle">Fictional demonstration records.</p>
+            <p className="mt-5 text-xs text-subtle">{t("lp.fictional")}</p>
           </div>
         </div>
       </div>

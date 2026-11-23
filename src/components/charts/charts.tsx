@@ -3,18 +3,21 @@
 import { BarChart3, Table2 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
- * Chart palette — validated with the dataviz six-check validator (light surface):
- * lightness band, chroma floor, CVD separation ≥ 8, normal-vision floor ≥ 15, contrast ≥ 3:1.
- * Assigned in this fixed order, never cycled. Status red is reserved for over-limit states.
+ * Chart palette — CSS variables defined per theme in globals.css, each set validated with the
+ * dataviz six-check validator against its own surface (light #ffffff: #008aa8 #b97000 #5157c4 #b23f7d;
+ * dark #111e2e: #1a9ab6 #c4861f #787ee4 #cc6399): lightness band, chroma floor, CVD separation ≥ 8,
+ * normal-vision floor ≥ 15, contrast ≥ 3:1. Assigned in this fixed order, never cycled.
+ * Status red is reserved for over-limit states.
  */
-export const SERIES = ["#008aa8", "#b97000", "#5157c4", "#b23f7d"] as const;
-export const SEQUENTIAL = ["#cfe9ee", "#8fcbd8", "#3fa4ba", "#008aa8", "#005f73"] as const;
-export const STATUS = { critical: "#b8322a", warning: "#c4861f", good: "#1f7f50" } as const;
-const GRID = "#e6ebf0";
-const AXIS = "#7c8a9c";
+export const SERIES = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)"] as const;
+export const STATUS = { critical: "var(--chart-critical)", warning: "var(--chart-warning)", good: "var(--chart-good)" } as const;
+const GRID = "var(--chart-grid)";
+const AXIS = "var(--chart-axis)";
+const GAP = "var(--chart-gap)";
 
 export interface SeriesDef {
   key: string;
@@ -67,6 +70,7 @@ export function ChartFrame({
   className?: string;
   height?: number;
 }) {
+  const { t } = useI18n();
   const [asTable, setAsTable] = useState(false);
   return (
     <figure className={cn("rounded-xl border border-line bg-surface shadow-xs", className)}>
@@ -84,13 +88,13 @@ export function ChartFrame({
             className="inline-flex h-7 items-center gap-1.5 rounded-md border border-line px-2 text-xs text-muted hover:text-ink-strong"
           >
             {asTable ? <BarChart3 className="size-3.5" /> : <Table2 className="size-3.5" />}
-            {asTable ? "Chart" : "Table"}
+            {asTable ? t("ui.chart") : t("ui.table")}
           </button>
         </div>
       </figcaption>
       <div className="px-3 pb-4 pt-3">
         {series && series.length > 1 && !asTable && (
-          <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 px-2 text-xs text-muted" aria-label="Legend">
+          <ul className="mb-2 flex flex-wrap gap-x-4 gap-y-1 px-2 text-xs text-muted" aria-label={t("ui.legend")}>
             {series.map((s, i) => (
               <li key={s.key} className="flex items-center gap-1.5">
                 <span className="size-2.5 rounded-sm" style={{ background: s.color ?? SERIES[i] }} aria-hidden />
@@ -129,7 +133,7 @@ export function ChartFrame({
             {children}
           </div>
         )}
-        {!asTable && <p className="sr-only">Chart. Use the Table button for the underlying values.</p>}
+        {!asTable && <p className="sr-only">{t("ui.chartSr")}</p>}
       </div>
     </figure>
   );
@@ -158,7 +162,7 @@ export function VBarChart<T extends Record<string, string | number>>({
         <CartesianGrid vertical={false} stroke={GRID} />
         <XAxis dataKey={xKey as never} {...axisProps} interval={0} tick={{ fill: AXIS, fontSize: 11 }} />
         <YAxis {...axisProps} width={44} allowDecimals={false} tickFormatter={(v: number) => (format ? format(v) : v.toLocaleString("en-IN"))} />
-        <Tooltip cursor={{ fill: "rgb(20 38 61 / 0.04)" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
+        <Tooltip cursor={{ fill: "var(--chart-hover)" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
         {series.map((s, i) => (
           <Bar
             key={s.key}
@@ -166,7 +170,7 @@ export function VBarChart<T extends Record<string, string | number>>({
             name={s.label}
             stackId={stacked ? "a" : undefined}
             fill={s.color ?? SERIES[i]}
-            stroke="#fff"
+            stroke={GAP}
             strokeWidth={stacked ? 1 : 0}
             radius={stacked ? (i === series.length - 1 ? [4, 4, 0, 0] : 0) : [4, 4, 0, 0]}
             maxBarSize={36}
@@ -192,10 +196,10 @@ export function HBarChart<T extends Record<string, string | number>>({ data, yKe
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }} barCategoryGap="30%">
         <CartesianGrid horizontal={false} stroke={GRID} />
         <XAxis type="number" {...axisProps} allowDecimals={false} tickFormatter={(v: number) => (format ? format(v) : v.toLocaleString("en-IN"))} />
-        <YAxis type="category" dataKey={yKey as never} {...axisProps} width={128} interval={0} tick={{ fill: "#253244", fontSize: 11.5 }} />
-        <Tooltip cursor={{ fill: "rgb(20 38 61 / 0.04)" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
+        <YAxis type="category" dataKey={yKey as never} {...axisProps} width={128} interval={0} tick={{ fill: "var(--chart-ink)", fontSize: 11.5 }} />
+        <Tooltip cursor={{ fill: "var(--chart-hover)" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
         {series.map((s, i) => (
-          <Bar key={s.key} dataKey={s.key} name={s.label} stackId={stacked ? "a" : undefined} fill={s.color ?? SERIES[i]} stroke="#fff" strokeWidth={stacked ? 1 : 0} radius={stacked ? (i === series.length - 1 ? [0, 4, 4, 0] : 0) : [0, 4, 4, 0]} maxBarSize={18} />
+          <Bar key={s.key} dataKey={s.key} name={s.label} stackId={stacked ? "a" : undefined} fill={s.color ?? SERIES[i]} stroke={GAP} strokeWidth={stacked ? 1 : 0} radius={stacked ? (i === series.length - 1 ? [0, 4, 4, 0] : 0) : [0, 4, 4, 0]} maxBarSize={18} />
         ))}
       </BarChart>
     </ResponsiveContainer>
@@ -209,9 +213,9 @@ export function TrendChart<T extends Record<string, string | number>>({ data, xK
         <CartesianGrid vertical={false} stroke={GRID} />
         <XAxis dataKey={xKey as never} {...axisProps} tick={{ fill: AXIS, fontSize: 11 }} />
         <YAxis {...axisProps} width={48} tickFormatter={(v: number) => (format ? format(v) : v.toLocaleString("en-IN"))} />
-        <Tooltip cursor={{ stroke: "#9aa8b8", strokeDasharray: "3 3" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
+        <Tooltip cursor={{ stroke: "var(--chart-cursor)", strokeDasharray: "3 3" }} content={(p) => <ChartTooltip active={p.active} payload={p.payload as TipProps["payload"]} label={p.label} format={format} />} />
         {series.map((s, i) => (
-          <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={s.color ?? SERIES[i]} strokeWidth={2} dot={false} activeDot={{ r: 4.5, stroke: "#fff", strokeWidth: 2 }} />
+          <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={s.color ?? SERIES[i]} strokeWidth={2} dot={false} activeDot={{ r: 4.5, stroke: GAP, strokeWidth: 2 }} />
         ))}
       </LineChart>
     </ResponsiveContainer>

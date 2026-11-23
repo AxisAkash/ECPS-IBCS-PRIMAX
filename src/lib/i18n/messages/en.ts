@@ -2,17 +2,28 @@
  * English source dictionary. Bangla (bn.ts) must provide every key — enforced by the type system.
  * Internal RAJUK workspace copy is English-only in the prototype; see DESIGN_SYSTEM.md (Localisation).
  */
-export const en = {
+import { enAdmin } from "./en-admin";
+import { enApplicant } from "./en-applicant";
+import { enPublic } from "./en-public";
+import { enRajuk } from "./en-rajuk";
+import { enShell } from "./en-shell";
+
+const core = {
   // Global / chrome
   "gov.country": "Government of the People's Republic of Bangladesh",
   "gov.agency": "Rajdhani Unnayan Kartripakkha (RAJUK)",
   "brand.name": "ECPS",
   "brand.full": "Electronic Construction Permitting System",
   "brand.tagline": "RAJUK building permission services",
+  "brand.short": "RAJUK · Building permission",
+  "brand.home": "ECPS home — RAJUK",
   "proto.badge": "Prototype",
   "proto.label": "Demonstration environment — all records are fictional",
   "lang.switch": "বাংলা",
   "lang.label": "Language",
+  "lang.switchTo": "Switch to Bangla",
+  "theme.toDark": "Switch to dark theme",
+  "theme.toLight": "Switch to light theme",
   "skip": "Skip to main content",
   "nav.services": "Services",
   "nav.how": "How it works",
@@ -35,10 +46,6 @@ export const en = {
   "hero.quicktrack.placeholder": "e.g. CP-26-Z4-01491",
   "hero.quicktrack.go": "Track",
   "hero.framework": "Aligned to",
-  "hero.card.title": "Construction Permit",
-  "hero.card.stage": "With Assistant Authorized Officer",
-  "hero.card.held": "Held 2 working days",
-  "hero.card.next": "Next: Authorized Officer",
 
   // Discovery
   "disc.kicker": "Find a service",
@@ -254,7 +261,7 @@ export const en = {
   "auth.back": "Back to the public portal",
   "auth.err.identifier": "Enter your email, mobile number or username.",
   "auth.err.password": "Enter your password.",
-  "auth.err.demo": "This prototype has no real accounts. Use a demo role below to explore.",
+  "auth.err.demo": "This prototype has no real accounts. Open the demo tools to explore with a sample role.",
   "auth.or": "or",
   "auth.demo.title": "Explore with a demo role",
   "auth.demo.lead": "Demonstration only — no credentials are checked and no real account is used.",
@@ -437,6 +444,30 @@ export const en = {
   "common.yes": "Yes",
   "common.no": "No",
   "common.back": "Back",
+  "demo.toggle": "Demo",
+  "demo.show": "Show demo tools",
+  "demo.hide": "Hide demo tools",
+  "demo.kicker": "Demonstration",
+  "demo.title": "Demo tools",
+  "demo.lead": "Explore the prototype with fictional records. Nothing here connects to real RAJUK services.",
+  "demo.close": "Close demo tools",
+  "demo.current": "Current role:",
+  "demo.enter": "Enter as a demo role",
+  "demo.scenarios": "Guided scenarios",
+  "demo.roles.lead": "Move between connected experiences. Records you changed stay in place, so you can follow a file across roles.",
+  "demo.reset.title": "Reset all demo data?",
+  "demo.reset.body": "Every application, signature, vote, inspection and ticket returns to its original fictional state. Your current role stays signed in.",
+  "demo.reset.confirm": "Yes, reset demo",
+  "demo.reset.toast": "Demo data reset",
+  "demo.reset.toastBody": "All fictional records are back to their starting state.",
+  "demo.signinHint": "Show demo access",
+  "auth.err.otpLink": "Preview the untrusted-device OTP and first-login password change",
+  "auth.err.otpNote": "interface simulation only.",
+  "nav.signedin": "Signed in as",
+  "shell.proto": "Fictional data. Steps marked SIMULATED do not connect to real services.",
+  "shell.portal": "Public portal",
 } as const;
+
+export const en = { ...core, ...enApplicant, ...enShell, ...enRajuk, ...enAdmin, ...enPublic } as const;
 
 export type MessageKey = keyof typeof en;

@@ -4,6 +4,7 @@ import { CheckCircle2, FileText, ImageIcon, RotateCcw, Trash2, UploadCloud } fro
 import { useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ui/feedback";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export interface UploadedFile {
@@ -39,6 +40,7 @@ export function FileDrop({
   invalid?: boolean;
 }) {
   const id = useId();
+  const { t } = useI18n();
   const input = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
@@ -65,7 +67,7 @@ export function FileDrop({
     const file = files?.[0];
     if (!file) return;
     if (file.size > maxMb * 1024 * 1024) {
-      setError(`“${file.name}” is ${(file.size / 1048576).toFixed(1)} MB. The limit is ${maxMb} MB — compress the PDF or split the drawing set.`);
+      setError(t("up.tooLarge", { name: file.name, size: (file.size / 1048576).toFixed(1), mb: maxMb }));
       return;
     }
     const previewUrl = file.type.startsWith("image/") ? URL.createObjectURL(file) : undefined;
@@ -97,24 +99,24 @@ export function FileDrop({
               <span className="truncate font-medium text-ink-strong">{current}</span>
               <span className="tabular text-xs text-muted">{Math.round(progress * 100)}%</span>
             </div>
-            <ProgressBar value={progress} label={`Uploading ${current}`} />
-            <p className="text-xs text-muted">Uploading (simulated)…</p>
+            <ProgressBar value={progress} label={current} />
+            <p className="text-xs text-muted">{t("up.uploading")}</p>
           </div>
         ) : (
-          <div className={cn("flex items-center gap-4", compact ? "flex-row" : "flex-col text-center sm:flex-row sm:text-left")}>
+          <div className={cn("flex items-center gap-x-4 gap-y-3", compact ? "flex-row flex-wrap" : "flex-col text-center sm:flex-row sm:text-left")}>
             <span className={cn("grid shrink-0 place-items-center rounded-full bg-surface text-teal-700 ring-1 ring-line", compact ? "size-9" : "size-11")}>
               <UploadCloud className="size-5" aria-hidden />
             </span>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 basis-40">
               <p className="text-sm font-medium text-ink-strong">{label}</p>
-              <p className="mt-0.5 text-xs text-muted">{hint ?? `PDF, JPG or PNG up to ${maxMb} MB · drag and drop or browse`}</p>
+              <p className="mt-0.5 text-xs text-muted">{hint ?? t("up.hint", { mb: maxMb })}</p>
             </div>
-            <div className="flex shrink-0 gap-2">
+            <div className="flex shrink-0 flex-wrap gap-2">
               <Button type="button" size="sm" variant="secondary" onClick={() => input.current?.click()}>
-                Browse
+                {t("up.browse")}
               </Button>
               <Button type="button" size="sm" variant="subtle" onClick={() => simulate({ name: sampleName, sizeKb: 180 + Math.round(Math.random() * 900) })}>
-                Use sample file
+                {t("up.sample")}
               </Button>
             </div>
           </div>
@@ -149,6 +151,7 @@ export function FileRow({
   onPreview?: () => void;
   kind?: "document" | "photo" | "drawing";
 }) {
+  const { t } = useI18n();
   const Icon = kind === "photo" ? ImageIcon : FileText;
   return (
     <div className={cn("flex items-center gap-3 rounded-lg border border-line bg-surface px-3 py-2.5", status === "superseded" && "opacity-60")}>
@@ -166,10 +169,10 @@ export function FileRow({
         <p className="text-xs text-muted">
           {sizeKb >= 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`}
           {meta && ` · ${meta}`}
-          {status === "superseded" && " · superseded"}
+          {status === "superseded" && ` · ${t("up.superseded")}`}
         </p>
       </div>
-      {status === "verified" && <CheckCircle2 className="size-4 text-success-600" aria-label="Verified" />}
+      {status === "verified" && <CheckCircle2 className="size-4 text-success-700" aria-label={t("ui.verified")} />}
       {onReplace && (
         <Button type="button" variant="ghost" size="icon-sm" onClick={onReplace} aria-label={`Replace ${name}`}>
           <RotateCcw />

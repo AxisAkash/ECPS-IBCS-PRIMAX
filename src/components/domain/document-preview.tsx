@@ -1,21 +1,23 @@
 "use client";
 
 import type { Application, DocumentRecord } from "@/lib/domain/types";
-import { DOCUMENT_CATEGORY_LABEL } from "@/lib/domain/catalog";
+import { useI18n } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 import { cn } from "@/lib/utils";
 import { DrawingSheet } from "./drawing-sheet";
 
-const SHEET_TITLE = { site: "Site plan", ground: "Ground floor plan", typical: "Typical floor plan", elevation: "Front elevation", section: "Section A–A", far: "FAR calculation sheet" } as const;
 
 /** Renders a fictional preview for any sample document type. */
 export function DocumentPreview({ doc, app, className }: { doc: DocumentRecord; app: Application; className?: string }) {
+  const { t } = useI18n();
+  const L = useLabels();
   if (doc.previewKind === "drawing" && doc.drawingSheet) {
     const sheets = app.documents.filter((d) => d.category === "drawing" && d.status !== "superseded");
     return (
       <div className={cn("overflow-hidden rounded-lg border border-line shadow-sm", className)}>
         <DrawingSheet
           kind={doc.drawingSheet}
-          title={SHEET_TITLE[doc.drawingSheet]}
+          title={L.sheet(doc.drawingSheet)}
           page={Math.max(1, sheets.findIndex((s) => s.id === doc.id) + 1)}
           total={Math.max(1, sheets.length)}
           appRef={app.ref}
@@ -29,15 +31,15 @@ export function DocumentPreview({ doc, app, className }: { doc: DocumentRecord; 
   }
   if (doc.previewKind === "photo") return <PhotoPlaceholder label={doc.name} kind={doc.category === "road_photo" ? "road" : doc.category === "plot_photo" ? "plot" : "portrait"} className={className} />;
   return (
-    <div className={cn("mx-auto aspect-[1/1.414] w-full max-w-md rounded-md border border-line bg-white p-8 shadow-sm", className)} role="img" aria-label={`Sample document preview: ${doc.name}`}>
+    <div data-theme="light" className={cn("mx-auto aspect-[1/1.414] w-full max-w-md rounded-md border border-line bg-white p-8 shadow-sm", className)} role="img" aria-label={t("ui.docPreview", { name: doc.name })}>
       <div className="flex items-start justify-between">
         <div className="space-y-1.5">
           <div className="h-2 w-28 rounded bg-navy-900/80" />
           <div className="h-1.5 w-20 rounded bg-line-strong" />
         </div>
-        <div className="grid size-10 place-items-center rounded-full border border-line-strong font-mono text-[0.5rem] text-subtle">SEAL</div>
+        <div className="grid size-10 place-items-center rounded-full border border-line-strong font-mono text-[0.5rem] text-subtle">{t("ui.seal")}</div>
       </div>
-      <p className="mt-6 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-teal-700">{DOCUMENT_CATEGORY_LABEL[doc.category]}</p>
+      <p className="mt-6 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-teal-700">{L.doc(doc.category)}</p>
       <p className="mt-1 text-xs font-semibold text-ink-strong">{doc.name}</p>
       <div className="mt-5 space-y-2">
         {Array.from({ length: 11 }).map((_, i) => (
@@ -48,15 +50,16 @@ export function DocumentPreview({ doc, app, className }: { doc: DocumentRecord; 
         <div className="h-10 rounded border border-dashed border-line-strong" />
         <div className="h-10 rounded border border-dashed border-line-strong" />
       </div>
-      <p className="mt-6 border-t border-line pt-3 text-center font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-danger-700">Fictional sample · not a real document</p>
+      <p className="mt-6 border-t border-line pt-3 text-center font-mono text-[0.5625rem] uppercase tracking-[0.16em] text-danger-700">{t("ui.fictionalDoc")}</p>
     </div>
   );
 }
 
 export function PhotoPlaceholder({ label, kind, className }: { label: string; kind: "plot" | "road" | "portrait" | "site"; className?: string }) {
+  const { t } = useI18n();
   return (
     <figure className={cn("overflow-hidden rounded-lg border border-line", className)}>
-      <svg viewBox="0 0 400 260" className="h-auto w-full" role="img" aria-label={`Sample photograph: ${label}`}>
+      <svg viewBox="0 0 400 260" className="h-auto w-full" role="img" aria-label={t("ui.photoPreview", { name: label })}>
         <rect width="400" height="260" fill="#dfe8ef" />
         <rect y="150" width="400" height="110" fill={kind === "road" ? "#9aa8b8" : "#c8d6c3"} />
         {kind === "road" && (
@@ -81,7 +84,7 @@ export function PhotoPlaceholder({ label, kind, className }: { label: string; ki
           </>
         )}
         <rect x="10" y="10" width="138" height="20" rx="3" fill="#14263d" opacity="0.75" />
-        <text x="18" y="24" fontSize="10" fill="#fff" fontFamily="var(--font-plex-mono), monospace">SAMPLE · FICTIONAL</text>
+        <text x="18" y="24" fontSize="10" fill="#fff" fontFamily="var(--font-plex-mono), var(--font-noto-bengali), monospace">{t("ui.sampleFictional")}</text>
       </svg>
       <figcaption className="truncate border-t border-line bg-surface-2 px-3 py-1.5 text-xs text-muted">{label}</figcaption>
     </figure>

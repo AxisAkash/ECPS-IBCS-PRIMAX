@@ -1,3 +1,8 @@
+import { bnAdmin } from "./bn-admin";
+import { bnApplicant } from "./bn-applicant";
+import { bnPublic } from "./bn-public";
+import { bnRajuk } from "./bn-rajuk";
+import { bnShell } from "./bn-shell";
 import type { MessageKey } from "./en";
 
 /**
@@ -6,15 +11,25 @@ import type { MessageKey } from "./en";
  * language and communications team before any public use.
  */
 export const bn: Record<MessageKey, string> = {
+  ...bnApplicant,
+  ...bnShell,
+  ...bnRajuk,
+  ...bnAdmin,
+  ...bnPublic,
   "gov.country": "গণপ্রজাতন্ত্রী বাংলাদেশ সরকার",
   "gov.agency": "রাজধানী উন্নয়ন কর্তৃপক্ষ (রাজউক)",
-  "brand.name": "ইসিপিএস",
+  "brand.name": "ECPS",
   "brand.full": "ইলেকট্রনিক কনস্ট্রাকশন পারমিটিং সিস্টেম",
   "brand.tagline": "রাজউকের ইমারত নির্মাণ অনুমোদন সেবা",
+  "brand.short": "রাজউক · ইমারত নির্মাণ অনুমোদন",
+  "brand.home": "ECPS মূল পাতা — রাজউক",
   "proto.badge": "প্রোটোটাইপ",
   "proto.label": "প্রদর্শনী পরিবেশ — সকল তথ্য কাল্পনিক",
   "lang.switch": "English",
   "lang.label": "ভাষা",
+  "lang.switchTo": "ইংরেজিতে দেখুন",
+  "theme.toDark": "ডার্ক থিমে যান",
+  "theme.toLight": "লাইট থিমে যান",
   "skip": "মূল বিষয়বস্তুতে যান",
   "nav.services": "সেবাসমূহ",
   "nav.how": "যেভাবে কাজ করে",
@@ -36,10 +51,6 @@ export const bn: Record<MessageKey, string> = {
   "hero.quicktrack.placeholder": "যেমন CP-26-Z4-01491",
   "hero.quicktrack.go": "দেখুন",
   "hero.framework": "যে বিধিবিধান অনুসারে",
-  "hero.card.title": "কনস্ট্রাকশন পারমিট",
-  "hero.card.stage": "সহকারী অথরাইজড অফিসারের কাছে",
-  "hero.card.held": "২ কর্মদিবস ধরে",
-  "hero.card.next": "পরবর্তী: অথরাইজড অফিসার",
 
   "disc.kicker": "সেবা খুঁজুন",
   "disc.title": "আপনি কী করতে চান?",
@@ -99,7 +110,7 @@ export const bn: Record<MessageKey, string> = {
   "service.REGISTER.name": "পাবলিক রেজিস্টার",
   "service.REGISTER.desc": "অনুমোদিত প্ল্যানিং ও কনস্ট্রাকশন পারমিট খুঁজুন এবং প্রকাশিত তথ্য যাচাই করুন।",
 
-  "how.kicker": "ইসিপিএস যেভাবে কাজ করে",
+  "how.kicker": "ECPS যেভাবে কাজ করে",
   "how.title": "চারটি ধাপ, মাঝখানে কিছুই গোপন নয়",
   "how.s1.title": "নিবন্ধন ও যাচাই",
   "how.s1.body": "মালিকগণ জাতীয় পরিচয়পত্র দিয়ে নিবন্ধন করেন। স্থপতি ও প্রকৌশলীগণ পেশাজীবী সংগঠনের সদস্যপদের মাধ্যমে নিবন্ধন করেন।",
@@ -192,7 +203,7 @@ export const bn: Record<MessageKey, string> = {
 
   "sup.kicker": "সহায়তা কেন্দ্র",
   "sup.title": "প্রয়োজনের সময় সহায়তা",
-  "sup.lead": "ইসিপিএস হেল্পডেস্ক অফিস সময়ে চালু থাকে। প্রতিটি অনুরোধের জন্য একটি ট্র্যাকিং নম্বর দেওয়া হয়, যাতে অগ্রগতি অনুসরণ করতে পারেন।",
+  "sup.lead": "ECPS হেল্পডেস্ক অফিস সময়ে চালু থাকে। প্রতিটি অনুরোধের জন্য একটি ট্র্যাকিং নম্বর দেওয়া হয়, যাতে অগ্রগতি অনুসরণ করতে পারেন।",
   "sup.ticket": "সহায়তার অনুরোধ করুন",
   "sup.ticket.body": "অনলাইনে সমস্যা জানান এবং সঙ্গে সঙ্গে রেফারেন্স নম্বর পান।",
   "sup.manuals": "ব্যবহার নির্দেশিকা",
@@ -221,7 +232,7 @@ export const bn: Record<MessageKey, string> = {
   "foot.citizens": "নাগরিক",
   "foot.professionals": "পেশাজীবী",
   "foot.about.title": "এই প্রোটোটাইপ সম্পর্কে",
-  "foot.disclaimer": "ইসিপিএস উন্নয়ন, পরিচালনা ও রক্ষণাবেক্ষণ প্রস্তাবের জন্য আইবিসিএস-প্রাইম্যাক্স কর্তৃক প্রস্তুতকৃত প্রোটোটাইপ। এটি রাজউকের কোনো দাপ্তরিক সেবা নয়। সকল নাম, রেফারেন্স, কাগজপত্র ও অঙ্ক কাল্পনিক।",
+  "foot.disclaimer": "ECPS উন্নয়ন, পরিচালনা ও রক্ষণাবেক্ষণ প্রস্তাবের জন্য IBCS-PRIMAX কর্তৃক প্রস্তুতকৃত প্রোটোটাইপ। এটি রাজউকের কোনো দাপ্তরিক সেবা নয়। সকল নাম, রেফারেন্স, কাগজপত্র ও অঙ্ক কাল্পনিক।",
   "foot.design": "ডিজাইন সিস্টেম",
   "foot.demo": "ডেমো নির্দেশিকা",
   "foot.rights": "প্রোটোটাইপ প্রদর্শনী · {year}",
@@ -237,12 +248,12 @@ export const bn: Record<MessageKey, string> = {
   "auth.remember": "৩০ দিনের জন্য এই ডিভাইসটি বিশ্বস্ত হিসেবে রাখুন",
   "auth.submit": "সাইন ইন",
   "auth.signing": "সাইন ইন হচ্ছে…",
-  "auth.noaccount": "ইসিপিএস-এ নতুন?",
+  "auth.noaccount": "ECPS-এ নতুন?",
   "auth.create": "অ্যাকাউন্ট তৈরি করুন",
   "auth.back": "পাবলিক পোর্টালে ফিরে যান",
   "auth.err.identifier": "আপনার ইমেইল, মোবাইল নম্বর বা ইউজারনেম লিখুন।",
   "auth.err.password": "আপনার পাসওয়ার্ড লিখুন।",
-  "auth.err.demo": "এই প্রোটোটাইপে কোনো প্রকৃত অ্যাকাউন্ট নেই। ঘুরে দেখতে নিচের একটি ডেমো ভূমিকা বেছে নিন।",
+  "auth.err.demo": "এই প্রোটোটাইপে কোনো প্রকৃত অ্যাকাউন্ট নেই। নমুনা ভূমিকা নিয়ে ঘুরে দেখতে ডেমো টুলস খুলুন।",
   "auth.or": "অথবা",
   "auth.demo.title": "ডেমো ভূমিকায় ঘুরে দেখুন",
   "auth.demo.lead": "শুধু প্রদর্শনের জন্য — কোনো পরিচয় যাচাই হয় না এবং কোনো প্রকৃত অ্যাকাউন্ট ব্যবহৃত হয় না।",
@@ -282,8 +293,8 @@ export const bn: Record<MessageKey, string> = {
   "exp.again": "আবার সাইন ইন করুন",
   "exp.home": "পাবলিক পোর্টালে ফিরে যান",
 
-  "reg2.title": "আপনার ইসিপিএস অ্যাকাউন্ট তৈরি করুন",
-  "reg2.lead": "আপনি ইসিপিএস যেভাবে ব্যবহার করবেন, সে অনুযায়ী অ্যাকাউন্ট বেছে নিন।",
+  "reg2.title": "আপনার ECPS অ্যাকাউন্ট তৈরি করুন",
+  "reg2.lead": "আপনি ECPS যেভাবে ব্যবহার করবেন, সে অনুযায়ী অ্যাকাউন্ট বেছে নিন।",
   "reg2.owner.title": "আবেদনকারী / ভবন মালিক",
   "reg2.owner.body": "নিজের জমির জন্য পারমিটের আবেদন, পেশাজীবীদের আমন্ত্রণ ও সিদ্ধান্ত অনুসরণ করুন।",
   "reg2.owner.req": "জাতীয় পরিচয়পত্র যাচাই প্রয়োজন",
@@ -420,4 +431,26 @@ export const bn: Record<MessageKey, string> = {
   "common.yes": "হ্যাঁ",
   "common.no": "না",
   "common.back": "পেছনে",
+  "demo.toggle": "ডেমো",
+  "demo.show": "ডেমো টুলস দেখান",
+  "demo.hide": "ডেমো টুলস লুকান",
+  "demo.kicker": "প্রদর্শনী",
+  "demo.title": "ডেমো টুলস",
+  "demo.lead": "কাল্পনিক তথ্য দিয়ে প্রোটোটাইপটি ঘুরে দেখুন। এখানকার কোনো কিছুই রাজউকের প্রকৃত সেবার সঙ্গে যুক্ত নয়।",
+  "demo.close": "ডেমো টুলস বন্ধ করুন",
+  "demo.current": "বর্তমান ভূমিকা:",
+  "demo.enter": "ডেমো ভূমিকায় প্রবেশ করুন",
+  "demo.scenarios": "নির্দেশিত ডেমো দৃশ্যপট",
+  "demo.roles.lead": "সংযুক্ত অভিজ্ঞতাগুলোর মধ্যে যাতায়াত করুন। আপনার পরিবর্তিত তথ্য যেমন আছে তেমনই থাকবে, তাই বিভিন্ন ভূমিকা থেকে একই নথি অনুসরণ করতে পারবেন।",
+  "demo.reset.title": "সব ডেমো তথ্য রিসেট করবেন?",
+  "demo.reset.body": "প্রতিটি আবেদন, স্বাক্ষর, ভোট, পরিদর্শন ও টিকিট শুরুর কাল্পনিক অবস্থায় ফিরে যাবে। বর্তমান ভূমিকায় আপনার সাইন-ইন বজায় থাকবে।",
+  "demo.reset.confirm": "হ্যাঁ, রিসেট করুন",
+  "demo.reset.toast": "ডেমো তথ্য রিসেট হয়েছে",
+  "demo.reset.toastBody": "সব কাল্পনিক তথ্য শুরুর অবস্থায় ফিরে গেছে।",
+  "demo.signinHint": "ডেমো প্রবেশাধিকার দেখান",
+  "auth.err.otpLink": "অপরিচিত ডিভাইসের ওটিপি ও প্রথম লগইনের পাসওয়ার্ড পরিবর্তন দেখুন",
+  "auth.err.otpNote": "শুধু ইন্টারফেস সিমুলেশন।",
+  "nav.signedin": "সাইন-ইন করা আছে",
+  "shell.proto": "কাল্পনিক তথ্য। SIMULATED চিহ্নিত ধাপগুলো কোনো প্রকৃত সেবার সঙ্গে যুক্ত নয়।",
+  "shell.portal": "পাবলিক পোর্টাল",
 };

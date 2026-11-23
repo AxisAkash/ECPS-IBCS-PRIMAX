@@ -38,8 +38,8 @@ export function NewApplicationDialog({ trigger, preset }: { trigger: ReactNode; 
       <DialogContent
         size="lg"
         eyebrow={t("ws.new")}
-        title="Which permission do you need?"
-        description="Interactive application journeys are available for the services marked below. Other services are shown so you can see where they will sit."
+        title={t("na.title")}
+        description={t("na.desc")}
       >
         <ul className="grid gap-2 sm:grid-cols-2">
           {SERVICES.map((s) => {
@@ -66,17 +66,17 @@ export function NewApplicationDialog({ trigger, preset }: { trigger: ReactNode; 
                       <span className="mt-0.5 line-clamp-2 block text-xs text-muted">{t(s.descKey as MessageKey)}</span>
                     ) : (
                       <span id={`${s.type}-na`} className="mt-0.5 flex items-center gap-1 text-xs text-subtle">
-                        <Lock className="size-3" aria-hidden /> Not interactive in this prototype
+                        <Lock className="size-3" aria-hidden /> {t("na.locked")}
                       </span>
                     )}
                   </span>
-                  {enabled && (busy === s.type ? <span className="text-xs text-muted">Creating…</span> : <ArrowRight className="mt-1 size-4 text-subtle group-hover:text-teal-700" aria-hidden />)}
+                  {enabled && (busy === s.type ? <span className="text-xs text-muted">{t("na.creating")}</span> : <ArrowRight className="mt-1 size-4 text-subtle group-hover:text-teal-700" aria-hidden />)}
                 </button>
               </li>
             );
           })}
         </ul>
-        <p className="mt-4 text-xs text-muted">Appeals and Occupancy Certificate appeals start from a decided application in your list.</p>
+        <p className="mt-4 text-xs text-muted">{t("na.appeals")}</p>
       </DialogContent>
     </Dialog>
   );

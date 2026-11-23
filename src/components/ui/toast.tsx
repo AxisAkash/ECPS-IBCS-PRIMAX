@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Info, OctagonAlert, X } from "lucide-react";
 import { create } from "zustand";
+import { useI18n } from "@/lib/i18n";
 import { cn, uid } from "@/lib/utils";
 
 interface Toast {
@@ -34,6 +35,7 @@ export const toast = {
 };
 
 export function Toaster() {
+  const { t: tr } = useI18n();
   const { toasts, dismiss } = useToasts();
   return (
     <div aria-live="polite" aria-atomic="false" className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-2">
@@ -47,13 +49,13 @@ export function Toaster() {
           >
             <Icon
               aria-hidden
-              className={cn("mt-0.5 size-[18px] shrink-0", t.tone === "success" ? "text-success-600" : t.tone === "error" ? "text-danger-600" : "text-teal-600")}
+              className={cn("mt-0.5 size-[18px] shrink-0", t.tone === "success" ? "text-success-700" : t.tone === "error" ? "text-danger-700" : "text-teal-700")}
             />
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink-strong">{t.title}</p>
               {t.body && <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">{t.body}</p>}
             </div>
-            <button onClick={() => dismiss(t.id)} className="grid size-6 place-items-center rounded text-subtle hover:bg-surface-3 hover:text-ink" aria-label="Dismiss notification">
+            <button onClick={() => dismiss(t.id)} className="grid size-6 place-items-center rounded text-subtle hover:bg-surface-3 hover:text-ink" aria-label={tr("ui.dismiss")}>
               <X className="size-3.5" />
             </button>
           </div>

@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
 import { EmptyState } from "./feedback";
@@ -48,6 +49,7 @@ export function DataTable<T>({
   className,
   maxHeight,
 }: DataTableProps<T>) {
+  const { t } = useI18n();
   const [sorting, setSorting] = useState<SortingState>(initialSort);
   // TanStack Table returns non-memoisable functions by design; the React Compiler lint does not apply here.
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -64,7 +66,7 @@ export function DataTable<T>({
   const rows = table.getRowModel().rows;
 
   if (data.length === 0) {
-    return <div className={className}>{empty ?? <EmptyState title="No records" body="Nothing matches the current filters." />}</div>;
+    return <div className={className}>{empty ?? <EmptyState title={t("ui.noRecords")} body={t("ui.noRecordsBody")} />}</div>;
   }
 
   const handleKey = (e: React.KeyboardEvent, row: Row<T>) => {
@@ -138,13 +140,13 @@ export function DataTable<T>({
       {pageSize && table.getPageCount() > 1 && (
         <div className="mt-3 flex items-center justify-between text-xs text-muted">
           <span className="tabular">
-            Showing {table.getState().pagination.pageIndex * pageSize + 1}–{Math.min((table.getState().pagination.pageIndex + 1) * pageSize, data.length)} of {data.length}
+            {t("ui.showing", { from: table.getState().pagination.pageIndex * pageSize + 1, to: Math.min((table.getState().pagination.pageIndex + 1) * pageSize, data.length), total: data.length })}
           </span>
           <div className="flex gap-1">
-            <Button variant="secondary" size="icon-sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} aria-label="Previous page">
+            <Button variant="secondary" size="icon-sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} aria-label={t("ui.prevPage")}>
               <ChevronLeft />
             </Button>
-            <Button variant="secondary" size="icon-sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} aria-label="Next page">
+            <Button variant="secondary" size="icon-sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} aria-label={t("ui.nextPage")}>
               <ChevronRight />
             </Button>
           </div>

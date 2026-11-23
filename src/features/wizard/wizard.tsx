@@ -41,19 +41,19 @@ export function ApplicationWizard({ id }: { id: string }) {
   const [declared, setDeclared] = useState(false);
   const [submitted, setSubmitted] = useState<string | null>(null);
 
-  const issuesByStep = useMemo(() => (app ? STEP_KEYS.map((s) => validateStep(app, s, far)) : []), [app, far]);
-  const issues = useMemo(() => (app ? allIssues(app, far) : []), [app, far]);
+  const issuesByStep = useMemo(() => (app ? STEP_KEYS.map((s) => validateStep(app, s, far, t)) : []), [app, far, t]);
+  const issues = useMemo(() => (app ? allIssues(app, far, t) : []), [app, far, t]);
 
   if (submitted) return <SubmittedScreen id={id} />;
-  if (!app) return <EmptyState title="Application not found" body="It may have been removed when the demo was reset." action={<Button asChild><Link href="/workspace">Back to dashboard</Link></Button>} />;
+  if (!app) return <EmptyState title={t("wz.notFound")} body={t("wz.notFoundBody")} action={<Button asChild><Link href="/workspace">{t("ad.back")}</Link></Button>} />;
   if (app.status !== "draft")
     return (
       <EmptyState
-        title="This application has already been submitted"
-        body="Submitted applications are locked. You can follow progress and respond to correction requests from the application page."
+        title={t("wz.locked")}
+        body={t("wz.lockedBody")}
         action={
           <Button asChild>
-            <Link href={`/workspace/applications/${app.id}`}>Open application</Link>
+            <Link href={`/workspace/applications/${app.id}`}>{t("wz.open")}</Link>
           </Button>
         }
       />
@@ -79,7 +79,7 @@ export function ApplicationWizard({ id }: { id: string }) {
     setAttempted((a) => ({ ...a, [step]: true }));
     const blocking = issuesByStep[step]!.filter((i) => i.severity === "error");
     if (blocking.length) {
-      toast.error("Some details are missing", blocking.length === 1 ? blocking[0]!.message : `${blocking.length} items on this step need attention.`);
+      toast.error(t("wz.missing"), blocking.length === 1 ? blocking[0]!.message : t("wz.missingN", { n: blocking.length }));
       document.getElementById("wizard-step")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
@@ -90,7 +90,7 @@ export function ApplicationWizard({ id }: { id: string }) {
 
   const saveDraft = async () => {
     await persistStep(step);
-    toast.success(t("wiz.saved"), "You can return to it from your dashboard.");
+    toast.success(t("wiz.saved"), t("wz.savedToast"));
   };
 
   const submit = async () => {
@@ -108,7 +108,7 @@ export function ApplicationWizard({ id }: { id: string }) {
       id: s,
       label: t(STEP_LABEL[s]),
       state: (i === step ? "current" : errs && (attempted[i] || i < (app.draftStep ?? 0)) ? "error" : reached && !errs && i < Math.max(step, app.draftStep ?? 0) ? "complete" : reached ? "complete" : "upcoming") as "current" | "complete" | "upcoming" | "error",
-      hint: i === step ? undefined : errs && (attempted[i] || i < (app.draftStep ?? 0)) ? `${errs} to complete` : undefined,
+      hint: i === step ? undefined : errs && (attempted[i] || i < (app.draftStep ?? 0)) ? t("wz.toComplete", { n: errs }) : undefined,
     };
   });
   const canSubmit = issues.filter((i) => i.severity === "error").length === 0 && declared;
@@ -129,16 +129,16 @@ export function ApplicationWizard({ id }: { id: string }) {
             t("wiz.saving")
           ) : savedAt ? (
             <>
-              <Check className="size-3.5 text-success-600" aria-hidden /> {t("wiz.saved")} · {formatRelative(savedAt)}
+              <Check className="size-3.5 text-success-700" aria-hidden /> {t("wiz.saved")} · {formatRelative(savedAt)}
             </>
           ) : (
-            <>Autosaves as you type</>
+            <>{t("wz.autosave")}</>
           )}
         </p>
       </div>
 
       {/* Mobile progress */}
-      <div className="mt-5 rounded-lg border border-line bg-surface p-3 lg:hidden">
+      <div className="mt-5 rounded-lg border border-line bg-surface p-3 xl:hidden">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-ink-strong">
             {step + 1}. {t(STEP_LABEL[key])}
@@ -147,16 +147,16 @@ export function ApplicationWizard({ id }: { id: string }) {
             {step + 1} / {STEP_KEYS.length}
           </span>
         </div>
-        <ProgressBar value={(step + 1) / STEP_KEYS.length} className="mt-2" label="Application progress" />
+        <ProgressBar value={(step + 1) / STEP_KEYS.length} className="mt-2" label={t("wz.progress")} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[15.5rem_minmax(0,1fr)]">
-        <aside className="hidden lg:block">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[15.5rem_minmax(0,1fr)]">
+        <aside className="hidden xl:block">
           <div className="sticky top-24 rounded-xl border border-line bg-surface p-2">
             <Stepper steps={stepStates} current={step} onSelect={(i) => setStep(i)} />
             <div className="mt-2 border-t border-line px-2.5 pb-1 pt-3">
-              <ProgressBar value={(app.draftStep ?? 0) / (STEP_KEYS.length - 1)} label="Draft completion" />
-              <p className="mt-1.5 text-[0.6875rem] text-muted">Draft {Math.round(((app.draftStep ?? 0) / (STEP_KEYS.length - 1)) * 100)}% complete</p>
+              <ProgressBar value={(app.draftStep ?? 0) / (STEP_KEYS.length - 1)} label={t("wz2.draftCompletion")} />
+              <p className="mt-1.5 text-[0.6875rem] text-muted">{t("wz.draftPct", { pct: Math.round(((app.draftStep ?? 0) / (STEP_KEYS.length - 1)) * 100) })}</p>
             </div>
           </div>
         </aside>
@@ -165,7 +165,7 @@ export function ApplicationWizard({ id }: { id: string }) {
           <section id="wizard-step" aria-label={t(STEP_LABEL[key])} className="scroll-mt-24 rounded-xl border border-line bg-surface p-5 shadow-xs sm:p-7">
             {key !== "review" && Object.keys(stepErrors).length > 0 && (
               <div role="alert" className="mb-6 rounded-lg border border-danger-600/25 bg-danger-100/60 px-4 py-3 text-sm text-danger-700">
-                <p className="font-semibold">Complete these before continuing:</p>
+                <p className="font-semibold">{t("wz.fix")}</p>
                 <ul className="mt-1.5 list-disc space-y-0.5 pl-5">
                   {Object.values(stepErrors).map((m) => (
                     <li key={m}>{m}</li>
@@ -184,11 +184,11 @@ export function ApplicationWizard({ id }: { id: string }) {
           </section>
 
           <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur sm:mx-0 sm:rounded-xl sm:border sm:shadow-md">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <Button variant="ghost" onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}>
                 <ArrowLeft /> <span className="hidden sm:inline">{t("wiz.back")}</span>
               </Button>
-              <div className="flex gap-2">
+              <div className="ml-auto flex flex-wrap justify-end gap-2">
                 <Button variant="secondary" onClick={saveDraft} loading={saving}>
                   <Save /> <span className="hidden sm:inline">{t("wiz.save")}</span>
                 </Button>
@@ -205,7 +205,7 @@ export function ApplicationWizard({ id }: { id: string }) {
             </div>
             {key === "review" && !canSubmit && (
               <p id="submit-why" className="mt-2 text-right text-xs text-muted">
-                {issues.some((i) => i.severity === "error") ? "Complete the items listed above to enable submission." : "Tick the declaration to enable submission."}
+                {issues.some((i) => i.severity === "error") ? t("wz.submitWhyIssues") : t("wz.submitWhyDeclare")}
               </p>
             )}
           </div>
@@ -223,7 +223,7 @@ export function ApplicationWizard({ id }: { id: string }) {
         loading={submitting}
         onConfirm={submit}
       >
-        <p className="rounded-md bg-surface-2 px-3 py-2 text-xs text-muted">The application fee is paid through the payment gateway as part of submission. In this prototype the payment is simulated.</p>
+        <p className="rounded-md bg-surface-2 px-3 py-2 text-xs text-muted">{t("wz.feeOnSubmit")}</p>
       </ConfirmDialog>
     </div>
   );
@@ -251,10 +251,10 @@ function SubmittedScreen({ id }: { id: string }) {
               <Button
                 variant="outline-dark"
                 size="icon"
-                aria-label="Copy reference"
+                aria-label={t("wz.copy")}
                 onClick={() => {
                   void navigator.clipboard?.writeText(app.ref);
-                  toast.success("Reference copied");
+                  toast.success(t("wz.copied"));
                 }}
               >
                 <Copy />
@@ -265,19 +265,19 @@ function SubmittedScreen({ id }: { id: string }) {
         <div className="space-y-4 px-8 py-6 text-sm">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs text-muted">Received at</p>
-              <p className="font-medium text-ink-strong">Front Desk, {app.property.zone}</p>
+              <p className="text-xs text-muted">{t("wz.receivedAt")}</p>
+              <p className="font-medium text-ink-strong">{t("wz.frontDesk", { zone: app.property.zone })}</p>
             </div>
             <div>
-              <p className="text-xs text-muted">Application fee</p>
-              <p className="font-medium text-ink-strong">Paid · simulated</p>
+              <p className="text-xs text-muted">{t("wz.appFee")}</p>
+              <p className="font-medium text-ink-strong">{t("wz.paidSim")}</p>
             </div>
             <div>
-              <p className="text-xs text-muted">Next step</p>
-              <p className="font-medium text-ink-strong">Scrutiny & assignment</p>
+              <p className="text-xs text-muted">{t("wz.nextStep")}</p>
+              <p className="font-medium text-ink-strong">{t("wz.scrutiny")}</p>
             </div>
           </div>
-          <p className={cn("rounded-md bg-teal-50 px-3 py-2 text-xs text-teal-800")}>Demo: switch to the RAJUK Officer role to see this file arrive in the zone queue.</p>
+          <p className={cn("rounded-md bg-teal-50 px-3 py-2 text-xs text-teal-800")}>{t("wz.demoNote")}</p>
         </div>
         <div className="flex flex-col gap-2 border-t border-line bg-surface-2 px-8 py-4 sm:flex-row sm:justify-end">
           <Button asChild variant="secondary">

@@ -1,7 +1,10 @@
+"use client";
+
 import { Check, ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Tone } from "@/lib/domain/workflow";
+import { useI18n } from "@/lib/i18n";
 import { cn, initials } from "@/lib/utils";
 
 /* ———————————————————————————— Badge ———————————————————————————— */
@@ -86,8 +89,9 @@ export function Panel({
 /* ———————————————————————————— Page header & breadcrumbs ———————————————————————————— */
 
 export function Breadcrumbs({ items, className }: { items: Array<{ label: string; href?: string }>; className?: string }) {
+  const { t } = useI18n();
   return (
-    <nav aria-label="Breadcrumb" className={className}>
+    <nav aria-label={t("ui.breadcrumb")} className={className}>
       <ol className="flex flex-wrap items-center gap-1 text-[0.8125rem] text-muted">
         {items.map((it, i) => (
           <li key={i} className="flex items-center gap-1">
@@ -177,7 +181,7 @@ export function Metric({ label, value, hint, tone, icon: Icon, href, className }
     <>
       <div className="flex items-center justify-between gap-3">
         <span className="text-[0.8125rem] text-muted">{label}</span>
-        {Icon && <Icon aria-hidden className={cn("size-4", tone === "danger" ? "text-danger-600" : tone === "warning" ? "text-amber-600" : tone === "success" ? "text-success-600" : "text-subtle")} />}
+        {Icon && <Icon aria-hidden className={cn("size-4", tone === "danger" ? "text-danger-700" : tone === "warning" ? "text-amber-700" : tone === "success" ? "text-success-700" : "text-subtle")} />}
       </div>
       <div className={cn("tabular mt-2 font-display text-[1.75rem] font-semibold leading-none tracking-tight", tone === "danger" ? "text-danger-700" : "text-ink-strong")}>{value}</div>
       {hint && <div className="mt-2 text-xs text-muted">{hint}</div>}
@@ -256,8 +260,9 @@ export function Stepper({
   orientation?: "vertical" | "horizontal";
   className?: string;
 }) {
+  const { t } = useI18n();
   return (
-    <ol className={cn(orientation === "vertical" ? "space-y-0.5" : "flex items-center gap-2 overflow-x-auto", className)} aria-label="Progress">
+    <ol className={cn(orientation === "vertical" ? "space-y-0.5" : "flex items-center gap-2 overflow-x-auto", className)} aria-label={t("ui.progress")}>
       {steps.map((s, i) => {
         const clickable = onSelect && s.state !== "upcoming";
         const inner = (
@@ -266,7 +271,7 @@ export function Stepper({
               className={cn(
                 "grid size-6 shrink-0 place-items-center rounded-full border text-[0.6875rem] font-semibold tabular",
                 s.state === "complete" && "border-teal-600 bg-teal-600 text-white",
-                s.state === "current" && "border-navy-900 bg-navy-900 text-white",
+                s.state === "current" && "border-emphasis bg-emphasis text-white",
                 s.state === "upcoming" && "border-line-strong bg-surface text-muted",
                 s.state === "error" && "border-amber-500 bg-amber-50 text-amber-700",
               )}

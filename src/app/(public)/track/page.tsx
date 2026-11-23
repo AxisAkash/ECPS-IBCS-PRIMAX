@@ -1,7 +1,10 @@
+import { pageTitle } from "@/lib/i18n/server";
 import { Suspense } from "react";
 import { TrackPage } from "@/features/public/misc";
 
-export const metadata = { title: "Track an application" };
+export async function generateMetadata() {
+  return pageTitle("meta.track");
+}
 
 export default function Page() {
   return (

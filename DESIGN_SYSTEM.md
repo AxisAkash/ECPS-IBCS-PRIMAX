@@ -34,6 +34,10 @@ Amber is never used for body text (fails contrast); `amber-700` is used instead.
 
 Validated with the dataviz six-check validator on the light surface (lightness band, chroma floor, CVD ΔE ≥ 8, normal-vision ΔE ≥ 15, contrast ≥ 3:1): **`#008AA8`, `#B97000`, `#5157C4`, `#B23F7D`**, assigned in fixed order. Red `#B8322A` is reserved for “over holding limit”. Every multi-series chart has a legend; every chart has tooltips and a **Table** toggle (`ChartFrame`).
 
+### Dark theme
+
+Light is the default. Dark mode is a designed set of values, not an inversion: tokens are redefined under `[data-theme="dark"]` in `globals.css` (deep navy canvas `#0B1521`, lifted surfaces `#111E2E`/`#142335`/`#1A2B40`, text `#D3DCE7`/`#F0F4F9`, muted `#9AABBF`, tints re-stepped so every text pair meets WCAG AA). Brand fills that carry white text keep their values. An `emphasis` token (navy in light, steel blue `#42628C` in dark) marks selected/current states. Letters, document previews and drawing sheets are "paper" islands (`data-theme="light"`). Charts read CSS variables; the dark series `#1A9AB6 #C4861F #787EE4 #CC6399` passes the palette validator on the dark surface. The theme is chosen with the sun/moon switch, stored in the `ecps-theme` cookie and rendered server-side (no flash). `tests/e2e/theme.spec.ts` covers persistence and runs axe colour-contrast in dark mode.
+
 ## 2. Typography
 
 | Role | Face | Notes |
@@ -65,7 +69,7 @@ The **kicker** (mono, uppercase, with a short leading rule) is the system's sign
 | Feedback | `Callout` (info/success/warning/danger/**demo**), `SimulatedTag`, `EmptyState`, `Skeleton`, `PageSkeleton`, `Spinner`, `ProgressBar` |
 | Domain | `DrawingSheet` (title block with signature slots and auto-stamped file number), `DocumentPreview`, `SiteMap` (simulated, DAP overlay), `MfaDialog`, `StatusBadge`, `StageTrack`, `HoldingIndicator` |
 | Charts | `ChartFrame`, `VBarChart`, `HBarChart`, `TrendChart` |
-| Brand | `LogoMark`/`Logo` (original mark, not the RAJUK emblem), `HeroPlan` (deterministic cadastral composition) |
+| Brand | `LogoMark`/`Logo` (the supplied RAJUK emblem on a white disc, with a localised wordmark), `HeroPlan` (deterministic cadastral composition) |
 
 shadcn/ui conventions (Radix + Tailwind + `cva`) are used as a foundation only; every visual is custom.
 
@@ -79,7 +83,9 @@ shadcn/ui conventions (Radix + Tailwind + `cva`) are used as a foundation only; 
 | Inspector | Phone-first single column, 44px touch targets, thumb-reachable sticky actions |
 | Management/finance | Desktop-first two-column charts that stack on narrow screens; every chart has a table alternative |
 
-Tested at 1440, 1024, 768, 390 and 360px wide.
+Tested at 1440, 1024, 768, 390 and 360px wide. An e2e guard (`tests/e2e/responsive.spec.ts`) fails if any of 17 key pages scrolls horizontally at 1024, 768 or 360px.
+
+Layout safety net in `globals.css`: direct children of any `.grid` get `min-width: 0` (so long references and tables shrink instead of pushing the page wider), and scroll containers are `position: relative` (so absolutely positioned `sr-only` text stays inside them). The wizard's step sidebar appears from 1280px; below that the compact progress header is used.
 
 ## 6. Accessibility (target WCAG 2.2 AA)
 
@@ -97,8 +103,14 @@ Tested at 1440, 1024, 768, 390 and 360px wide.
 ## 7. Localisation
 
 - English and Bangla dictionaries are typed: Bangla must define every English key (enforced by TypeScript and a unit test that also checks placeholders).
-- Translated: public landing, navigation, authentication and registration, service names, applicant dashboard and wizard chrome, statuses.
-- English-only (prototype scope): internal RAJUK workspace screens.
+- One typed dictionary, split by area for maintainability: `en.ts` (core) + `en-applicant`, `en-shell`, `en-rajuk`, `en-admin`, `en-public`, each mirrored in Bangla. `translate()` lives in `i18n/core.ts` so client components, the demo store and server metadata share it.
+- Every screen is translated: public portal, auth, applicant and professional workspaces, all RAJUK internal screens, administration, dialogs, toasts, empty states, charts and page titles.
+- Domain labels (stages, statuses, services, documents, departments, checklists, next actions) come from one `useLabels()` hook so a term reads the same everywhere.
+- Data values with a fixed vocabulary (job titles, zones, departments, meeting titles…) use a glossary lookup `term(group, value)` with a fallback to the stored value.
+- Generated messages (notifications, signing-package log lines) store a message key plus variables and render in the reader's language; English text is kept as a fallback.
+- Kept as recorded: names, addresses, project titles, typed notes, references/codes, audit-log details, CSV exports and drawing title blocks. `/design-system` is developer documentation and stays English.
+- Dates, relative times, month names, numbers and Taka amounts follow the locale; Bangla date-times use the 24-hour clock.
+- `tests/e2e/language.spec.ts` checks that English → Bangla → English leaves no Bangla behind; `LANG_AUDIT=<file>` lists any Latin words per screen in Bangla.
 - Official service names are kept in their commonly used transliterated form (e.g. “প্ল্যানিং পারমিট”) with plain-language descriptions. All Bangla copy should be reviewed by RAJUK.
 
 ## 8. Content principles

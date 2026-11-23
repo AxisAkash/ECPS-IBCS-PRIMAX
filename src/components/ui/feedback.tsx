@@ -1,5 +1,8 @@
+"use client";
+
 import { AlertTriangle, CheckCircle2, Info, OctagonAlert, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function Spinner({ className, label }: { className?: string; label?: string }) {
@@ -16,8 +19,9 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 export function PageSkeleton() {
+  const { t } = useI18n();
   return (
-    <div className="space-y-6" role="status" aria-label="Loading">
+    <div className="space-y-6" role="status" aria-label={t("ui.loading")}>
       <Skeleton className="h-8 w-72" />
       <Skeleton className="h-4 w-96 max-w-full" />
       <div className="grid gap-4 md:grid-cols-3">
@@ -31,10 +35,10 @@ export function PageSkeleton() {
 }
 
 const CALLOUT = {
-  info: { icon: Info, cls: "border-teal-600/25 bg-teal-50 text-teal-800", iconCls: "text-teal-600" },
-  success: { icon: CheckCircle2, cls: "border-success-600/25 bg-success-100/70 text-success-700", iconCls: "text-success-600" },
-  warning: { icon: AlertTriangle, cls: "border-amber-500/40 bg-amber-50 text-amber-700", iconCls: "text-amber-600" },
-  danger: { icon: OctagonAlert, cls: "border-danger-600/25 bg-danger-100/70 text-danger-700", iconCls: "text-danger-600" },
+  info: { icon: Info, cls: "border-teal-600/25 bg-teal-50 text-teal-800", iconCls: "text-teal-700" },
+  success: { icon: CheckCircle2, cls: "border-success-600/25 bg-success-100/70 text-success-700", iconCls: "text-success-700" },
+  warning: { icon: AlertTriangle, cls: "border-amber-500/40 bg-amber-50 text-amber-700", iconCls: "text-amber-700" },
+  danger: { icon: OctagonAlert, cls: "border-danger-600/25 bg-danger-100/70 text-danger-700", iconCls: "text-danger-700" },
   demo: { icon: Info, cls: "border-dashed border-slate-ink/30 bg-surface-2 text-muted", iconCls: "text-slate-ink" },
 } as const;
 
@@ -68,10 +72,11 @@ export function Callout({
 }
 
 /** Explicit label for demonstration-only behaviour. */
-export function SimulatedTag({ children = "Simulated", className }: { children?: ReactNode; className?: string }) {
+export function SimulatedTag({ children, className }: { children?: ReactNode; className?: string }) {
+  const { t } = useI18n();
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-xs border border-dashed border-slate-ink/40 px-1.5 py-px font-mono text-[0.625rem] uppercase tracking-wider text-slate-ink", className)}>
-      {children}
+      {children ?? t("common.simulated")}
     </span>
   );
 }
@@ -105,7 +110,7 @@ export function EmptyState({
 
 export function ProgressBar({ value, className, tone = "teal", label }: { value: number; className?: string; tone?: "teal" | "amber" | "navy" | "success"; label?: string }) {
   const pct = Math.round(Math.max(0, Math.min(1, value)) * 100);
-  const fill = { teal: "bg-teal-600", amber: "bg-amber-500", navy: "bg-navy-900", success: "bg-success-600" }[tone];
+  const fill = { teal: "bg-teal-600", amber: "bg-amber-500", navy: "bg-emphasis", success: "bg-success-600" }[tone];
   return (
     <div
       role="progressbar"

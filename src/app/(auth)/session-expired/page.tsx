@@ -26,8 +26,7 @@ export default function SessionExpiredPage() {
         </Button>
       </div>
       <Callout tone="demo" className="mt-8">
-        Demo behaviour: the browser signed you out after {minutes} minutes without activity (configurable in Admin → Security, TOR 1.9). In production, session expiry must
-        also be enforced by the server.
+        {t("se.demo", { n: minutes })}
       </Callout>
     </div>
   );

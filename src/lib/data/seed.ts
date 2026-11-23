@@ -33,12 +33,16 @@ import type {
   Ticket,
   TwoCFile,
   User,
+  CommitteeConfig,
+  ReportDelivery,
+  TrustedDevice,
   WorkflowEvent,
   ApplicationStatus,
   DrawingSheetKind,
 } from "@/lib/domain/types";
 import { DEFAULT_HOLDING_LIMITS } from "@/lib/domain/workflow";
 import { daysAgo, hoursAgo } from "@/lib/utils";
+import { localText, notifMsg } from "@/lib/i18n/notify";
 
 export const DEMO_PERSONAS = {
   applicant: "u-app-01",
@@ -559,6 +563,9 @@ export interface DemoSeed {
   dap: DapZone[];
   issuedPermits: typeof PUBLIC_PERMITS;
   counters: { application: number; ticket: number };
+  committees: CommitteeConfig[];
+  reportDelivery: ReportDelivery;
+  trustedDevices: TrustedDevice[];
 }
 
 export function createSeed(now = Date.now()): DemoSeed {
@@ -582,8 +589,8 @@ export function createSeed(now = Date.now()): DemoSeed {
       status: "awaiting",
       requiredSignerIds: ["u-off-02", "u-off-01"],
       audit: [
-        { at: daysAgo(2, now, 12), actorId: "u-com-04", text: "Version 3 locked as approved drawing set after committee vote." },
-        { at: daysAgo(1, now, 16), actorId: "u-off-02", text: "Signed pages 1–5 in slot 1. FAR calculation sheet excluded by placement rule.", simulated: true },
+        { at: daysAgo(2, now, 12), actorId: "u-com-04", ...localText("log.lockedV3") },
+        { at: daysAgo(1, now, 16), actorId: "u-off-02", ...localText("log.signedSeed"), simulated: true },
       ],
     },
     {
@@ -602,7 +609,7 @@ export function createSeed(now = Date.now()): DemoSeed {
       ],
       status: "signed",
       requiredSignerIds: ["u-off-02", "u-off-01"],
-      audit: [{ at: daysAgo(3, now), actorId: "u-off-01", text: "All required signatures applied; post-render check found 10 of 10 signature marks (simulated).", simulated: true }],
+      audit: [{ at: daysAgo(3, now), actorId: "u-off-01", ...localText("log.allApplied", { vars: { n: 10 } }), simulated: true }],
     },
   ];
 
@@ -679,25 +686,27 @@ export function createSeed(now = Date.now()): DemoSeed {
   const a103 = applications.find((a) => a.id === "a-103")!;
   payments.push({ id: "p-a103", applicationId: "a-103", applicationRef: a103.ref, zone: "Zone 1", category: "application_fee", amount: 10000, status: "paid", channel: "Mobile banking", gatewayRef: "SSLCZ-DEMO-A103", paidAt: daysAgo(21, now), createdAt: daysAgo(21, now), reconciled: true });
 
-  const n = (userId: string, hrs: number, title: string, body: string, kind: Notification["kind"], href?: string, read = false): Notification => ({
-    id: `n-${userId}-${hrs}`, userId, at: hoursAgo(hrs, now), title, body, kind, href, read,
+  const n = (userId: string, hrs: number, text: ReturnType<typeof notifMsg>, kind: Notification["kind"], href?: string, read = false): Notification => ({
+    id: `n-${userId}-${hrs}`, userId, at: hoursAgo(hrs, now), ...text, kind, href, read,
   });
+  const a203 = applications.find((a) => a.id === "a-203")!;
+  const a208 = applications.find((a) => a.id === "a-208")!;
   const notifications: Notification[] = [
-    n("u-app-01", 3, "Fee payment requested", `Permit fee for ${a104.ref} is due. Electrical and plumbing drawings are also requested.`, "action", "/workspace/applications/a-104"),
-    n("u-app-01", 96, "Correction requested", `${applications.find((a) => a.id === "a-102")!.ref}: the adjacent-road photograph needs to be replaced.`, "warning", "/workspace/applications/a-102"),
-    n("u-app-01", 48, "File moved to Assistant Authorized Officer", `${a103.ref} is now with the Assistant Authorized Officer, Zone 1.`, "info", "/workspace/applications/a-103"),
-    n("u-app-01", 400, "Planning Permit approved", "PP-26-Z1-01442 has been approved and published in the Public Register.", "success", "/workspace/applications/a-106", true),
-    n("u-pro-01", 70, "New invitation", "Nusrat Jahan Chowdhury invited you as Architect on a Planning Permit draft.", "action", "/workspace/invitations"),
-    n("u-pro-01", 20, "New invitation", "Rehana Parvin invited you as Architect on a Construction Permit draft.", "action", "/workspace/invitations"),
-    n("u-off-01", 2, "File received", "CP — Ten-storey residential building, Dhanmondi R/A forwarded to you by Nasima Begum.", "info", "/rajuk/files/a-203"),
-    n("u-off-01", 20, "Signature required", "Approved drawing set for a-208 awaits your signature.", "action", "/rajuk/signing/sp-208"),
-    n("u-off-01", 30, "Holding limit exceeded", "1 file in your tray has exceeded its holding limit.", "warning", "/rajuk/inbox?filter=overdue"),
-    n("u-ins-01", 5, "Inspection scheduled", "Plinth-level inspection at Rupnagar today.", "action", "/rajuk/inspections/i-01"),
-    n("u-com-01", 10, "Agenda published", "BC Committee meeting 14/2026 agenda is available.", "info", "/rajuk/committee"),
-    n("u-est-01", 90, "NOC requested", "Town Planning routed a Purbachal lease plot for Estate NOC.", "action", "/rajuk/estate"),
-    n("u-fin-01", 6, "Reconciliation exceptions", "9 gateway transactions are not yet reconciled.", "warning", "/rajuk/finance"),
-    n("u-adm-01", 12, "Duplicate user profile", "A new profile request shares an Employee ID with an active user.", "warning", "/rajuk/admin/users"),
-    n("u-sup-01", 1, "New ticket", "HD-26-00418 — Unable to upload drawing over 20 MB.", "action", "/rajuk/helpdesk"),
+    n("u-app-01", 3, notifMsg("ntf.feeReq.t", "ntf.seed.fee.b", { vars: { ref: a104.ref } }), "action", "/workspace/applications/a-104"),
+    n("u-app-01", 96, notifMsg("ntf.corrReq.t", "ntf.seed.photo.b", { vars: { ref: applications.find((a) => a.id === "a-102")!.ref } }), "warning", "/workspace/applications/a-102"),
+    n("u-app-01", 48, notifMsg("ntf.seed.moved.t", "ntf.seed.moved.b", { vars: { ref: a103.ref }, keys: { stage: "stage.assistant_authorized_officer" }, terms: { zone: ["zone", "Zone 1"] } }), "info", "/workspace/applications/a-103"),
+    n("u-app-01", 400, notifMsg("ntf.seed.ppApproved.t", "ntf.seed.ppApproved.b", { vars: { permit: "PP-26-Z1-01442" } }), "success", "/workspace/applications/a-106", true),
+    n("u-pro-01", 70, notifMsg("ntf.invite.t", "ntf.seed.invPP.b", { vars: { who: "Nusrat Jahan Chowdhury" } }), "action", "/workspace/invitations"),
+    n("u-pro-01", 20, notifMsg("ntf.invite.t", "ntf.seed.invCP.b", { vars: { who: "Rehana Parvin" } }), "action", "/workspace/invitations"),
+    n("u-off-01", 2, notifMsg("ntf.fileRecv.t", "ntf.seed.fwdBy.b", { vars: { ref: a203.ref, title: a203.title, who: "Nasima Begum" } }), "info", "/rajuk/files/a-203"),
+    n("u-off-01", 20, notifMsg("ntf.sigReq.t", "ntf.seed.sig.b", { vars: { ref: a208.ref } }), "action", "/rajuk/signing/sp-208"),
+    n("u-off-01", 30, notifMsg("ntf.seed.limit.t", "ntf.seed.limit.b", { vars: { n: 1 } }), "warning", "/rajuk/inbox?filter=overdue"),
+    n("u-ins-01", 5, notifMsg("ntf.seed.insp.t", "ntf.seed.insp.b", { vars: { place: "Rupnagar" } }), "action", "/rajuk/inspections/i-01"),
+    n("u-com-01", 10, notifMsg("ntf.seed.agenda.t", "ntf.seed.agenda.b", { vars: { no: "14/2026" } }), "info", "/rajuk/committee"),
+    n("u-est-01", 90, notifMsg("ntf.seed.noc.t", "ntf.seed.noc.b"), "action", "/rajuk/estate"),
+    n("u-fin-01", 6, notifMsg("ntf.seed.recon.t", "ntf.seed.recon.b", { vars: { n: 9 } }), "warning", "/rajuk/finance"),
+    n("u-adm-01", 12, notifMsg("ntf.seed.dup.t", "ntf.seed.dup.b"), "warning", "/rajuk/admin/users"),
+    n("u-sup-01", 1, notifMsg("ntf.tkNew.t", "ntf.tkNew.b", { vars: { ref: "HD-26-00418", subject: "Unable to upload drawing over 20 MB." } }), "action", "/rajuk/helpdesk"),
   ];
 
   const audit: AuditEntry[] = [
@@ -843,5 +852,14 @@ export function createSeed(now = Date.now()): DemoSeed {
     dap,
     issuedPermits: [],
     counters: { application: 400, ticket: 419 },
+    committees: [
+      { id: "bcc-r", name: "BC Committee (Regular)", type: "Regular", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-com-02", "u-com-03"] },
+      { id: "bcc-l", name: "BC Committee (LSP)", type: "Large & Special Projects", maxPresentations: 2, members: ["u-com-04", "u-com-01", "u-ctp-01"] },
+    ],
+    reportDelivery: { monthly: true, weekly: false, recipients: "director.dc@demo.ecps.test; ao.zone4@demo.ecps.test" },
+    trustedDevices: USERS.filter((u) => u.status === "active").flatMap((u) => [
+      { id: `td-${u.id}-1`, userId: u.id, label: "This browser", kind: "laptop" as const, lastSeenAt: new Date(now).toISOString() },
+      { id: `td-${u.id}-2`, userId: u.id, label: "Android phone (sample)", kind: "phone" as const, lastSeenAt: daysAgo(4, now) },
+    ]),
   };
 }

@@ -116,7 +116,7 @@ export default function VerifyDevicePage() {
       </form>
 
       <Callout tone="demo" className="mt-8">
-        {t("otp.demo")} Real OTP delivery and verification must be performed by the ECPS server and SMS gateway (TOR 1.9).
+        {t("otp.demo")} {t("otp.real")}
       </Callout>
       <p className="mt-6 text-center text-sm">
         <Link href="/sign-in" className="text-muted hover:text-ink-strong hover:underline">

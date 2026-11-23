@@ -32,6 +32,7 @@ import type {
 import { DEPARTMENT_LABEL, nextStage, STAGE_LABEL } from "@/lib/domain/workflow";
 import { SERVICE_SHORT_LABEL } from "@/lib/domain/catalog";
 import { pad, uid } from "@/lib/utils";
+import { localText, notifMsg } from "@/lib/i18n/notify";
 
 export interface Session {
   role: RoleKey;
@@ -59,7 +60,10 @@ interface DemoActions {
   addDocument: (appId: string, doc: Omit<DocumentRecord, "id" | "uploadedAt" | "uploadedBy" | "sample" | "version" | "status">) => void;
   removeDocument: (appId: string, docId: string) => void;
   inviteProfessional: (appId: string, userId: string, role: ProfessionalRole) => void;
-  replaceProfessional: (appId: string, oldUserId: string, newUserId: string) => void;
+  replaceProfessional: (appId: string, oldUserId: string, newUserId: string, reason: string) => void;
+  endorseDrawings: (appId: string) => void;
+  regenerateLetter: (appId: string, reason: string) => void;
+  notifyServiceDrawings: (appId: string) => void;
   respondInvitation: (appId: string, userId: string, accept: boolean, note?: string) => void;
   submitApplication: (id: string) => void;
   resubmitCorrection: (id: string, note: string) => void;
@@ -117,6 +121,10 @@ interface DemoActions {
   reconcilePayment: (id: string) => void;
   advanceMigration: (id: string) => void;
   moveTwoC: (id: string, toId: string, note: string) => void;
+  addTwoCDocument: (id: string, name: string) => void;
+  removeTrustedDevice: (id: string) => void;
+  saveReportDelivery: (patch: Partial<DemoSeed["reportDelivery"]>) => void;
+  formCommittee: (c: Omit<DemoSeed["committees"][number], "id">) => void;
 }
 
 export type DemoStore = DemoState & DemoActions;
@@ -201,8 +209,9 @@ export const useDemoStore = create<DemoStore>()(
 
         addDocument: (appId, doc) =>
           patchApp(appId, (a) => {
-            const prior = a.documents.filter((d) => d.category === doc.category && d.ownerIndex === doc.ownerIndex && d.drawingSheet === doc.drawingSheet && d.status !== "superseded");
-            const replaced = ["plot_photo", "road_photo"].includes(doc.category) || doc.category === "drawing";
+            // Versioning applies to the same drawing sheet or the same service drawing; photos and attachments are additive.
+            const prior = a.documents.filter((d) => d.category === doc.category && d.drawingSheet === doc.drawingSheet && d.service === doc.service && d.status !== "superseded");
+            const replaced = doc.category === "drawing" && (!!doc.drawingSheet || !!doc.service);
             const version = replaced && prior.length ? Math.max(...prior.map((p) => p.version)) + 1 : 1;
             return {
               ...a,
@@ -221,21 +230,27 @@ export const useDemoStore = create<DemoStore>()(
             professionals: [...a.professionals.filter((p) => p.role !== role || p.status === "declined"), { userId, role, status: "invited", invitedAt: new Date().toISOString() }],
           }));
           const a = app(appId)!;
-          notify(userId, { title: "New invitation", body: `${get().users.find((u) => u.id === me())?.name} invited you to participate in "${a.title}".`, kind: "action", href: "/workspace/invitations" });
+          notify(userId, { ...notifMsg("ntf.invite.t", "ntf.invite.b", { vars: { who: get().users.find((u) => u.id === me())?.name ?? "", title: a.title } }), kind: "action", href: "/workspace/invitations" });
           audit("professional.invite", a.ref, `Invited ${userId} as ${role}`);
         },
 
-        replaceProfessional: (appId, oldUserId, newUserId) => {
+        replaceProfessional: (appId, oldUserId, newUserId, reason) => {
           const a = app(appId)!;
-          const old = a.professionals.find((p) => p.userId === oldUserId)!;
+          const old = a.professionals.find((p) => p.userId === oldUserId && p.status !== "replaced")!;
+          const nameOf = (id: string) => get().users.find((u) => u.id === id)?.name ?? id;
           patchApp(appId, (x) => ({
             ...x,
             professionals: [
-              ...x.professionals.map((p) => (p.userId === oldUserId ? { ...p, status: "replaced" as const } : p)),
-              { userId: newUserId, role: old.role, status: "invited", invitedAt: new Date().toISOString(), note: `Replaces ${oldUserId}` },
+              ...x.professionals.map((p) =>
+                p.userId === oldUserId && p.role === old.role && p.status !== "replaced" ? { ...p, status: "replaced" as const, replacementReason: reason } : p,
+              ),
+              { userId: newUserId, role: old.role, status: "invited", invitedAt: new Date().toISOString(), note: `Replaces ${nameOf(oldUserId)}` },
             ],
+            history: [...x.history, event(me(), "professional_replaced", { note: `${nameOf(oldUserId)} → ${nameOf(newUserId)} (${old.role}). Reason: ${reason}` })],
           }));
-          notify(newUserId, { title: "Replacement invitation", body: `You are invited to replace a ${old.role} on "${a.title}".`, kind: "action", href: "/workspace/invitations" });
+          notify(oldUserId, { ...notifMsg("ntf.replOld.t", "ntf.replOld.b", { vars: { ref: a.ref, reason } }), kind: "warning", href: "/workspace/invitations" });
+          if (a.holderId) notify(a.holderId, { ...notifMsg("ntf.replHolder.t", "ntf.replHolder.b", { vars: { ref: a.ref }, keys: { role: `pro.${old.role}` } }), kind: "info", href: `/rajuk/files/${appId}` });
+          notify(newUserId, { ...notifMsg("ntf.replNew.t", "ntf.replNew.b", { vars: { title: a.title }, keys: { role: `pro.${old.role}` } }), kind: "action", href: "/workspace/invitations" });
           audit("professional.replace", a.ref, `${oldUserId} → ${newUserId}`, "notice");
         },
 
@@ -249,8 +264,9 @@ export const useDemoStore = create<DemoStore>()(
           const a = app(appId)!;
           const who = get().users.find((u) => u.id === userId)?.name;
           notify(a.applicantId, {
-            title: accept ? "Invitation accepted" : "Invitation declined",
-            body: `${who} ${accept ? "accepted" : "declined"} your invitation for "${a.title}".${note ? ` Note: ${note}` : ""}`,
+            ...notifMsg(accept ? "ntf.accepted.t" : "ntf.declined.t", accept ? (note ? "ntf.accepted.bn" : "ntf.accepted.b") : note ? "ntf.declined.bn" : "ntf.declined.b", {
+              vars: { who: who ?? "", title: a.title, note: note ?? "" },
+            }),
             kind: accept ? "success" : "warning",
             href: `/workspace/applications/${a.id}`,
           });
@@ -282,8 +298,8 @@ export const useDemoStore = create<DemoStore>()(
               ...s.payments,
             ],
           }));
-          notify("u-off-01", { title: "New application received", body: `${ref} — ${a.title} arrived at Front Desk, ${a.property.zone}.`, kind: "info", href: `/rajuk/files/${id}` });
-          notify(a.applicantId, { title: "Application submitted", body: `${ref} was submitted and received at the Front Desk.`, kind: "success", href: `/workspace/applications/${id}` });
+          notify("u-off-01", { ...notifMsg("ntf.newApp.t", "ntf.newApp.b", { vars: { ref, title: a.title }, terms: { zone: ["zone", a.property.zone] } }), kind: "info", href: `/rajuk/files/${id}` });
+          notify(a.applicantId, { ...notifMsg("ntf.submitted.t", "ntf.submitted.b", { vars: { ref } }), kind: "success", href: `/workspace/applications/${id}` });
           audit("application.submit", ref, a.title);
         },
 
@@ -296,7 +312,7 @@ export const useDemoStore = create<DemoStore>()(
             stageEnteredAt: new Date().toISOString(),
             history: [...x.history, event(me(), "resubmitted", { note })],
           }));
-          if (a.holderId) notify(a.holderId, { title: "Correction resubmitted", body: `${a.ref}: applicant uploaded the requested correction.`, kind: "action", href: `/rajuk/files/${id}` });
+          if (a.holderId) notify(a.holderId, { ...notifMsg("ntf.corrResub.t", "ntf.corrResub.b", { vars: { ref: a.ref } }), kind: "action", href: `/rajuk/files/${id}` });
           audit("application.resubmit", a.ref, note);
         },
 
@@ -343,8 +359,8 @@ export const useDemoStore = create<DemoStore>()(
               ],
             }));
           }
-          notify(a.applicantId, { title: "Permit issued", body: `${permitNo} is issued. A public summary is now in the Public Register.`, kind: "success", href: `/workspace/applications/${appId}` });
-          notify("u-fin-01", { title: "Payment received", body: `${a.ref} permit fee received via ${channel}.`, kind: "info", href: "/rajuk/finance" });
+          notify(a.applicantId, { ...notifMsg("ntf.permit.t", "ntf.permit.b", { vars: { permit: permitNo } }), kind: "success", href: `/workspace/applications/${appId}` });
+          notify("u-fin-01", { ...notifMsg("ntf.payRecv.t", "ntf.payRecv.b", { vars: { ref: a.ref }, keys: { channel: channel === "Card" ? "pay.card" : channel === "Mobile banking" ? "pay.mfs" : "pay.bank" } }), kind: "info", href: "/rajuk/finance" });
           audit("payment.received", a.ref, `${channel} (simulated)`);
         },
 
@@ -404,8 +420,8 @@ export const useDemoStore = create<DemoStore>()(
             stageEnteredAt: now,
             history: [...x.history, event(me(), "forwarded", { fromStage: x.stage, toStage, toUserId, note })],
           }));
-          if (toUserId) notify(toUserId, { title: "File received", body: `${a.ref} forwarded to you (${STAGE_LABEL[toStage]}).`, kind: "info", href: `/rajuk/files/${appId}` });
-          notify(a.applicantId, { title: "Application progressed", body: `${a.ref} moved to ${STAGE_LABEL[toStage]}.`, kind: "info", href: `/workspace/applications/${appId}` });
+          if (toUserId) notify(toUserId, { ...notifMsg("ntf.fileRecv.t", "ntf.fileRecv.b", { vars: { ref: a.ref }, keys: { stage: `stage.${toStage}` } }), kind: "info", href: `/rajuk/files/${appId}` });
+          notify(a.applicantId, { ...notifMsg("ntf.progressed.t", "ntf.progressed.b", { vars: { ref: a.ref }, keys: { stage: `stage.${toStage}` } }), kind: "info", href: `/workspace/applications/${appId}` });
           audit("file.forward", a.ref, `${STAGE_LABEL[a.stage]} → ${STAGE_LABEL[toStage]}`);
         },
 
@@ -420,7 +436,7 @@ export const useDemoStore = create<DemoStore>()(
             stageEnteredAt: new Date().toISOString(),
             history: [...x.history, event(me(), "routed", { fromStage: x.stage, toStage: "department_review", note: `Routed to ${DEPARTMENT_LABEL[dept]}: ${note}` })],
           }));
-          if (holder) notify(holder, { title: "File routed for opinion", body: `${a.ref} routed to ${DEPARTMENT_LABEL[dept]}.`, kind: "action", href: dept === "estate" ? "/rajuk/estate" : `/rajuk/files/${appId}` });
+          if (holder) notify(holder, { ...notifMsg("ntf.routed.t", "ntf.routed.b", { vars: { ref: a.ref }, keys: { dept: `dept.${dept}` } }), kind: "action", href: dept === "estate" ? "/rajuk/estate" : `/rajuk/files/${appId}` });
           audit("file.route", a.ref, DEPARTMENT_LABEL[dept]);
         },
 
@@ -432,7 +448,7 @@ export const useDemoStore = create<DemoStore>()(
             correctionNote: note,
             history: [...x.history, event(me(), "correction_requested", { note })],
           }));
-          notify(a.applicantId, { title: "Correction requested", body: `${a.ref}: ${note}`, kind: "warning", href: `/workspace/applications/${appId}` });
+          notify(a.applicantId, { ...notifMsg("ntf.corrReq.t", "ntf.refNote.b", { vars: { ref: a.ref, note } }), kind: "warning", href: `/workspace/applications/${appId}` });
           audit("file.correction", a.ref, note);
         },
 
@@ -445,7 +461,7 @@ export const useDemoStore = create<DemoStore>()(
             observations: [...x.observations, { id: uid("ob"), at: new Date().toISOString(), authorId: me(), visibility, text, stage: x.stage }],
             history: [...x.history, event(me(), "observation", { note: visibility === "internal" ? "Internal note added." : text })],
           }));
-          if (visibility === "applicant") notify(a.applicantId, { title: "New observation", body: `${a.ref}: ${text}`, kind: "info", href: `/workspace/applications/${appId}` });
+          if (visibility === "applicant") notify(a.applicantId, { ...notifMsg("ntf.observation.t", "ntf.refNote.b", { vars: { ref: a.ref, note: text } }), kind: "info", href: `/workspace/applications/${appId}` });
           audit("file.observation", a.ref, visibility);
         },
 
@@ -484,7 +500,7 @@ export const useDemoStore = create<DemoStore>()(
                 signatures: [],
                 status: "awaiting",
                 requiredSignerIds: [me()],
-                audit: [{ at: new Date().toISOString(), actorId: me(), text: "Approval package generated and locked at version 1." }],
+                audit: [{ at: new Date().toISOString(), actorId: me(), ...localText("log.pkgGenerated") }],
               };
               set((s) => ({ signing: [pkg, ...s.signing] }));
             }
@@ -497,7 +513,7 @@ export const useDemoStore = create<DemoStore>()(
               holderId: undefined,
               history: [...x.history, event(me(), "rejected", { note, simulated: true })],
             }));
-            notify(a.applicantId, { title: "Application rejected", body: `${a.ref}: ${note}`, kind: "warning", href: `/workspace/applications/${appId}` });
+            notify(a.applicantId, { ...notifMsg("ntf.rejected.t", "ntf.refNote.b", { vars: { ref: a.ref, note } }), kind: "warning", href: `/workspace/applications/${appId}` });
             audit("file.reject", a.ref, note, "notice");
           }
         },
@@ -519,8 +535,8 @@ export const useDemoStore = create<DemoStore>()(
                     status: complete ? "signed" : "awaiting",
                     audit: [
                       ...p.audit,
-                      { at: now, actorId: me(), text: `Signed ${pages.length} design pages in slot ${slot} (v${p.version}). Excluded: ${p.sheets.filter((x) => !x.signable).map((x) => x.title).join(", ") || "none"}.`, simulated: true },
-                      ...(complete ? [{ at: now, actorId: "system", text: `Post-render verification: ${marks} of ${marks} signature marks present (simulated).`, simulated: true }] : []),
+                      { at: now, actorId: me(), ...localText(p.sheets.some((x) => !x.signable) ? "log.signed" : "log.signedNone", { vars: { n: pages.length, slot, v: p.version }, lists: { excluded: p.sheets.filter((x) => !x.signable).map((x) => `sheet.${x.kind}`) } }), simulated: true },
+                      ...(complete ? [{ at: now, actorId: "system", ...localText("log.verified", { vars: { n: marks } }), simulated: true }] : []),
                     ],
                   }
                 : p,
@@ -542,10 +558,10 @@ export const useDemoStore = create<DemoStore>()(
                 history: [...x.history, event("system", "fee_requested", { note: "Permit fee and electrical & plumbing drawings requested from applicant." })],
               }));
               set((s) => ({ payments: [{ id: uid("p"), applicationId: a.id, applicationRef: a.ref, zone: a.property.zone, category: "permit_fee", amount: fee?.total ?? 0, status: "pending", channel: "—", createdAt: now, reconciled: false }, ...s.payments] }));
-              notify(a.applicantId, { title: "Fee payment requested", body: `${a.ref}: approval signed. Please pay the permit fee and upload electrical & plumbing drawings.`, kind: "action", href: `/workspace/applications/${a.id}` });
+              notify(a.applicantId, { ...notifMsg("ntf.feeReq.t", "ntf.feeReq.b", { vars: { ref: a.ref } }), kind: "action", href: `/workspace/applications/${a.id}` });
             } else {
               patchApp(a.id, (x) => ({ ...x, status: "approved", stage: "issued", holderId: undefined, decidedAt: now, permitNo: x.ref, history: [...x.history, event("system", "approved", { note: "Signed approval issued." })] }));
-              notify(a.applicantId, { title: "Approval issued", body: `${a.ref} has been approved and signed.`, kind: "success", href: `/workspace/applications/${a.id}` });
+              notify(a.applicantId, { ...notifMsg("ntf.approved.t", "ntf.approved.b", { vars: { ref: a.ref } }), kind: "success", href: `/workspace/applications/${a.id}` });
             }
           }
         },
@@ -596,14 +612,14 @@ export const useDemoStore = create<DemoStore>()(
                     signatures: [],
                     status: "awaiting",
                     requiredSignerIds: ["u-off-01"],
-                    audit: [{ at: now, actorId: me(), text: "Approved drawing version locked after positive committee vote." }],
+                    audit: [{ at: now, actorId: me(), ...localText("log.lockedVote") }],
                   },
                   ...s.signing,
                 ],
               }));
             }
             patchApp(a.id, (x) => ({ ...x, status: "signing", stage: "signing", holderId: "u-off-01", stageEnteredAt: now }));
-            notify("u-off-01", { title: "Signature required", body: `${a.ref} approved by committee — approval set awaits your signature.`, kind: "action", href: `/rajuk/signing/${pkgId}` });
+            notify("u-off-01", { ...notifMsg("ntf.sigReq.t", "ntf.sigReq.b", { vars: { ref: a.ref } }), kind: "action", href: `/rajuk/signing/${pkgId}` });
             if (autoSign) {
               const prev = get().session;
               set({ session: prev ? { ...prev, userId: "u-off-01" } : prev });
@@ -612,10 +628,10 @@ export const useDemoStore = create<DemoStore>()(
             }
           } else if (decision === "correction") {
             patchApp(a.id, (x) => ({ ...x, status: "correction_requested", stage: "authorized_officer", holderId: "u-off-01", correctionNote: "BC Committee requested corrections — see committee minutes.", stageEnteredAt: now }));
-            notify(a.applicantId, { title: "Committee requested correction", body: `${a.ref}: please revise and resubmit for second presentation.`, kind: "warning", href: `/workspace/applications/${a.id}` });
+            notify(a.applicantId, { ...notifMsg("ntf.comCorr.t", "ntf.comCorr.b", { vars: { ref: a.ref } }), kind: "warning", href: `/workspace/applications/${a.id}` });
           } else {
             patchApp(a.id, (x) => ({ ...x, status: "rejected", stage: "closed", holderId: undefined, decidedAt: now }));
-            notify(a.applicantId, { title: "Application rejected by committee", body: `${a.ref} was rejected at ${meeting.title}.`, kind: "warning", href: `/workspace/applications/${a.id}` });
+            notify(a.applicantId, { ...notifMsg("ntf.comRej.t", "ntf.comRej.b", { vars: { ref: a.ref, meeting: meeting.title } }), kind: "warning", href: `/workspace/applications/${a.id}` });
           }
           audit("committee.conclude", a.ref, decision, "notice");
         },
@@ -629,8 +645,8 @@ export const useDemoStore = create<DemoStore>()(
           set((s) => ({ inspections: s.inspections.map((i) => (i.id === id ? { ...i, status: "submitted", submittedAt: now, outcome } : i)) }));
           const a = app(ins.applicationId)!;
           patchApp(a.id, (x) => ({ ...x, history: [...x.history, event(me(), "inspection", { note: `Inspection submitted — outcome: ${outcome?.replace("_", " ")}.` })] }));
-          notify("u-off-01", { title: "Inspection report submitted", body: `${a.ref}: ${outcome?.replace("_", " ")}.`, kind: outcome === "compliant" ? "info" : "warning", href: `/rajuk/files/${a.id}` });
-          notify(a.applicantId, { title: "Site inspection completed", body: `An inspection was recorded for ${a.ref}.`, kind: "info", href: `/workspace/applications/${a.id}` });
+          notify("u-off-01", { ...notifMsg("ntf.inspSub.t", "ntf.inspSub.b", { vars: { ref: a.ref }, keys: { outcome: `outcome.${outcome ?? "compliant"}` } }), kind: outcome === "compliant" ? "info" : "warning", href: `/rajuk/files/${a.id}` });
+          notify(a.applicantId, { ...notifMsg("ntf.inspDone.t", "ntf.inspDone.b", { vars: { ref: a.ref } }), kind: "info", href: `/workspace/applications/${a.id}` });
           audit("inspection.submit", a.ref, outcome);
         },
 
@@ -642,8 +658,8 @@ export const useDemoStore = create<DemoStore>()(
           const now = new Date().toISOString();
           const ticket: Ticket = { ...t, id: uid("t"), ref: `HD-26-${pad(counter, 5)}`, raisedBy: me(), status: "open", createdAt: now, updatedAt: now, thread: [{ at: now, authorId: me(), text: t.description }] };
           set((s) => ({ tickets: [ticket, ...s.tickets], counters: { ...s.counters, ticket: counter } }));
-          notify(me(), { title: "Ticket received", body: `${ticket.ref} logged. You will receive updates here.`, kind: "info", href: "/workspace/support" });
-          notify("u-sup-01", { title: "New ticket", body: `${ticket.ref} — ${t.subject}`, kind: "action", href: "/rajuk/helpdesk" });
+          notify(me(), { ...notifMsg("ntf.tkRecv.t", "ntf.tkRecv.b", { vars: { ref: ticket.ref } }), kind: "info", href: "/workspace/support" });
+          notify("u-sup-01", { ...notifMsg("ntf.tkNew.t", "ntf.tkNew.b", { vars: { ref: ticket.ref, subject: t.subject } }), kind: "action", href: "/rajuk/helpdesk" });
           return ticket;
         },
         replyTicket: (id, text) =>
@@ -651,7 +667,7 @@ export const useDemoStore = create<DemoStore>()(
         setTicketStatus: (id, status) => {
           const t = get().tickets.find((x) => x.id === id)!;
           set((s) => ({ tickets: s.tickets.map((x) => (x.id === id ? { ...x, status, updatedAt: new Date().toISOString() } : x)) }));
-          notify(t.raisedBy, { title: `Ticket ${t.ref} updated`, body: `Status: ${status.replace("_", " ")}`, kind: status === "resolved" ? "success" : "info", href: t.raisedBy.startsWith("u-app") || t.raisedBy.startsWith("u-pro") ? "/workspace/support" : "/rajuk/helpdesk" });
+          notify(t.raisedBy, { ...notifMsg("ntf.tkUpd.t", "ntf.tkUpd.b", { vars: { ref: t.ref }, keys: { status: `tkst.${status}` } }), kind: status === "resolved" ? "success" : "info", href: t.raisedBy.startsWith("u-app") || t.raisedBy.startsWith("u-pro") ? "/workspace/support" : "/rajuk/helpdesk" });
           audit("ticket.status", t.ref, status);
         },
         assignTicket: (id, assigneeId) => set((s) => ({ tickets: s.tickets.map((t) => (t.id === id ? { ...t, assigneeId, status: t.status === "open" ? "in_progress" : t.status, updatedAt: new Date().toISOString() } : t)) })),
@@ -720,7 +736,7 @@ export const useDemoStore = create<DemoStore>()(
             documents: [...x.documents, { id: uid("doc"), name: `estate_noc_${memoNo.replace(/\W+/g, "_")}.pdf`, category: "noc", sizeKb: 210, pages: 1, version: 1, uploadedAt: new Date().toISOString(), uploadedBy: me(), status: "verified", sample: true, previewKind: "document" }],
             history: [...x.history, event(me(), "noc_uploaded", { note: `Estate NOC ${memoNo} uploaded; file returned to processing.` })],
           }));
-          notify(a.applicantId, { title: "Estate NOC added", body: `${a.ref}: Estate section issued its NOC.`, kind: "info", href: `/workspace/applications/${appId}` });
+          notify(a.applicantId, { ...notifMsg("ntf.noc.t", "ntf.noc.b", { vars: { ref: a.ref } }), kind: "info", href: `/workspace/applications/${appId}` });
           audit("estate.noc", a.ref, memoNo);
         },
         reconcilePayment: (id) => {
@@ -739,6 +755,46 @@ export const useDemoStore = create<DemoStore>()(
               return b;
             }),
           })),
+        endorseDrawings: (appId) => {
+          const a = app(appId)!;
+          const now = new Date().toISOString();
+          patchApp(appId, (x) => ({
+            ...x,
+            professionals: x.professionals.map((p) => (p.userId === me() && p.status === "accepted" ? { ...p, endorsedAt: now } : p)),
+            history: [...x.history, event(me(), "endorsed", { note: "Drawings endorsed by the participating professional (simulated digital endorsement).", simulated: true })],
+          }));
+          notify(a.applicantId, { ...notifMsg("ntf.endorsed.t", "ntf.endorsed.b", { vars: { who: get().users.find((u) => u.id === me())?.name ?? "", ref: a.ref } }), kind: "success", href: `/workspace/applications/${appId}` });
+          audit("professional.endorse", a.ref);
+        },
+        regenerateLetter: (appId, reason) => {
+          const a = app(appId)!;
+          const v = (a.letterVersion ?? 1) + 1;
+          patchApp(appId, (x) => ({ ...x, letterVersion: v, history: [...x.history, event(me(), "letter_regenerated", { note: `Decision letter regenerated as version ${v}. Reason: ${reason}` })] }));
+          notify(a.applicantId, { ...notifMsg("ntf.letter.t", "ntf.letter.b", { vars: { ref: a.ref, v } }), kind: "info", href: `/workspace/applications/${appId}` });
+          audit("letter.regenerate", a.ref, `v${v}: ${reason}`, "notice");
+        },
+        notifyServiceDrawings: (appId) => {
+          const a = app(appId)!;
+          patchApp(appId, (x) => ({ ...x, history: [...x.history, event(me(), "service_drawings", { note: "Electrical and plumbing drawings submitted after approval." })] }));
+          notify("u-off-01", { ...notifMsg("ntf.svc.t", "ntf.svc.b", { vars: { ref: a.ref } }), kind: "info", href: `/rajuk/files/${appId}` });
+          audit("application.service_drawings", a.ref);
+        },
+        addTwoCDocument: (id, name) => {
+          set((s) => ({ twoC: s.twoC.map((f) => (f.id === id ? { ...f, documents: [...f.documents, { name, addedOn: new Date().toISOString() }] } : f)) }));
+          audit("twoc.document", id, name);
+        },
+        removeTrustedDevice: (id) => {
+          set((s) => ({ trustedDevices: s.trustedDevices.filter((d) => d.id !== id) }));
+          audit("auth.device_removed", id, "Trusted device removed; OTP required on next sign-in", "notice");
+        },
+        saveReportDelivery: (patch) => {
+          set((s) => ({ reportDelivery: { ...s.reportDelivery, ...patch } }));
+          audit("settings.reports", "Report delivery", JSON.stringify(patch));
+        },
+        formCommittee: (c) => {
+          set((s) => ({ committees: [...s.committees, { ...c, id: uid("bcc") }] }));
+          audit("committee.form", c.name, `${c.members.length} members`, "notice");
+        },
         moveTwoC: (id, toId, note) =>
           set((s) => ({ twoC: s.twoC.map((f) => (f.id === id ? { ...f, custodianId: toId, movements: [...f.movements, { at: new Date().toISOString(), fromId: f.custodianId, toId, note }] } : f)) })),
       };
@@ -746,7 +802,7 @@ export const useDemoStore = create<DemoStore>()(
     {
       name: STORAGE_KEY,
       // Bump when the seed schema changes so stale browser state is replaced by the new seed.
-      version: 3,
+      version: 5,
       migrate: () => createSeed() as unknown as DemoStore,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,

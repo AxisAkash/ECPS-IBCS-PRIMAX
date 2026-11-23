@@ -10,18 +10,20 @@ import { Callout, EmptyState } from "@/components/ui/feedback";
 import { Switch, Textarea } from "@/components/ui/form";
 import { ConfirmDialog, Sheet } from "@/components/ui/overlay";
 import { toast } from "@/components/ui/toast";
-import { OCCUPANCY } from "@/lib/domain/catalog";
 import type { Application, CommitteeItem, CommitteeMeeting } from "@/lib/domain/types";
 import { useDemoStore, userName } from "@/lib/store/demo-store";
 import { cn, downloadText, formatDate, formatDateTime } from "@/lib/utils";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useLabels } from "@/lib/i18n/labels";
 
 const VOTE_META = {
-  approve: { label: "Approve", icon: Check, on: "bg-success-600 text-white border-success-600", tone: "success" as const },
-  correction: { label: "Correction", icon: PenLine, on: "bg-amber-500 text-navy-950 border-amber-500", tone: "warning" as const },
-  reject: { label: "Reject", icon: X, on: "bg-danger-600 text-white border-danger-600", tone: "danger" as const },
+  approve: { label: "vote.approve" as MessageKey, icon: Check, on: "bg-success-600 text-white border-success-600", tone: "success" as const },
+  correction: { label: "vote.correction" as MessageKey, icon: PenLine, on: "bg-amber-500 text-navy-950 border-amber-500", tone: "warning" as const },
+  reject: { label: "vote.reject" as MessageKey, icon: X, on: "bg-danger-600 text-white border-danger-600", tone: "danger" as const },
 };
 
 export function CommitteeWorkspace() {
+  const { t, term, locale } = useI18n();
   const meetings = useDemoStore((s) => s.meetings);
   const applications = useDemoStore((s) => s.applications);
   const users = useDemoStore((s) => s.users);
@@ -47,12 +49,12 @@ export function CommitteeWorkspace() {
   return (
     <div>
       <PageHeader
-        kicker="BC Committee · TOR 1.4 · 1.5 · 1.10 · 1.13"
-        title="Committee agenda"
-        description={isMember ? "Review listed cases, record your vote and conclude decisions. Votes are recorded against your name in the minutes." : "Read-only view of committee agendas and decisions."}
+        kicker={t("cm.kicker")}
+        title={t("cm.title")}
+        description={isMember ? t("cm.descMember") : t("cm.descRead")}
       />
       <div className="grid gap-6 xl:grid-cols-[18rem_minmax(0,1fr)]">
-        <nav aria-label="Meetings" className="space-y-2">
+        <nav aria-label={t("cm.meetings")} className="space-y-2">
           {meetings.map((m) => (
             <button
               key={m.id}
@@ -62,33 +64,33 @@ export function CommitteeWorkspace() {
               className={cn("w-full rounded-xl border p-4 text-left transition-colors", m.id === selected ? "border-teal-600 bg-teal-50/60" : "border-line bg-surface hover:border-slate-ink/40")}
             >
               <div className="flex items-center justify-between gap-2">
-                <Badge tone={m.status === "concluded" ? "neutral" : m.status === "in_session" ? "accent" : "info"}>{m.status.replace("_", " ")}</Badge>
-                <span className="text-xs text-muted">{m.items.length} cases</span>
+                <Badge tone={m.status === "concluded" ? "neutral" : m.status === "in_session" ? "accent" : "info"}>{t(`mtgst.${m.status}`)}</Badge>
+                <span className="text-xs text-muted">{t("cm.cases", { n: m.items.length })}</span>
               </div>
-              <p className="mt-2 text-sm font-semibold text-ink-strong">{m.title}</p>
+              <p className="mt-2 text-sm font-semibold text-ink-strong">{term("mtg", m.title)}</p>
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted">
-                <CalendarDays className="size-3.5" aria-hidden /> {formatDateTime(m.date)}
+                <CalendarDays className="size-3.5" aria-hidden /> {formatDateTime(m.date, locale)}
               </p>
             </button>
           ))}
         </nav>
 
         {!meeting ? (
-          <EmptyState icon={Gavel} title="No meetings scheduled" />
+          <EmptyState icon={Gavel} title={t("cm.none")} />
         ) : (
           <div className="min-w-0 space-y-5">
             <Panel
-              title={meeting.title}
-              description={`${formatDateTime(meeting.date)} · ${meeting.venue}`}
+              title={term("mtg", meeting.title)}
+              description={`${formatDateTime(meeting.date, locale)} · ${term("venue", meeting.venue)}`}
               actions={
                 <Button variant="secondary" size="sm" onClick={() => downloadText(`${meeting.id}-minutes.txt`, minutes(meeting), "text/plain;charset=utf-8")}>
-                  <Download /> Minutes
+                  <Download /> {t("cm.minutes")}
                 </Button>
               }
             >
               <div className="flex flex-wrap items-center gap-4">
                 <span className="flex items-center gap-2 text-xs text-muted">
-                  <Users className="size-4" aria-hidden /> Members recorded in minutes
+                  <Users className="size-4" aria-hidden /> {t("cm.members")}
                 </span>
                 <ul className="flex flex-wrap gap-2">
                   {meeting.memberIds.map((id) => {
@@ -97,8 +99,8 @@ export function CommitteeWorkspace() {
                       <li key={id} className={cn("flex items-center gap-2 rounded-full border py-1 pl-1 pr-3 text-xs", id === session?.userId ? "border-teal-600 bg-teal-50" : "border-line bg-surface")}>
                         <Avatar name={u?.name ?? "?"} size="xs" />
                         <span className="text-ink-strong">{u?.name}</span>
-                        {u?.designation.includes("external") && <span className="text-muted">· external expert</span>}
-                        {u?.designation.includes("chair") && <span className="text-muted">· chair</span>}
+                        {u?.designation.includes("external") && <span className="text-muted">{t("cm.external")}</span>}
+                        {u?.designation.includes("chair") && <span className="text-muted">{t("cm.chair")}</span>}
                       </li>
                     );
                   })}
@@ -106,7 +108,7 @@ export function CommitteeWorkspace() {
               </div>
             </Panel>
             {meeting.items.length === 0 ? (
-              <EmptyState title="No cases listed yet" body="Authorized Officers list files for this meeting from the review workspace." />
+              <EmptyState title={t("cm.noCases")} body={t("cm.noCasesBody")} />
             ) : (
               meeting.items.map((it) => <AgendaItem key={it.id} meeting={meeting} item={it} app={applications.find((a) => a.id === it.applicationId)!} isMember={isMember} />)
             )}
@@ -118,6 +120,8 @@ export function CommitteeWorkspace() {
 }
 
 function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeeting; item: CommitteeItem; app: Application; isMember: boolean }) {
+  const { t, term, locale } = useI18n();
+  const L = useLabels();
   const users = useDemoStore((s) => s.users);
   const session = useDemoStore((s) => s.session);
   const castVote = useDemoStore((s) => s.castVote);
@@ -140,23 +144,23 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
             <h3 id={`item-${item.id}`} className="ref text-base font-semibold text-ink-strong">
               {app.ref}
             </h3>
-            <Badge tone={item.presentation === 2 ? "warning" : "info"}>{item.presentation === 2 ? "2nd & final presentation" : "1st presentation"}</Badge>
-            {decided && <Badge tone={VOTE_META[item.decision === "approved" ? "approve" : item.decision === "rejected" ? "reject" : "correction"].tone}>Decision: {item.decision}</Badge>}
+            <Badge tone={item.presentation === 2 ? "warning" : "info"}>{item.presentation === 2 ? t("cm.pres2") : t("cm.pres1")}</Badge>
+            {decided && <Badge tone={VOTE_META[item.decision === "approved" ? "approve" : item.decision === "rejected" ? "reject" : "correction"].tone}>{t("cm.decision", { d: t(`dec.${item.decision!}`) })}</Badge>}
           </div>
           <p className="mt-1 text-sm text-ink">{app.title}</p>
           <p className="mt-1 flex flex-wrap gap-x-4 text-xs text-muted">
             <span className="flex items-center gap-1">
-              <MapPin className="size-3" aria-hidden /> {app.property.area}, {app.property.zone}
+              <MapPin className="size-3" aria-hidden /> {app.property.area}, {L.zone(app.property.zone)}
             </span>
             {app.building && (
               <span>
-                Group {app.building.occupancy} ({OCCUPANCY[app.building.occupancy]}) · {app.building.storeys} storeys · {app.building.totalFloorAreaSqm.toLocaleString("en-IN")} m²
+                {t("cm.building", { occ: app.building.occupancy, occName: L.occ(app.building.occupancy), storeys: app.building.storeys, area: app.building.totalFloorAreaSqm.toLocaleString(locale === "bn" ? "bn-BD" : "en-IN") })}
               </span>
             )}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => setDetails(true)}>
-          <Eye /> Case details
+          <Eye /> {t("cm.details")}
         </Button>
       </header>
 
@@ -164,13 +168,13 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
         <div className="space-y-4">
           {item.presentation === 2 && (
             <Callout tone="warning" icon={Info}>
-              Per BC Committee rules (maximum two presentations), the <strong>Correction</strong> option is removed for the second submission — only Approve or Reject (TOR 1.4).
+              {t("cm.rule")}
             </Callout>
           )}
           {isMember && !decided ? (
             <div>
-              <p className="mb-2 text-sm font-medium text-ink-strong">Your vote</p>
-              <div role="radiogroup" aria-label="Your vote" className="flex flex-wrap gap-2">
+              <p className="mb-2 text-sm font-medium text-ink-strong">{t("cm.yourVote")}</p>
+              <div role="radiogroup" aria-label={t("cm.yourVote")} className="flex flex-wrap gap-2">
                 {options.map((o) => {
                   const M = VOTE_META[o];
                   const on = mine?.vote === o;
@@ -182,16 +186,16 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
                       aria-checked={on}
                       onClick={() => {
                         castVote(meeting.id, item.id, o, remark || undefined);
-                        toast.success(`Vote recorded: ${M.label}`, "Recorded against your name for the minutes.");
+                        toast.success(t("cm.voteToast", { vote: t(M.label) }), t("cm.voteToastBody"));
                       }}
                       className={cn("inline-flex h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium transition-colors", on ? M.on : "border-line-strong bg-surface text-ink hover:border-slate-ink/50")}
                     >
-                      <M.icon className="size-4" aria-hidden /> {M.label}
+                      <M.icon className="size-4" aria-hidden /> {t(M.label)}
                     </button>
                   );
                 })}
               </div>
-              <Textarea className="mt-3" rows={2} value={remark} onChange={(e) => setRemark(e.target.value)} placeholder="Remark for the minutes (optional)" aria-label="Remark" />
+              <Textarea className="mt-3" rows={2} value={remark} onChange={(e) => setRemark(e.target.value)} placeholder={t("cm.remark")} aria-label={t("cm.remarkLabel")} />
             </div>
           ) : (
             item.minutesNote && <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm text-ink">{item.minutesNote}</p>
@@ -201,23 +205,23 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
               <li key={v.memberId} className="flex items-center gap-2 text-sm">
                 <Avatar name={userName(users, v.memberId)} size="xs" />
                 <span className="text-ink-strong">{userName(users, v.memberId)}</span>
-                <Badge tone={VOTE_META[v.vote].tone}>{VOTE_META[v.vote].label}</Badge>
+                <Badge tone={VOTE_META[v.vote].tone}>{t(VOTE_META[v.vote].label)}</Badge>
                 {v.remark && <span className="truncate text-xs text-muted">“{v.remark}”</span>}
               </li>
             ))}
           </ul>
         </div>
         <div className="rounded-lg border border-line bg-surface-2 p-4">
-          <p className="text-xs text-muted">Tally</p>
+          <p className="text-xs text-muted">{t("cm.tally")}</p>
           <dl className="mt-2 space-y-1.5 text-sm">
             {options.concat(item.presentation === 2 && tally.correction ? ["correction"] : []).map((o) => (
               <div key={o} className="flex items-center justify-between">
-                <dt className="text-ink">{VOTE_META[o].label}</dt>
+                <dt className="text-ink">{t(VOTE_META[o].label)}</dt>
                 <dd className="tabular font-semibold text-ink-strong">{tally[o]}</dd>
               </div>
             ))}
             <div className="flex items-center justify-between border-t border-line pt-1.5 text-xs text-muted">
-              <dt>Members voted</dt>
+              <dt>{t("cm.voted")}</dt>
               <dd className="tabular">
                 {item.votes.length} / {meeting.memberIds.length}
               </dd>
@@ -225,32 +229,32 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
           </dl>
           {isMember && !decided && (
             <Button className="mt-4 w-full" variant="navy" size="sm" disabled={item.votes.length === 0} onClick={() => setConcluding(true)}>
-              <Gavel /> Record decision
+              <Gavel /> {t("cm.record")}
             </Button>
           )}
-          {decided && <p className="mt-3 text-xs text-muted">Decided {formatDate(item.decidedAt)}</p>}
+          {decided && <p className="mt-3 text-xs text-muted">{t("cm.decided", { date: formatDate(item.decidedAt, locale) })}</p>}
         </div>
       </div>
 
       <ConfirmDialog
         open={concluding}
         onOpenChange={setConcluding}
-        eyebrow={`${meeting.title} · ${app.ref}`}
-        title="Record the committee decision?"
-        description={`Majority of recorded votes: ${tally.approve} approve · ${tally.correction} correction · ${tally.reject} reject. The decision is final for this presentation.`}
-        confirmLabel="Yes, record decision"
+        eyebrow={`${term("mtg", meeting.title)} · ${app.ref}`}
+        title={t("cm.q")}
+        description={t("cm.qDesc", { a: tally.approve, c: tally.correction, r: tally.reject })}
+        confirmLabel={t("cm.yes")}
         tone="navy"
         onConfirm={() => {
           concludeItem(meeting.id, item.id, { autoSign });
           setConcluding(false);
-          toast.success("Decision recorded", tally.approve >= tally.reject ? (autoSign ? "Approval auto-signed (simulated); applicant asked for fees and service drawings." : "Approval sent to the Authorized Officer for signature.") : "Applicant notified.");
+          toast.success(t("cm.toast"), tally.approve >= tally.reject ? (autoSign ? t("cm.toastAuto") : t("cm.toastAo")) : t("cm.toastNotified"));
         }}
       >
         <label className="flex items-start gap-3 rounded-lg border border-line p-3 text-sm">
-          <Switch checked={autoSign} onCheckedChange={setAutoSign} className="mt-0.5" aria-label="Auto-sign after positive vote" />
+          <Switch checked={autoSign} onCheckedChange={setAutoSign} className="mt-0.5" aria-label={t("cm.autoLabel")} />
           <span>
-            <span className="block font-medium text-ink-strong">Post-vote automation (TOR 1.13)</span>
-            <span className="text-xs text-muted">If approved: apply the Authorized Officer&apos;s signature automatically (simulated) and request the fee and electrical/plumbing drawings from the applicant.</span>
+            <span className="block font-medium text-ink-strong">{t("cm.auto")}</span>
+            <span className="text-xs text-muted">{t("cm.autoBody")}</span>
           </span>
         </label>
       </ConfirmDialog>
@@ -260,18 +264,18 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
           {sitePlan && <DocumentPreview doc={sitePlan} app={app} />}
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <dt className="text-xs text-muted">Owner(s)</dt>
+              <dt className="text-xs text-muted">{t("cm.owners")}</dt>
               <dd className="text-ink-strong">{app.owners.map((o) => o.name).join(", ")}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted">Plot</dt>
+              <dt className="text-xs text-muted">{t("cm.plot")}</dt>
               <dd className="text-ink-strong">
-                {app.property.plotAreaSqm} m² · road {app.property.roadWidthM} m
+                {t("cm.plotVal", { area: app.property.plotAreaSqm, road: app.property.roadWidthM })}
               </dd>
             </div>
           </dl>
           <div>
-            <p className="mb-2 text-xs text-muted">Recommendation trail</p>
+            <p className="mb-2 text-xs text-muted">{t("cm.trail")}</p>
             <ul className="space-y-2 text-sm">
               {app.history
                 .filter((h) => h.note)
@@ -284,7 +288,7 @@ function AgendaItem({ meeting, item, app, isMember }: { meeting: CommitteeMeetin
             </ul>
           </div>
           <Button asChild variant="secondary">
-            <Link href={`/rajuk/files/${app.id}`}>Open full file</Link>
+            <Link href={`/rajuk/files/${app.id}`}>{t("cm.openFull")}</Link>
           </Button>
         </div>
       </Sheet>

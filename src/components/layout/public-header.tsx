@@ -1,14 +1,16 @@
 "use client";
 
-import { ArrowRight, Languages, Menu as MenuIcon, X } from "lucide-react";
+import { ArrowRight, Languages, Menu as MenuIcon, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { DemoToggle } from "@/features/demo/demo-tools";
 import { roleMeta } from "@/lib/domain/roles";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
+import { useTheme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 const NAV: Array<{ href: string; key: MessageKey }> = [
@@ -33,7 +35,29 @@ export function LanguageToggle({ onDark, className }: { onDark?: boolean; classN
     >
       <Languages className="size-4" aria-hidden />
       <span lang={locale === "en" ? "bn" : "en"}>{t("lang.switch")}</span>
-      <span className="sr-only"> (Switch to {locale === "en" ? "Bangla" : "English"})</span>
+      <span className="sr-only"> ({t("lang.switchTo")})</span>
+    </button>
+  );
+}
+
+/** Light/dark switch. Light is the default; the choice is saved in a cookie and applied instantly. */
+export function ThemeToggle({ onDark, className }: { onDark?: boolean; className?: string }) {
+  const { theme, toggle } = useTheme();
+  const { t } = useI18n();
+  const label = theme === "dark" ? t("theme.toLight") : t("theme.toDark");
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "inline-grid size-8 place-items-center rounded-md transition-colors",
+        onDark ? "text-on-dark hover:bg-white/10" : "text-ink hover:bg-surface-3",
+        className,
+      )}
+    >
+      {theme === "dark" ? <Sun className="size-4" aria-hidden /> : <Moon className="size-4" aria-hidden />}
     </button>
   );
 }
@@ -52,14 +76,8 @@ export function UtilityBar() {
           <span className="text-on-dark">{t("gov.agency")}</span>
         </p>
         <div className="flex shrink-0 items-center gap-3">
-          <Link href="/demo" className="hidden items-center gap-1.5 rounded px-1 text-amber-200 hover:text-amber-100 md:inline-flex">
-            <span className="size-1.5 rounded-full bg-amber-500" aria-hidden />
-            {t("proto.badge")} · {t("proto.label")}
-          </Link>
-          <Link href="/demo" className="inline-flex items-center gap-1.5 rounded px-1 text-amber-200 md:hidden">
-            <span className="size-1.5 rounded-full bg-amber-500" aria-hidden />
-            {t("proto.badge")}
-          </Link>
+          <DemoToggle onDark className="h-7" />
+          <ThemeToggle onDark className="size-7" />
           <LanguageToggle onDark className="h-7" />
         </div>
       </div>
@@ -109,7 +127,7 @@ export function PublicHeader() {
       >
         <div className="mx-auto flex h-16 max-w-[88rem] items-center justify-between gap-6 px-4 sm:px-6 lg:px-10">
           <Logo onDark={dark} />
-          <nav aria-label="Main" className="hidden lg:block">
+          <nav aria-label={t("ui.mainNav")} className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {NAV.map((n) => (
                 <li key={n.href}>
@@ -159,7 +177,7 @@ export function PublicHeader() {
           </div>
         </div>
         {open && (
-          <nav id="mobile-nav" aria-label="Main" className="animate-fade-in border-t border-line bg-surface lg:hidden">
+          <nav id="mobile-nav" aria-label={t("ui.mainNav")} className="animate-fade-in border-t border-line bg-surface lg:hidden">
             <ul className="mx-auto max-w-[88rem] space-y-0.5 px-4 py-3 sm:px-6">
               {NAV.map((n) => (
                 <li key={n.href}>

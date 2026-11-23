@@ -10,13 +10,13 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-teal-600 text-white shadow-[inset_0_-1px_0_rgb(0_0_0/0.12),0_1px_2px_rgb(20_38_61/0.12)] hover:bg-teal-700",
-        navy: "bg-navy-900 text-white shadow-sm hover:bg-navy-800",
+          "bg-teal-600 text-white shadow-[inset_0_-1px_0_rgb(0_0_0/0.12),0_1px_2px_rgb(20_38_61/0.12)] hover:bg-teal-700 dark:hover:bg-teal-600 dark:hover:brightness-110",
+        navy: "bg-emphasis text-white shadow-sm hover:bg-emphasis/90",
         accent: "bg-amber-500 text-navy-950 shadow-[inset_0_-1px_0_rgb(0_0_0/0.1)] hover:bg-amber-600 hover:text-navy-950",
         secondary: "border border-line-strong bg-surface text-ink-strong shadow-xs hover:border-slate-ink/40 hover:bg-surface-2",
         ghost: "text-ink hover:bg-surface-3 hover:text-ink-strong",
         subtle: "bg-teal-50 text-teal-800 hover:bg-teal-100",
-        danger: "bg-danger-600 text-white shadow-sm hover:bg-danger-700",
+        danger: "bg-danger-600 text-white shadow-sm hover:bg-danger-700 dark:hover:bg-danger-600 dark:hover:brightness-110",
         "danger-outline": "border border-danger-600/40 bg-surface text-danger-700 hover:bg-danger-100",
         "outline-dark": "border border-white/25 text-white hover:border-white/50 hover:bg-white/5",
         link: "h-auto px-0 text-teal-700 underline-offset-4 hover:underline",

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
+import { useDemoUi } from "@/lib/store/demo-ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 const COLS: Array<{ title: MessageKey; links: Array<{ href: string; key: MessageKey }> }> = [
@@ -36,6 +37,7 @@ const COLS: Array<{ title: MessageKey; links: Array<{ href: string; key: Message
 
 export function PublicFooter() {
   const { t } = useI18n();
+  const demoVisible = useDemoUi((s) => s.visible);
   return (
     <footer className="on-dark relative overflow-hidden bg-navy-950 text-on-dark-muted">
       <div className="bg-blueprint absolute inset-0 opacity-60" aria-hidden />
@@ -76,9 +78,11 @@ export function PublicFooter() {
             <Link href="/design-system" className="hover:text-white">
               {t("foot.design")}
             </Link>
-            <Link href="/demo" className="hover:text-white">
-              {t("foot.demo")}
-            </Link>
+            {demoVisible && (
+              <Link href="/demo" className="hover:text-white">
+                {t("foot.demo")}
+              </Link>
+            )}
           </div>
         </div>
       </div>

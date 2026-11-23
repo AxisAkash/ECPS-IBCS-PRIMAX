@@ -22,6 +22,7 @@ import { ROLES } from "@/lib/domain/roles";
 import type { RoleKey } from "@/lib/domain/types";
 import { useI18n } from "@/lib/i18n";
 import { ecps } from "@/lib/services";
+import { useDemoUi } from "@/lib/store/demo-ui";
 import { cn } from "@/lib/utils";
 
 export const ROLE_ICON: Record<RoleKey, LucideIcon> = {
@@ -37,8 +38,8 @@ export const ROLE_ICON: Record<RoleKey, LucideIcon> = {
   support: Headset,
 };
 
-export function DemoRoleGrid({ columns = 2, next }: { columns?: 1 | 2 | 3; next?: string }) {
-  const { t, locale } = useI18n();
+export function DemoRoleGrid({ columns = 2, next, onDone }: { columns?: 1 | 2 | 3; next?: string; onDone?: () => void }) {
+  const { t, term } = useI18n();
   const router = useRouter();
   const [pending, setPending] = useState<RoleKey | null>(null);
 
@@ -47,6 +48,10 @@ export function DemoRoleGrid({ columns = 2, next }: { columns?: 1 | 2 | 3; next?
     await ecps.auth.demoSignIn(role);
     const meta = ROLES.find((r) => r.key === role)!;
     router.push(next && (next.startsWith(meta.workspace === "rajuk" ? "/rajuk" : "/workspace")) ? next : meta.home);
+    setPending(null);
+    // Close the demo tools once a role is chosen so they never cover the workspace.
+    useDemoUi.getState().hide();
+    onDone?.();
   };
 
   return (
@@ -63,14 +68,14 @@ export function DemoRoleGrid({ columns = 2, next }: { columns?: 1 | 2 | 3; next?
               onClick={() => enter(r.key)}
               className="group flex w-full items-center gap-3 rounded-lg border border-line bg-surface px-3.5 py-3 text-left transition-[border-color,box-shadow,background-color] hover:border-teal-600/50 hover:shadow-sm disabled:cursor-wait disabled:opacity-60"
             >
-              <span className={cn("grid size-9 shrink-0 place-items-center rounded-md", r.workspace === "rajuk" ? "bg-navy-900 text-white" : "bg-teal-50 text-teal-700")}>
+              <span className={cn("grid size-9 shrink-0 place-items-center rounded-md", r.workspace === "rajuk" ? "bg-emphasis text-white" : "bg-teal-50 text-teal-700")}>
                 {busy ? <Spinner className="size-4" /> : <Icon className="size-4" aria-hidden />}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="sr-only">{t("auth.demo.enter", { role: "" }).replace(/\s+$/, "")} </span>
-                <span className="block text-sm font-semibold text-ink-strong">{locale === "bn" ? r.labelBn : r.label}</span>
+                <span className="block text-sm font-semibold text-ink-strong">{t(`role.${r.key}`)}</span>
                 <span className="block truncate text-xs text-muted">
-                  {persona.name} · {persona.designation}
+                  {persona.name} · {term("desig", persona.designation)}
                 </span>
               </span>
               <ArrowRight className="size-4 shrink-0 text-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-teal-700" aria-hidden />
